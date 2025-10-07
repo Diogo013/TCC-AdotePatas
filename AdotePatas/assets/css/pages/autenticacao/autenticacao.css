@@ -1,0 +1,216 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700;800&family=Inter:wght@400;500;700&display=swap');
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-image: url('../../../../images/cadastro-login/background.png');
+    background-size: cover;
+    background-attachment: fixed;
+}
+
+.container-card {
+    background-color: rgba(180, 100, 89, 0.35);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    z-index: 10;
+    position: relative;
+}
+
+.input-style {
+    color: white;
+    font-weight: 500;
+    padding: 1.15rem;
+    border: none;
+    border-radius: 0.75rem;
+    transition: background-color 0.3s, box-shadow 0.3s;
+    background-color: rgba(180, 100, 89, 0.58);
+}
+
+.input-style::placeholder {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.input-style:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(179, 72, 72, 0.5);
+}
+
+.email-input {
+    letter-spacing: 0.05em;
+    font-size: 1.1rem;
+}
+
+.senha-input {
+    font-size: 1.1rem;
+    background-color: rgba(152, 4, 3, 0.58);
+}
+
+.toggle-senha {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: white;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.toggle-senha:hover {
+    opacity: 1;
+}
+
+.link-style {
+    color: #f0e9e9;
+    border-bottom: 1px solid #f0e9e9;
+    font-weight: 500;
+    transition: color 0.3s, border-color 0.3s;
+}
+
+.link-style:hover {
+    color: white;
+    border-color: white;
+}
+
+.adopt-btn {
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+    cursor: pointer;
+    background-color: #b92b2b;
+    color: #f0e9e9;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 1.5rem; /* Ajustado para caber melhor */
+    padding: 0.75rem 0; /* py-3 */
+    width: 100%;
+    max-width: 280px;
+    border-radius: 1rem; /* rounded-2xl */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.19);
+}
+
+.adopt-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25), 0 10px 25px rgba(0, 0, 0, 0.22);
+}
+
+.adopt-btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.heart-background {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+    font-size: 3.5rem;
+    line-height: 1;
+    color: #a82626;
+    user-select: none;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3), -1px -1px 2px rgba(255, 255, 255, 0.15);
+}
+
+.adopt-btn span {
+    position: relative;
+    z-index: 2;
+    text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.pata-fundo {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    height: 24rem;
+    width: 40rem;
+    opacity: 0.4;
+    z-index: 0;
+    pointer-events: none;
+    display: none; /* Oculto por padrão */
+}
+
+@media (min-width: 1024px) {
+    .pata-fundo {
+        display: block;
+    }
+}
+
+/* --- ESTILOS DAS ABAS --- */
+.tab-btn.active {
+    color: white;
+    border-bottom: 3px solid #f0e9e9;
+}
+
+.form-container {
+    display: none; /* Esconde todos os formulários por padrão */
+}
+
+.form-container.active {
+    display: block; /* Mostra apenas o formulário ativo */
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- ESTILOS DO MODAL 'ESQUECI A SENHA' --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: none; /* Inicia oculto */
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.modal-overlay.active {
+    display: flex;
+    opacity: 1;
+}
+
+.modal-content {
+    background-color: #f7f4f2; /* Cor de fundo suave do site */
+    padding: 2.5rem;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 450px;
+    position: relative;
+    transform: scale(0.95);
+    transition: transform 0.3s ease-in-out;
+}
+
+.modal-overlay.active .modal-content {
+    transform: scale(1);
+}
+
+.modal-close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 2.5rem;
+    font-weight: 300;
+    color: #888;
+    background: none;
+    border: none;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.modal-close-btn:hover {
+    color: #333;
+}
+
+#resend-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+}
