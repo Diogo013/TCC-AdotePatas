@@ -266,7 +266,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             <form id="form-recuperar-senha" class="space-y-4">
                 <input type="email" id="email_recuperar" name="email_recuperar" placeholder="E-mail" required class="input-style w-full email-input">
-                <input type="email" id="email_confirmar" name="email_confirmar" placeholder="Confirmar e-mail" required class="input-style w-full email-input">
                 <p id="modal-error-msg" class="text-red-700 font-semibold text-center hidden"></p>
                 <div class="flex justify-center w-full pt-4">
                     <button type="submit" class="adopt-btn">
