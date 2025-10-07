@@ -148,24 +148,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Acesso - Adote Patas</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="images/global/Logo-AdotePatas.png"/>
     <link rel="stylesheet" href="assets/css/pages/autenticacao/autenticacao.css">
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4">
 
+
+<a href="index.html" class="btn-voltar" title="Voltar para a página inicial">
+    <i class="fa-solid fa-arrow-left"></i>
+    <span>Voltar</span>
+</a>
+
 <img src="images/cadastro-login/pata.png" alt="Desenho de Pata" class="pata-fundo">
+
 
 <div class="w-full max-w-lg mx-auto">
     <div class="w-full flex items-center justify-between mb-6 relative">
         <div>
-            <a href="index.php" title="Voltar para a página inicial">
-                <img src="images/global/Logo-AdotePatas.png" alt="Logo Adote Patas" class="h-24 w-24 sm:h-32 sm:w-32">
+            <a href="index.html" title="Voltar para a página inicial">
+                <img src="images/global/Logo-AdotePatas.png" alt="Logo Adote Patas" width="70" height="70">
             </a>
-        </div>
+            </div>
         <div class="absolute inset-x-0 text-center">
-            <h1 id="page-title" class="text-4xl sm:text-5xl font-extrabold text-[#666662]">Entrar</h1>
-            <div class="w-12 h-1 bg-[#666662] mx-auto mt-1 rounded-full"></div>
+            <h1 id="page-title" class="text-4xl sm:text-4xl font-bold text-[#666662]">Entrar</h1>
+            <div class="w-24 h-1 bg-[#666662] mx-auto mt-1 rounded-full"></div>
         </div>
         <div class="h-16 w-16 invisible"></div>
     </div>
@@ -197,7 +205,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <div class="flex justify-end pt-2">
                         <a href="#" id="forgot-password-link" class="link-style">Esqueci a senha</a>
                     </div>
-                    <div class="flex justify-center w-50 pt-4 mx-auto">
+                    <div class="flex justify-center w-40 mx-auto">
                         <button type="submit" class="adopt-btn">
                             <div class="heart-background">❤</div><span>Entrar</span>
                         </button>
@@ -216,10 +224,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <i class="fas fa-eye toggle-senha" data-target="senha_cadastro"></i>
                     </div>
                     <div class="relative">
-                        <input type="password" id="confirma_senha_cadastro" name="confirma_senha_cadastro" placeholder="Confirme a Senha" required class="input-style w-full pr-12 senha-input">
+                        <input type="password" id="confirma_senha_cadastro" name="confirma_senha_cadastro" placeholder="Confirmar a Senha" required class="input-style w-full pr-12 senha-input">
                         <i class="fas fa-eye toggle-senha" data-target="confirma_senha_cadastro"></i>
                     </div>
-                    <div class="flex justify-center w-full pt-4">
+                    <div class="flex justify-center w-40 mx-auto">
                         <button type="submit" class="adopt-btn">
                             <div class="heart-background">❤</div><span>Cadastrar</span>
                         </button>
@@ -232,16 +240,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <input type="hidden" name="form_type" value="cadastro_ong">
                     <input type="text" name="nome_ong" placeholder="Nome Oficial da ONG" required class="input-style w-full">
                     <input type="text" name="cnpj" placeholder="CNPJ" required class="input-style w-full">
-                    <input type="email" name="email_ong" placeholder="E-mail de Contato da ONG" required class="input-style w-full">
+                    <input type="email" name="email_ong" placeholder="E-mail" required class="input-style w-full">
                     <div class="relative">
                         <input type="password" id="senha_ong" name="senha_ong" placeholder="Senha" required class="input-style w-full pr-12 senha-input">
                         <i class="fas fa-eye toggle-senha" data-target="senha_ong"></i>
                     </div>
                     <div class="relative">
-                        <input type="password" id="confirma_senha_ong" name="confirma_senha_ong" placeholder="Confirme a Senha" required class="input-style w-full pr-12 senha-input">
+                        <input type="password" id="confirma_senha_ong" name="confirma_senha_ong" placeholder="Confirmar a Senha" required class="input-style w-full pr-12 senha-input">
                         <i class="fas fa-eye toggle-senha" data-target="confirma_senha_ong"></i>
                     </div>
-                    <div class="flex justify-center w-full pt-4">
+                    <div class="flex justify-center w-60 mx-auto">
                         <button type="submit" class="adopt-btn">
                             <div class="heart-background">❤</div><span>Cadastrar ONG</span>
                         </button>
@@ -297,5 +305,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </script>
 <script src="assets/js/pages/autenticacao/autenticacao.js"></script>
 
+
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y" crossorigin="anonymous"></script>
 </body>
 </html>

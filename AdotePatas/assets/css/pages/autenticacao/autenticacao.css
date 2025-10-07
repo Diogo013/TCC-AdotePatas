@@ -1,3 +1,5 @@
+@import "../../global/global.css";
+
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700;800&family=Inter:wght@400;500;700&display=swap');
 
 body {
@@ -6,21 +8,34 @@ body {
     background-size: cover;
     background-attachment: fixed;
 }
-
+::selection {
+  background-color: var(--cor-rosa-escuro);
+  color: var(--cor-branca);
+}
+img{
+    user-select: none;
+}
 .container-card {
     background-color: rgba(180, 100, 89, 0.35);
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     z-index: 10;
     position: relative;
 }
-
+.input-style:-webkit-autofill,
+.input-style:-webkit-autofill:hover,
+.input-style:-webkit-autofill:focus,
+.input-style:-webkit-autofill:active {
+    box-shadow: 0 0 0 1000px rgba(180, 100, 89, 0.78) inset;
+    outline: none;
+    border: none;
+    -webkit-text-fill-color: var(--cor-branca);
+}
 .input-style {
     color: white;
     font-weight: 500;
     padding: 1.15rem;
     border: none;
     border-radius: 0.75rem;
-    transition: background-color 0.3s, box-shadow 0.3s;
     background-color: rgba(180, 100, 89, 0.58);
 }
 
@@ -30,8 +45,9 @@ body {
 
 .input-style:focus {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(179, 72, 72, 0.5);
+    border: solid 2px rgba(180, 100, 89, 0.03);
 }
+
 
 .email-input {
     letter-spacing: 0.05em;
@@ -41,6 +57,11 @@ body {
 .senha-input {
     font-size: 1.1rem;
     background-color: rgba(152, 4, 3, 0.58);
+}
+
+.senha-input:focus {
+    outline: none;
+    border: solid 2px rgba(152, 4, 3, 0.03);
 }
 
 .toggle-senha {
@@ -59,8 +80,8 @@ body {
 }
 
 .link-style {
-    color: #f0e9e9;
-    border-bottom: 1px solid #f0e9e9;
+    color: var(--cor-vermelho);
+    border-bottom: 1px solid var(--cor-vermelho);
     font-weight: 500;
     transition: color 0.3s, border-color 0.3s;
 }
@@ -213,4 +234,49 @@ body {
     cursor: not-allowed;
     text-decoration: none;
     border-bottom: 1px solid transparent;
+}
+/* ==========================================================================
+   BOTÃO VOLTAR - Estilo e Posicionamento Fixo/Responsivo
+   ========================================================================== */
+.btn-voltar {
+    /* --- Posicionamento --- */
+    position: absolute; /* Ou 'fixed' se quiser que ele permaneça mesmo com scroll */
+    top: 2rem;  /* 32px do topo */
+    left: 2rem; /* 32px da esquerda */
+    z-index: 100; /* Garante que fique acima de outros elementos */
+    display: inline-flex; /* Alinha o ícone e o texto corretamente */
+    align-items: center;
+    gap: 0.5rem; /* Espaço entre o ícone e o texto */
+    padding: 0.75rem 1.25rem;
+    color: var(--cor-vermelho);
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+
+.btn-voltar:focus-visible {
+    outline: 2px solid var(--cor-branca);
+    outline-offset: 2px;
+}
+
+/* --- AJUSTES RESPONSIVOS (Mobile First) --- */
+
+/* Telas de tablet e menores */
+@media (max-width: 768px) {
+    .btn-voltar {
+        top: 1rem; /* Menor distância do topo */
+        left: 1rem; /* Menor distância da esquerda */
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* Telas de celular (bem pequenas) */
+@media (max-width: 480px) {
+    .btn-voltar {
+        padding: 0.75rem;
+        top: 0.3rem;
+        left: 0.3rem;
+    }
 }
