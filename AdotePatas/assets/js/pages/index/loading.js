@@ -8,6 +8,6 @@ window.onload = function () {
     setTimeout(() => {
       // Adiciona a classe que inicia a transição de fade-out
       loadingScreen.classList.add("hidden");
-    }, 3000); // 2000 milissegundos = 2 segundos. Altere este valor conforme necessário.
+    }, 3000); // 3000 milissegundos = 3 segundos. Altere este valor conforme necessário.
   }
 };

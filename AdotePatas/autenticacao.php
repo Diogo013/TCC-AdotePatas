@@ -152,8 +152,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="images/global/Logo-AdotePatas.png"/>
     <link rel="stylesheet" href="assets/css/pages/autenticacao/autenticacao.css">
+     <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4">
+
+<div id="toast-notification" class="toast" style="display: none;">
+    <div id="toast-icon" class="toast-icon">
+        </div>
+    <div class="toast-content">
+        <p id="toast-message" class="toast-message">Mensagem de exemplo.</p>
+    </div>
+    <div class="toast-progress-bar"></div>
+</div>
 
 
 <a href="index.html" class="btn-voltar" title="Voltar para a página inicial">
@@ -187,9 +197,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
 
         <?php if (!empty($mensagem_status)): ?>
-            <?php $bg_class = $tipo_mensagem == 'success' ? 'bg-green-100 border-green-400 text-green-700' : 'bg-red-100 border-red-400 text-red-700'; ?>
-            <div class="<?php echo $bg_class; ?> border px-4 py-3 rounded relative mb-4" role="alert">
-                <span class="block sm:inline"><?php echo $mensagem_status; ?></span>
+            <div id="php-data" 
+                 data-message="<?php echo htmlspecialchars($mensagem_status); ?>" 
+                 data-type="<?php echo htmlspecialchars($tipo_mensagem); ?>" 
+                 style="display: none;">
             </div>
         <?php endif; ?>
 

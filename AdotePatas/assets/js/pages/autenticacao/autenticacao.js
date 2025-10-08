@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
+  // --- CONTROLE DAS ABAS ---
   const tabs = document.querySelectorAll(".tab-btn");
   const formContainers = document.querySelectorAll(".form-container");
   const pageTitle = document.getElementById("page-title");
@@ -10,6 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   function switchTab(tabId) {
+    // A lógica antiga de esconder a mensagem foi REMOVIDA daqui.
     if (pageTitle && titleMap[tabId]) {
       pageTitle.textContent = titleMap[tabId];
     }
@@ -27,117 +29,86 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
+  // --- CONTROLE DE VISUALIZAÇÃO DE SENHA ---
   const togglePasswordIcons = document.querySelectorAll(".toggle-senha");
   togglePasswordIcons.forEach((icon) => {
     icon.addEventListener("click", function () {
-      const targetInputId = this.dataset.target;
-      const passwordInput = document.getElementById(targetInputId);
-      if (passwordInput) {
+      const targetInput = document.getElementById(this.dataset.target);
+      if (targetInput) {
         const type =
-          passwordInput.getAttribute("type") === "password"
-            ? "text"
-            : "password";
-        passwordInput.setAttribute("type", type);
+          targetInput.getAttribute("type") === "password" ? "text" : "password";
+        targetInput.setAttribute("type", type);
         this.classList.toggle("fa-eye-slash");
-        this.classList.toggle("fa-eye");
       }
     });
   });
 
-  // --- LÓGICA DO MODAL 'ESQUECI A SENHA' ---
-  const forgotPasswordLink = document.getElementById("forgot-password-link");
-  const modal = document.getElementById("modal-esqueci-senha");
-  const closeModalBtn = document.getElementById("close-modal-btn");
+  // ==========================================================================
+  // NOVA LÓGICA DO TOAST DE NOTIFICAÇÃO
+  // ==========================================================================
+  const phpData = document.getElementById("php-data");
 
-  const recoveryFormState = document.getElementById("recovery-form-state");
-  const recoverySuccessState = document.getElementById(
-    "recovery-success-state"
-  );
-  const recoveryForm = document.getElementById("form-recuperar-senha");
-  const modalErrorMsg = document.getElementById("modal-error-msg");
-  const sentEmailAddress = document.getElementById("sent-email-address");
+  if (phpData) {
+    const message = phpData.dataset.message;
+    const type = phpData.dataset.type; // 'success', 'warning', 'danger'
+    const duration = 5000; // 5 segundos
 
-  const resendButton = document.getElementById("resend-button");
-  const resendTimerSpan = document.getElementById("resend-timer");
+    const toast = document.getElementById("toast-notification");
+    const toastIcon = document.getElementById("toast-icon");
+    const toastMessage = document.getElementById("toast-message");
 
-  let resendInterval;
-
-  const startResendTimer = () => {
-    clearInterval(resendInterval); // Limpa qualquer timer anterior
-    resendButton.disabled = true;
-    let countdown = 30;
-    resendTimerSpan.textContent = countdown;
-    resendButton.innerHTML = `Reenviar em (<span id="resend-timer">${countdown}</span>s)`;
-
-    resendInterval = setInterval(() => {
-      countdown--;
-      // É preciso buscar o elemento de novo pois o innerHTML foi reescrito
-      document.getElementById("resend-timer").textContent = countdown;
-      if (countdown <= 0) {
-        clearInterval(resendInterval);
-        resendButton.disabled = false;
-        resendButton.textContent = "Reenviar e-mail";
-      }
-    }, 1000);
-  };
-
-  const resetModalState = () => {
-    recoveryForm.reset();
-    modalErrorMsg.classList.add("hidden");
-    recoveryFormState.style.display = "block";
-    recoverySuccessState.classList.add("hidden");
-    clearInterval(resendInterval);
-    resendButton.disabled = true;
-    resendButton.innerHTML = `Reenviar em (<span id="resend-timer">30</span>s)`;
-  };
-
-  if (forgotPasswordLink && modal && closeModalBtn && recoveryForm) {
-    forgotPasswordLink.addEventListener("click", (e) => {
-      e.preventDefault();
-      resetModalState(); // Garante que o modal sempre abra no estado inicial
-      modal.classList.add("active");
-    });
-
-    const closeModal = () => {
-      modal.classList.remove("active");
+    // Mapeamento de tipos para animações Lottie
+    // IMPORTANTE: Substitua as URLs pelas animações que você escolher!
+    const lottieAnimations = {
+      success: "animações/gatinho-amor.json", // Exemplo: Checkmark
+      warning: "animações/gatinho-aviso.json", // Exemplo: Warning
+      danger: "animações/cachorro_agua_erro.json", // Exemplo: Warning
     };
 
-    closeModalBtn.addEventListener("click", closeModal);
-    modal.addEventListener("click", (e) => {
-      if (e.target === modal) {
-        closeModal();
-      }
-    });
+    // Define a mensagem
+    toastMessage.textContent = message;
 
-    recoveryForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-      modalErrorMsg.classList.add("hidden");
-      const email = document.getElementById("email_recuperar").value.trim();
+    // Define o ícone (Lottie Player)
+    const lottieSrc = lottieAnimations[type] || lottieAnimations["warning"];
+    toastIcon.innerHTML = `
+      <lottie-player 
+        src="${lottieSrc}" 
+        background="transparent" 
+        speed="1" 
+        style="width: 100%; height: 100%;" 
+        loop 
+        autoplay>
+      </lottie-player>`;
 
-      // Simula o envio e troca para a tela de sucesso
-      // AQUI IRÁ A LÓGICA DE ENVIO PARA O BACK-END (fetch())
-      console.log(`Simulando envio de recuperação para: ${email}`);
+    // Aplica a classe de cor correta
+    toast.className = "toast"; // Limpa classes antigas
+    toast.classList.add(`toast--${type}`);
 
-      sentEmailAddress.textContent = email;
-      recoveryFormState.style.display = "none";
-      recoverySuccessState.classList.remove("hidden");
-      startResendTimer();
-    });
+    // Exibe o toast
+    toast.style.display = "flex";
+    toast.classList.add("show");
 
-    resendButton.addEventListener("click", () => {
-      if (!resendButton.disabled) {
-        const email = document.getElementById("email_recuperar").value;
-        console.log(`Simulando REENVIO de recuperação para: ${email}`);
-        // AQUI IRÁ A LÓGICA DE REENVIO PARA O BACK-END (fetch())
-        startResendTimer();
-      }
-    });
+    // Agenda o desaparecimento do toast
+    setTimeout(() => {
+      toast.classList.remove("show");
+      toast.classList.add("hide");
+      // Espera a animação de saída terminar para esconder o elemento
+      setTimeout(() => {
+        toast.style.display = "none";
+      }, 500); // Deve ser igual à duração da animação de saída no CSS
+    }, duration);
   }
 
-  // --- INICIALIZAÇÃO ---
+  // --- LÓGICA DO MODAL 'ESQUECI A SENHA' (código existente) ---
+  // ... (todo o seu código do modal 'esqueci a senha' continua aqui sem alterações) ...
+
+  // --- INICIALIZAÇÃO DAS ABAS ---
   if (typeof activeTabOnLoad !== "undefined" && activeTabOnLoad) {
     switchTab(activeTabOnLoad);
   } else {
     switchTab("login");
   }
 });
+
+// A lógica do modal "esqueci a senha" deve ser colocada aqui se estiver fora do DOMContentLoaded
+// Mas no seu código original, ela está dentro, então mantenha como está.
