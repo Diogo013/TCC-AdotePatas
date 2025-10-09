@@ -8,6 +8,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let startX = 0;
   let dragX = 0;
 
+
+
   // --- CONSTANTES DE CONTROLE ---
   const DRAG_THRESHOLD = 50; // Distância em pixels para ativar a troca de card
   const MAX_DRAG_X = 350; // Limite máximo de arraste em pixels
@@ -33,30 +35,30 @@ document.addEventListener("DOMContentLoaded", () => {
       const currentDragX = isDragging && isActive ? dragX : 0;
 
       card.style.setProperty("--z-index", cards.length - Math.abs(pos));
-      card.style.setProperty("--opacity", isActive ? 1 : 0.6);
+      card.style.setProperty("--opacity", isActive ? 1 : 0.8);
       card.style.setProperty("--scale", isActive ? 1 : 0.9);
 
       if (pos > 0) {
-        card.style.setProperty(
-          "--x-offset",
-          `calc(${pos * 10}% + ${currentDragX}px)`
-        );
-        card.style.setProperty("--y-offset", `${pos * 20}px`);
+        // cards à direita do ativo: empilhamento com deslocamento positivo
+        card.style.setProperty("--x-offset", `calc(${pos * 15}% + ${currentDragX}px)`);
+        card.style.setProperty("--y-offset", `${pos * 1}px`);
         card.style.setProperty("--rotation", `${pos * 10}deg`);
       } else {
-        card.style.setProperty(
-          "--x-offset",
-          `calc(${pos * 10}% + ${currentDragX}px)`
-        );
+        // cards à esquerda (ou o ativo): menor deslocamento
+        card.style.setProperty("--x-offset", `calc(${pos * 10}% + ${currentDragX}px)`);
         card.style.setProperty("--y-offset", "0px");
 
         if (isActive) {
+          // destaque do card ativo
           card.style.setProperty("--rotation", "-20deg");
         } else {
-          card.style.setProperty("--rotation", `${pos * 5}deg`);
+          // rotação baseada na posição relativa (pos é negativo para a esquerda)
+          card.style.setProperty("--rotation", `${pos * -20}deg`);
         }
       }
     });
+        console.log(cards);
+
   }
 
   // --- FUNÇÕES DA LÓGICA DE ARRASTAR ---

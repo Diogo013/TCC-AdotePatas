@@ -419,10 +419,10 @@ body {
 
 .card-carousel-container {
   position: relative;
-  width: 100%;
-  max-width: 440px; /* Largura máxima do card ativo */
-  height: 600px; /* Altura fixa para o container */
-  margin: 0; /* O Bootstrap já cuida do alinhamento da coluna */
+  width: 90%;
+  max-width: 400px; /* Largura máxima do card ativo */
+  height: 500px; /* Altura fixa para o container */
+  margin: 10px; /* O Bootstrap já cuida do alinhamento da coluna */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -443,10 +443,8 @@ body {
   height: 100%;
   background: transparent;
   cursor: pointer;
-
   /* A transição é a chave para a animação suave */
   transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.6s ease;
-
   /* Usamos variáveis para controlar a posição e rotação via JS */
   transform: translateX(var(--x-offset, 0px)) translateY(var(--y-offset, 0px))
     scale(var(--scale, 1)) rotate(var(--rotation, 0deg));
@@ -477,7 +475,7 @@ body {
   line-height: 1.2;
   font-family: "Poppins", sans-serif;
   color: var(--cor-cinza-texto);
-  margin: 0 1rem;
+  margin-right: 1rem;
 }
 .conclusao-about {
   font-size: 2rem;
@@ -541,13 +539,11 @@ span.destaque-recomeco {
   left: 70%;
   width: 150%;
   height: 150%;
-
   /* Caminho para a imagem da pata */
   background-image: url("../../../../images/index/pata-footer.svg");
   background-repeat: no-repeat;
   background-position: center center;
   background-size: contain;
-
   /* Transformação para centralizar e ajustar */
   transform: translate(-50%, -50%) rotate(5deg) scale(1.1);
 
