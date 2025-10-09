@@ -414,81 +414,59 @@ body {
   color: var(--cor-vermelho);
 }
 /* ==========================================================================
-   SWIPER - Refatorado para Responsividade (Mobile First)
+   CARROSSEL DE CARDS COM CSS E JS PUROS
    ========================================================================== */
 
-/* --- Container Principal do Swiper --- */
-.swiper {
-  width: 100%;
-  max-width: 280px; /* Tamanho base para telas pequenas (Ex: iPhone SE) */
-  margin-left: auto;
-  margin-right: auto; /* Garante a centralização do carrossel */
-  overflow: visible; /* Essencial para ver os slides laterais */
-  user-select: none;
-}
-
-.swiper-wrapper {
-  align-items: center; /* Mantém os slides verticalmente alinhados */
-}
-
-/* ==========================================================================
-   SWIPER - COM EFEITO DE CARDS EMPILHADOS E ROTAÇÃO CUSTOMIZADA
-   ========================================================================== */
-
-.swiper {
-  width: 100%;
-  max-width: 280px;
-  /* IMPORTANTE: O Swiper precisa de altura quando os slides são absolutos */
-  height: 380px;
-  margin: auto;
-  overflow: visible;
-  user-select: none;
-}
-
-/* O slide agora é apenas um container transparente para a animação do Swiper */
-.swiper-slide {
-  /* Removemos todos os estilos visuais daqui */
-  transform-style: preserve-3d; /* Melhora a renderização 3D */
-}
-
-/* Toda a aparência do card agora está no div interno */
-.card-content {
+.card-carousel-container {
   position: relative;
+  width: 100%;
+  max-width: 440px; /* Largura máxima do card ativo */
+  height: 600px; /* Altura fixa para o container */
+  margin: 0; /* O Bootstrap já cuida do alinhamento da coluna */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.card-deck {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* Estilo base para todos os cards no baralho */
+.card-item-deck {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  cursor: pointer;
+
+  /* A transição é a chave para a animação suave */
+  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.6s ease;
+
+  /* Usamos variáveis para controlar a posição e rotação via JS */
+  transform: translateX(var(--x-offset, 0px)) translateY(var(--y-offset, 0px))
+    scale(var(--scale, 1)) rotate(var(--rotation, 0deg));
+
+  opacity: var(--opacity, 1);
+  z-index: var(--z-index, 1);
+}
+
+/* O conteúdo visual do card (a imagem, borda, etc.) */
+.card-item-deck .card-content {
   width: 100%;
   height: 100%;
   border-radius: 12px;
   background-size: cover;
   background-position: center;
-  border: solid 8px var(--cor-rosa-escuro);
+  border: solid 10px var(--cor-rosa-escuro);
   box-shadow: rgba(0, 0, 0, 0.15) 0px 8px 20px -3px;
 
-  /* Nossa lógica de rotação customizada! */
-  transform: rotate(var(--rotation-angle, 0deg));
-  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-/* Quando o slide-pai estiver ativo, o card-filho fica reto */
-.swiper-slide-active .card-content {
-  transform: rotate(0deg);
-}
-
-/* --- MEDIA QUERIES (ajustando a altura do container) --- */
-@media (min-width: 768px) {
-  .swiper {
-    max-width: 380px;
-    height: 510px;
-  }
-  .card-content {
-    border-width: 10px;
-  }
-}
-
-@media (min-width: 992px) {
-  .swiper {
-    max-width: 440px;
-    height: 590px;
-    margin: 0;
-  }
+  /* Rotação única e "permanente" de cada card */
+  transform: rotate(var(--random-rotation, 0deg));
 }
 /* ==========================================================================
    Texto de como nós surgimos
