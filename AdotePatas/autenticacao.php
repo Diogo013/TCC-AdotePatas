@@ -156,7 +156,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4">
 
-<div id="toast-notification" class="toast" style="display: none;">
+<div id="toast-notification" class="toast p-0" style="display: none;">
     <div id="toast-icon" class="toast-icon">
         </div>
     <div class="toast-content">

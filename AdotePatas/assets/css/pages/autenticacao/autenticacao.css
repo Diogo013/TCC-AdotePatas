@@ -305,7 +305,6 @@ img {
   min-width: 350px;
   max-width: 90%;
   border-radius: 12px;
-  padding: 1rem 1.5rem;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
   overflow: hidden;
   opacity: 0;

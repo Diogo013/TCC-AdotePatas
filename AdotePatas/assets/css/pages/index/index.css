@@ -431,72 +431,63 @@ body {
   align-items: center; /* Mantém os slides verticalmente alinhados */
 }
 
-/* --- Estilo dos Slides (O Ponto Principal da Mudança) --- */
-.swiper-slide {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: bold;
-  color: #fff;
-
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  border: solid 8px var(--cor-rosa-escuro); /* Borda um pouco menor em mobile */
-
-  /* --- PONTO CRÍTICO: Removendo tamanhos fixos --- */
-  width: 100%; /* O slide agora ocupa 100% do container .swiper */
-  aspect-ratio: 420 / 560; /* Mantém a proporção original (3:4) sem fixar a altura */
-
-  box-shadow: rgba(0, 0, 0, 0.15) 0px 8px 20px -3px;
-  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-    opacity 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-/* --- Efeitos Visuais dos Slides (Ativo e Inativos) --- */
-.swiper-slide:not(.swiper-slide-active) {
-  transform: scale(0.8);
-  opacity: 0.6;
-}
-
-.swiper-slide-active {
-  opacity: 1;
-  z-index: 20;
-  box-shadow: rgba(0, 0, 0, 0.25) 0px 15px 35px -8px;
-}
-
-/* --- Imagens de Fundo (mantidas como no original) --- */
-.swiper-slide:nth-child(1n) {
-  background-image: url("../../../../images/index/cacau.webp");
-}
-.swiper-slide:nth-child(2n) {
-  background-image: url("../../../../images/index/zeus.webp");
-}
-.swiper-slide:nth-child(3n) {
-  background-image: url("../../../../images/index/kitty.jpg");
-}
-
 /* ==========================================================================
-   NOVO: Bloco de Responsividade para o Swiper
+   SWIPER - COM EFEITO DE CARDS EMPILHADOS E ROTAÇÃO CUSTOMIZADA
    ========================================================================== */
 
-/* --- TABLETS (a partir de 768px) --- */
+.swiper {
+  width: 100%;
+  max-width: 280px;
+  /* IMPORTANTE: O Swiper precisa de altura quando os slides são absolutos */
+  height: 380px;
+  margin: auto;
+  overflow: visible;
+  user-select: none;
+}
+
+/* O slide agora é apenas um container transparente para a animação do Swiper */
+.swiper-slide {
+  /* Removemos todos os estilos visuais daqui */
+  transform-style: preserve-3d; /* Melhora a renderização 3D */
+}
+
+/* Toda a aparência do card agora está no div interno */
+.card-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  background-size: cover;
+  background-position: center;
+  border: solid 8px var(--cor-rosa-escuro);
+  box-shadow: rgba(0, 0, 0, 0.15) 0px 8px 20px -3px;
+
+  /* Nossa lógica de rotação customizada! */
+  transform: rotate(var(--rotation-angle, 0deg));
+  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Quando o slide-pai estiver ativo, o card-filho fica reto */
+.swiper-slide-active .card-content {
+  transform: rotate(0deg);
+}
+
+/* --- MEDIA QUERIES (ajustando a altura do container) --- */
 @media (min-width: 768px) {
   .swiper {
-    max-width: 380px; /* Aumentamos o tamanho do carrossel em tablets */
+    max-width: 380px;
+    height: 510px;
   }
-  .swiper-slide {
-    border-width: 10px; /* Retornamos a borda para o tamanho original */
+  .card-content {
+    border-width: 10px;
   }
 }
 
-/* --- DESKTOPS (a partir de 992px) --- */
 @media (min-width: 992px) {
   .swiper {
-    max-width: 440px; /* Tamanho original para desktops */
-    margin: 0; /* No desktop, a coluna do Bootstrap já cuida do alinhamento */
+    max-width: 440px;
+    height: 590px;
+    margin: 0;
   }
 }
 /* ==========================================================================
@@ -541,38 +532,60 @@ span.destaque-recomeco {
 }
 
 /* ==========================================================================
-   FOOTER - CLIP-PATH E ESTILIZAÇÃO
+   FOOTER - COMBINANDO CLIP-PATH E PATA DE FUNDO
    ========================================================================== */
 
 .site-footer {
   position: relative;
-  background-color: var(--cor-vermelho-claro);
-  color: var(--cor-branca);
+  background-color: var(--cor-laranja-pastel);
+  color: #fff; /* Texto branco para melhor contraste */
   text-align: center;
-  opacity: 0.95;
+  overflow: hidden; /* Necessário para o pseudo-elemento não vazar */
   z-index: 1;
-  transition: all 0.3s ease;
 
-  /* --- ESTILO BASE (MOBILE) --- */
+  /* --- REINTEGRAÇÃO DO SEU CLIP-PATH --- */
+  /* Estilo base (mobile) com a concavidade mais suave */
   -webkit-clip-path: url(#footerConcavityShallow);
   clip-path: url(#footerConcavityShallow);
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
   padding: 8rem 0 3rem;
   margin-top: -5rem;
+
+  /* Workaround para um bug de renderização do clip-path em alguns navegadores */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
+/* Pseudo-elemento para a pata de fundo */
 .site-footer::before {
   content: "";
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  pointer-events: none;
+  top: 73%;
+  left: 70%;
+  width: 150%;
+  height: 150%;
+
+  /* Caminho para a imagem da pata */
+  background-image: url("../../../../images/index/pata-footer.svg");
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: contain;
+
+  /* Transformação para centralizar e ajustar */
+  transform: translate(-50%, -50%) rotate(5deg) scale(1.1);
+
+  /* Opacidade reduzida para o efeito de marca d'água */
+  opacity: 0.2;
+  z-index: -1; /* Coloca a pata atrás do conteúdo */
 }
 
-/* --- TABLETS (A partir de 768px) --- */
+/* Container para o conteúdo, garantindo que fique acima da pata */
+.footer-container {
+  position: relative;
+  z-index: 2;
+}
+
+/* --- MEDIA QUERIES PARA AJUSTAR A CONCAVIDADE --- */
+/* Tablets (A partir de 768px) */
 @media (min-width: 768px) {
   .site-footer {
     -webkit-clip-path: url(#footerConcavityDeep);
@@ -582,7 +595,7 @@ span.destaque-recomeco {
   }
 }
 
-/* --- DESKTOPS (A partir de 1200px) --- */
+/* Desktops (A partir de 1200px) */
 @media (min-width: 1200px) {
   .site-footer {
     -webkit-clip-path: url(#footerConcavityExtraDeep);
@@ -592,33 +605,24 @@ span.destaque-recomeco {
   }
 }
 
-/* --- Container do Conteúdo do Footer --- */
-.footer-content {
-  display: flex;
-  justify-content: space-between;
-
-  /* --- CORREÇÃO APLICADA AQUI --- */
-  /* De flex-start para stretch, para igualar a altura das colunas */
-  align-items: stretch;
-
-  max-width: 1100px;
-  gap: 2rem;
-  text-align: left;
-  position: relative;
-  z-index: 2;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-/* --- Colunas Individuais do Footer --- */
+/* --- ESTILOS DO CONTEÚDO INTERNO (Mantidos) --- */
 .footer-column {
-  flex: 1;
+  padding: 1rem;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  text-align: center;
 }
 
 .footer-column h3 {
-  font-size: 1.2rem;
-  font-weight: bold;
-  margin-bottom: 1rem;
+  font-family: "Poppins", sans-serif;
+  font-weight: 700;
+  font-size: 1.5rem;
+  margin-bottom: 1.2rem;
+  color: var(--cor-branca);
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .footer-column ul {
@@ -627,41 +631,46 @@ span.destaque-recomeco {
   margin: 0;
 }
 
+.footer-column p,
 .footer-column ul li {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.8rem;
 }
 
 .footer-column a {
   color: var(--cor-branca);
   text-decoration: none;
-  font-size: 0.95rem;
+  font-size: 1rem;
+  font-weight: 500;
   transition: opacity 0.3s ease;
 }
 
 .footer-column a:hover {
   opacity: 0.8;
-}
-
-.footer-column p {
-  margin-bottom: 0.5rem;
+  text-decoration: underline;
 }
 
 .footer-column i {
   margin-right: 8px;
-  color: var(--cor-branca);
-  font-size: 1rem;
+  font-size: 1.1rem;
 }
 
-/* --- Linhas divisórias (apenas para desktop) --- */
-.footer-column:not(:last-child) {
-  border-right: 1px solid rgba(255, 255, 255, 0.5);
-  padding-right: 1.5rem;
+/* --- RESPONSIVIDADE DAS COLUNAS E DIVISÓRIAS --- */
+@media (min-width: 992px) {
+  .footer-column {
+    align-items: flex-start; /* Alinha o texto à esquerda em desktops */
+    text-align: left;
+  }
+  .footer-column:not(:last-child) {
+    border-right: 1px solid rgba(255, 255, 255, 0.3);
+  }
 }
 
-.footer-column:not(:first-child) {
-  padding-left: 1.5rem;
+@media (max-width: 991.98px) {
+  .footer-column {
+    min-height: auto;
+    margin-bottom: 2rem;
+  }
 }
-
 /* --- Responsividade para o conteúdo do Footer (Mobile) --- */
 @media (max-width: 768px) {
   .footer-content {
