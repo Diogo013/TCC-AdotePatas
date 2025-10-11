@@ -291,6 +291,26 @@ img {
   }
 }
 
+
+.mensagem-validacao {
+  color: #f15151; /* Tom de vermelho do seu toast de erro */
+  transition: opacity 0.3s ease-in-out;
+  opacity: 0; /* Começa invisível */
+}
+
+.mensagem-validacao.visivel {
+  opacity: 1; /* Torna visível com uma transição suave */
+  font-size: 1rem; /* 14px */
+  font-weight: 500;
+  margin: 0.3rem 0;
+  height: 30px; /* Garante uma altura fixa para não "empurrar" o layout */
+}
+
+/* Estilo para inputs inválidos */
+.input-style.invalido {
+  border-color: #f87171;
+}
+
 /* ==========================================================================
    TOAST/MODAL DE NOTIFICAÇÃO - Estilos e Animações
    ========================================================================== */

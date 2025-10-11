@@ -1,0 +1,52 @@
+# Ativa o motor de reescrita de URL do Apache
+RewriteEngine On
+
+# Define a base do seu projeto.
+RewriteBase /TCC-ADOTEPATAS/adotepatas/
+
+# --- REGRAS DE SEGURANÇA ---
+
+# Impede que os usuários listem o conteúdo das pastas
+Options -Indexes
+
+# Bloqueia o acesso direto a arquivos de configuração sensíveis
+<Files "conexao.php">
+    Order allow,deny
+    Deny from all
+</Files>
+
+# Protege o próprio arquivo .htaccess
+<Files .htaccess>
+    Order allow,deny
+    Deny from all
+</Files>
+
+
+# --- REGRAS DE URL AMIGÁVEL ---
+
+# --- INÍCIO DAS NOVAS REGRAS PARA O INDEX ---
+
+# 1. Remove "index.html" da URL se ele for acessado diretamente
+RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /(.*/)?index\.html\ HTTP/
+RewriteRule ^((.*/)?index\.html)$ /$1 [R=301,L]
+
+# 2. Permite que a URL raiz "/" carregue o arquivo index.html internamente
+RewriteRule ^$ index.html [L]
+
+# --- FIM DAS NOVAS REGRAS ---
+
+
+# Redireciona "login" para a página de autenticação
+RewriteRule ^login/?$ autenticacao.php [NC,L]
+
+# Redireciona "cadastro" para a página de autenticação com a aba de cadastro ativa
+RewriteRule ^cadastro/?$ autenticacao.php?tab=cadastro_usuario [NC,L]
+
+# Redireciona "cadastro-ong" para a página de autenticação com a aba de ONG ativa
+RewriteRule ^cadastro-ong/?$ autenticacao.php?tab=cadastro_ong [NC,L]
+
+
+# --- REGRA GERAL (para arquivos e pastas existentes) ---
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d

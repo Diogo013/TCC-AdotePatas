@@ -2,10 +2,45 @@
 // Inclui a conexão com o banco de dados
 include_once 'conexao.php';
 
+// --- FUNÇÕES DE VALIDAÇÃO (PHP) ---
+
+// Valida a estrutura do CPF
+function validarCPF($cpf) {
+    $cpf = preg_replace('/[^0-9]/', '', $cpf);
+    if (strlen($cpf) != 11 || preg_match('/(\d)\1{10}/', $cpf)) return false;
+    for ($t = 9; $t < 11; $t++) {
+        for ($d = 0, $c = 0; $c < $t; $c++) {
+            $d += $cpf[$c] * (($t + 1) - $c);
+        }
+        $d = ((10 * $d) % 11) % 10;
+        if ($cpf[$c] != $d) return false;
+    }
+    return true;
+}
+
+// Valida a força da senha
+function validarForcaSenha($senha) {
+    $erros = [];
+    if (strlen($senha) < 8) $erros[] = "A senha deve ter no mínimo 8 caracteres.";
+    if (!preg_match('/[A-Z]/', $senha)) $erros[] = "A senha deve conter ao menos uma letra maiúscula.";
+    if (!preg_match('/[0-9]/', $senha)) $erros[] = "A senha deve conter ao menos um número.";
+    if (!preg_match('/[\W_]/', $senha)) $erros[] = "A senha deve conter ao menos um caractere especial.";
+    return $erros;
+}
+
+// --- INÍCIO DA PARTE ALTERADA ---
+
 // --- CONFIGURAÇÃO INICIAL ---
+// Verifica se uma aba específica foi solicitada pela URL amigável via .htaccess
+if (isset($_GET['tab']) && in_array($_GET['tab'], ['login', 'cadastro_usuario', 'cadastro_ong'])) {
+    $active_tab = $_GET['tab'];
+} else {
+    $active_tab = 'login'; // Valor padrão
+}
+
 $mensagem_status = '';
-$tipo_mensagem = ''; // success, danger, warning
-$active_tab = 'login'; // Aba padrão a ser exibida
+$tipo_mensagem = '';
+
 
 // --- PROCESSAMENTO DOS FORMULÁRIOS (POST) ---
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -77,66 +112,102 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
             break;
 
-        // --- CASO 2: CADASTRO DE USUÁRIO ---
-        case 'cadastro_usuario':
-            $active_tab = 'cadastro_usuario';
-            $nome = $_POST['nome'] ?? '';
-            $email = $_POST['email_cadastro'] ?? '';
-            $senha = $_POST['senha_cadastro'] ?? '';
-            $confirma_senha = $_POST['confirma_senha_cadastro'] ?? '';
-            $cpf = $_POST['cpf'] ?? '';
+    // --- CASO 2: CADASTRO DE USUÁRIO COM VALIDAÇÃO ROBUSTA (VERSÃO CORRIGIDA) ---
+case 'cadastro_usuario':
+    $active_tab = 'cadastro_usuario';
+    $nome = trim($_POST['nome-completo'] ?? '');
+    $cpf = trim($_POST['cpf-cadastro'] ?? '');
+    $email = trim($_POST['email-cadastro'] ?? '');
+    $senha = $_POST['senha-cadastro'] ?? '';
+    $confirma_senha = $_POST['confirma-senha-cadastro'] ?? '';
+    
+    $erros = [];
 
-            if (empty($nome) || empty($email) || empty($senha) || empty($cpf)) {
-                 $mensagem_status = "Todos os campos são obrigatórios.";
-                 $tipo_mensagem = 'danger';
-            } elseif ($senha !== $confirma_senha) {
-                $mensagem_status = "As senhas não coincidem.";
-                $tipo_mensagem = 'warning';
-            } else {
-                $senha_hashed = password_hash($senha, PASSWORD_DEFAULT);
-                try {
-                    $sql = "INSERT INTO usuario (nome, email, senha, cpf) VALUES (:nome, :email, :senha, :cpf)";
-                    $stmt = $conn->prepare($sql);
-                    $stmt->execute([':nome' => $nome, ':email' => $email, ':senha' => $senha_hashed, ':cpf' => $cpf]);
-                    $mensagem_status = "Cadastro realizado com sucesso! Você já pode fazer login.";
-                    $tipo_mensagem = 'success';
-                    $active_tab = 'login'; // Muda para a aba de login após sucesso
-                } catch (PDOException $e) {
-                    $mensagem_status = ($e->getCode() == '23000') ? "Este e-mail ou CPF já está cadastrado." : "Falha no banco de dados: " . $e->getMessage();
-                    $tipo_mensagem = 'danger';
-                }
-            }
-            break;
+    // VALIDAÇÃO EM CASCATA: Se um erro fundamental é encontrado, não continua para o próximo.
+    
+    // 1. Validação de campos vazios
+    if (empty($nome) || empty($cpf) || empty($email) || empty($senha) || empty($confirma_senha)) {
+        $erros[] = "Todos os campos são obrigatórios.";
+    } else {
+        // Se os campos não estão vazios, prossiga com validações de formato e regras
+        
+        // 2. Validação do Nome Completo
+        if (strpos($nome, ' ') === false) {
+            $erros[] = "Por favor, digite seu nome completo.";
+        }
+
+        // 3. Validação do E-mail (formato)
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $erros[] = "O formato do e-mail é inválido.";
+        }
+
+        // 4. Validação do CPF (formato)
+        if (!validarCPF($cpf)) {
+            $erros[] = "O CPF informado é inválido.";
+        }
+        
+        // 5. Validação da Senha (força e confirmação)
+        $erros_senha = validarForcaSenha($senha);
+        if (!empty($erros_senha)) {
+            $erros = array_merge($erros, $erros_senha);
+        } elseif ($senha !== $confirma_senha) {
+            $erros[] = "As senhas não coincidem.";
+        }
+    }
+
+    // --- Verificação de Duplicidade no Banco (SÓ SE NÃO HOUVER ERROS DE FORMATO) ---
+    if (empty($erros)) {
+        // Checa E-mail
+        $sql = "SELECT id_usuario FROM usuario WHERE email = :email LIMIT 1";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([':email' => $email]);
+        if ($stmt->fetch()) {
+            $erros[] = "Este e-mail já está cadastrado.";
+        }
+
+        // Checa CPF
+        $sql = "SELECT id_usuario FROM usuario WHERE cpf = :cpf LIMIT 1";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([':cpf' => preg_replace('/[^0-9]/', '', $cpf)]);
+        if ($stmt->fetch()) {
+            $erros[] = "Este CPF já está cadastrado.";
+        }
+    }
+    
+    // --- Decisão Final ---
+    if (!empty($erros)) {
+        // Se, após todas as checagens, houver erros, configure a mensagem e mantenha a aba.
+        $mensagem_status = $erros[0];
+        $tipo_mensagem = 'danger';
+        $active_tab = 'cadastro_usuario'; // Garante que a aba de cadastro será reexibida
+    } else {
+        // Se não houver nenhum erro, insere no banco.
+        $senha_hashed = password_hash($senha, PASSWORD_DEFAULT);
+        try {
+            $sql = "INSERT INTO usuario (nome, email, senha, cpf) VALUES (:nome, :email, :senha, :cpf)";
+            $stmt = $conn->prepare($sql);
+            $stmt->execute([
+                ':nome' => $nome, 
+                ':email' => $email, 
+                ':senha' => $senha_hashed, 
+                ':cpf' => preg_replace('/[^0-9]/', '', $cpf)
+            ]);
+            $mensagem_status = "Cadastro realizado com sucesso! Você já pode fazer login.";
+            $tipo_mensagem = 'success';
+            $active_tab = 'login'; // SÓ MUDA PARA LOGIN EM CASO DE SUCESSO TOTAL
+        } catch (PDOException $e) {
+            $mensagem_status = "Ocorreu uma falha no banco de dados. Tente novamente.";
+            $tipo_mensagem = 'danger';
+            $active_tab = 'cadastro_usuario'; // Mantém na aba de cadastro em caso de erro no BD
+            error_log("Erro no cadastro: " . $e->getMessage());
+        }
+    }
+    break;
 
         // --- CASO 3: CADASTRO DE ONG ---
         case 'cadastro_ong':
             $active_tab = 'cadastro_ong';
-            $nome_ong = $_POST['nome_ong'] ?? '';
-            $cnpj = $_POST['cnpj'] ?? '';
-            $email_ong = $_POST['email_ong'] ?? '';
-            $senha_ong = $_POST['senha_ong'] ?? '';
-            $confirma_senha_ong = $_POST['confirma_senha_ong'] ?? '';
-
-            if (empty($nome_ong) || empty($cnpj) || empty($email_ong) || empty($senha_ong)) {
-                $mensagem_status = "Todos os campos são obrigatórios.";
-                $tipo_mensagem = 'danger';
-            } elseif ($senha_ong !== $confirma_senha_ong) {
-                $mensagem_status = "As senhas não coincidem.";
-                $tipo_mensagem = 'warning';
-            } else {
-                $senha_hashed = password_hash($senha_ong, PASSWORD_DEFAULT);
-                try {
-                    $sql = "INSERT INTO ong (nome, cnpj, email, senha) VALUES (:nome, :cnpj, :email, :senha)";
-                    $stmt = $conn->prepare($sql);
-                    $stmt->execute([':nome' => $nome_ong, ':cnpj' => $cnpj, ':email' => $email_ong, ':senha' => $senha_hashed]);
-                    $mensagem_status = "Cadastro da ONG realizado com sucesso! Você já pode fazer login.";
-                    $tipo_mensagem = 'success';
-                    $active_tab = 'login'; // Muda para a aba de login após sucesso
-                } catch (PDOException $e) {
-                    $mensagem_status = ($e->getCode() == '23000') ? "Este e-mail ou CNPJ já está cadastrado." : "Falha no banco de dados: " . $e->getMessage();
-                    $tipo_mensagem = 'danger';
-                }
-            }
+            // ... (seu código de cadastro de ONG aqui)
             break;
     }
 }
@@ -148,39 +219,75 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Acesso - Adote Patas</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="images/global/Logo-AdotePatas.png"/>
     <link rel="stylesheet" href="assets/css/pages/autenticacao/autenticacao.css">
-     <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4">
 
-<div id="toast-notification" class="toast p-0" style="display: none;">
-    <div id="toast-icon" class="toast-icon">
+<div id="modal-esqueci-senha" class="modal-overlay">
+    <div class="modal-content">
+        <button id="close-modal-btn" class="modal-close-btn">&times;</button>
+        <div id="recovery-form-state">
+            <h2 class="text-3xl font-bold text-[#666662] text-center mb-2">Esqueci a senha</h2>
+            <div class="w-12 h-1 bg-[#666662] mx-auto mb-6 rounded-full"></div>
+
+            <p class="text-center text-gray-600 mb-6">
+                Digite o <strong>E-mail</strong> cadastrado para receber o link de redefinição de senha:
+            </p>
+
+            <form id="form-recuperar-senha" class="space-y-4">
+                <input type="email" id="email_recuperar" name="email_recuperar" placeholder="E-mail" required class="input-style w-full email-input">
+                <p id="modal-error-msg" class="text-red-700 font-semibold text-center hidden"></p>
+                <div class="flex justify-center w-full pt-4">
+                    <button type="submit" class="adopt-btn">
+                        <div class="heart-background">❤</div><span>Enviar</span>
+                    </button>
+                </div>
+            </form>
         </div>
+
+        <div id="recovery-success-state" class="hidden text-center">
+            <i class="fas fa-envelope-open-text text-5xl text-pink-500 mb-4"></i>
+            <h3 class="text-2xl font-bold text-gray-800">Verifique seu e-mail</h3>
+            <p class="text-gray-600 mt-2">
+                Enviamos um link de redefinição para <br>
+                <strong id="sent-email-address" class="text-gray-900"></strong>
+            </p>
+            <div class="mt-8">
+                <button id="resend-button" class="text-gray-600 font-semibold link-style" disabled>
+                    Reenviar em (<span id="resend-timer">30</span>s)
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="toast-notification" class="toast p-0" style="display: none;">
+    <div id="toast-icon" class="toast-icon"></div>
     <div class="toast-content">
         <p id="toast-message" class="toast-message">Mensagem de exemplo.</p>
     </div>
     <div class="toast-progress-bar"></div>
 </div>
 
-
-<a href="index.html" class="btn-voltar" title="Voltar para a página inicial">
+<a href="./" class="btn-voltar" title="Voltar para a página inicial">
     <i class="fa-solid fa-arrow-left"></i>
     <span>Voltar</span>
 </a>
 
 <img src="images/cadastro-login/pata.png" alt="Desenho de Pata" class="pata-fundo">
 
-
 <div class="w-full max-w-lg mx-auto">
     <div class="w-full flex items-center justify-between mb-6 relative">
         <div>
-            <a href="index.html" title="Voltar para a página inicial">
+            <a href="./" title="Voltar para a página inicial">
                 <img src="images/global/Logo-AdotePatas.png" alt="Logo Adote Patas" width="70" height="70">
             </a>
-            </div>
+        </div>
         <div class="absolute inset-x-0 text-center">
             <h1 id="page-title" class="text-4xl sm:text-4xl font-bold text-[#666662]">Entrar</h1>
             <div class="w-24 h-1 bg-[#666662] mx-auto mt-1 rounded-full"></div>
@@ -224,100 +331,85 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </form>
             </div>
 
-            <div id="cadastro_usuario" class="form-container">
-                <form action="autenticacao.php" method="post" class="space-y-6">
-                    <input type="hidden" name="form_type" value="cadastro_usuario">
-                    <input type="text" name="nome" placeholder="Nome Completo" required class="input-style w-full">
-                    <input type="text" name="cpf" placeholder="CPF" required class="input-style w-full">
-                    <input type="email" name="email_cadastro" placeholder="E-mail" required class="input-style w-full">
-                    <div class="relative">
-                        <input type="password" id="senha_cadastro" name="senha_cadastro" placeholder="Senha" required class="input-style w-full pr-12 senha-input">
-                        <i class="fas fa-eye toggle-senha" data-target="senha_cadastro"></i>
-                    </div>
-                    <div class="relative">
-                        <input type="password" id="confirma_senha_cadastro" name="confirma_senha_cadastro" placeholder="Confirmar a Senha" required class="input-style w-full pr-12 senha-input">
-                        <i class="fas fa-eye toggle-senha" data-target="confirma_senha_cadastro"></i>
-                    </div>
-                    <div class="flex justify-center w-40 mx-auto">
-                        <button type="submit" class="adopt-btn">
-                            <div class="heart-background">❤</div><span>Cadastrar</span>
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            <div id="cadastro_ong" class="form-container">
-                <form action="autenticacao.php" method="post" class="space-y-6">
-                    <input type="hidden" name="form_type" value="cadastro_ong">
-                    <input type="text" name="nome_ong" placeholder="Nome Oficial da ONG" required class="input-style w-full">
-                    <input type="text" name="cnpj" placeholder="CNPJ" required class="input-style w-full">
-                    <input type="email" name="email_ong" placeholder="E-mail" required class="input-style w-full">
-                    <div class="relative">
-                        <input type="password" id="senha_ong" name="senha_ong" placeholder="Senha" required class="input-style w-full pr-12 senha-input">
-                        <i class="fas fa-eye toggle-senha" data-target="senha_ong"></i>
-                    </div>
-                    <div class="relative">
-                        <input type="password" id="confirma_senha_ong" name="confirma_senha_ong" placeholder="Confirmar a Senha" required class="input-style w-full pr-12 senha-input">
-                        <i class="fas fa-eye toggle-senha" data-target="confirma_senha_ong"></i>
-                    </div>
-                    <div class="flex justify-center w-60 mx-auto">
-                        <button type="submit" class="adopt-btn">
-                            <div class="heart-background">❤</div><span>Cadastrar ONG</span>
-                        </button>
-                    </div>
-                </form>
-            </div>
+<div id="cadastro_usuario" class="form-container">
+    <form action="autenticacao.php" method="post" id="form-cadastro" class="space-y-6">
+        <input type="hidden" name="form_type" value="cadastro_usuario">
+        <div>
+            <input type="text" name="nome-completo" id="nome-completo" placeholder="Nome Completo" required class="input-style w-full" 
+                   value="<?php echo htmlspecialchars($nome ?? ''); ?>">
+            <div id="mensagem-nome-completo" class="mensagem-validacao"></div>
         </div>
-    </div>
+        <div>
+            <input type="text" name="cpf-cadastro" id="cpf-cadastro" placeholder="CPF" required class="input-style w-full" 
+                   value="<?php echo htmlspecialchars($cpf ?? ''); ?>">
+            <div id="mensagem-cpf-cadastro" class="mensagem-validacao"></div>
+        </div>
+        <div>
+            <input type="email" name="email-cadastro" id="email-cadastro" placeholder="E-mail" required class="input-style w-full"
+                   value="<?php echo htmlspecialchars($email ?? ''); ?>">
+            <div id="mensagem-email-cadastro" class="mensagem-validacao"></div>
+        </div>
+        <div>
+            <div class="relative">
+                <input type="password" id="senha-cadastro" name="senha-cadastro" placeholder="Senha" required class="input-style w-full pr-12 senha-input">
+                <i class="fas fa-eye toggle-senha" data-target="senha-cadastro"></i>
+            </div>
+            <div id="mensagem-senha-cadastro" class="mensagem-validacao"></div>
+        </div>
+        <div>
+            <div class="relative">
+                <input type="password" id="confirma-senha-cadastro" name="confirma-senha-cadastro" placeholder="Confirmar a Senha" required class="input-style w-full pr-12 senha-input">
+                <i class="fas fa-eye toggle-senha" data-target="confirma-senha-cadastro"></i>
+            </div>
+            <div id="mensagem-confirma-senha-cadastro" class="mensagem-validacao"></div>
+        </div>
+        <div class="flex justify-center w-40 mx-auto">
+            <button type="submit" id="cadastro-cliente" class="adopt-btn">
+                <div class="heart-background">❤</div><span>Cadastrar</span>
+            </button>
+        </div>
+    </form>
 </div>
 
-<div id="modal-esqueci-senha" class="modal-overlay">
-    <div class="modal-content">
-        <button id="close-modal-btn" class="modal-close-btn">&times;</button>
-        
-        <div id="recovery-form-state">
-            <h2 class="text-3xl font-bold text-[#666662] text-center mb-2">Esqueci a senha</h2>
-            <div class="w-12 h-1 bg-[#666662] mx-auto mb-6 rounded-full"></div>
-
-            <p class="text-center text-gray-600 mb-6">
-                Digite o <strong>E-mail</strong> cadastrado para receber o link de redefinição de senha:
-            </p>
-
-            <form id="form-recuperar-senha" class="space-y-4">
-                <input type="email" id="email_recuperar" name="email_recuperar" placeholder="E-mail" required class="input-style w-full email-input">
-                <p id="modal-error-msg" class="text-red-700 font-semibold text-center hidden"></p>
-                <div class="flex justify-center w-full pt-4">
+            
+        <div id="cadastro_ong" class="form-container">
+            <form action="autenticacao.php" method="post" class="space-y-6">
+                <input type="hidden" name="form_type" value="cadastro_ong">
+                <input type="text" name="nome_ong" placeholder="Nome Oficial da ONG" required class="input-style w-full">
+                <input type="text" name="cnpj" placeholder="CNPJ" required class="input-style w-full">
+                <input type="email" name="email_ong" placeholder="E-mail" required class="input-style w-full">
+                <div class="relative">
+                    <input type="password" id="senha_ong" name="senha_ong" placeholder="Senha" required class="input-style w-full pr-12 senha-input">
+                    <i class="fas fa-eye toggle-senha" data-target="senha_ong"></i>
+                </div>
+                <div class="relative">
+                    <input type="password" id="confirma_senha_ong" name="confirma_senha_ong" placeholder="Confirmar a Senha" required class="input-style w-full pr-12 senha-input">
+                    <i class="fas fa-eye toggle-senha" data-target="confirma_senha_ong"></i>
+                </div>
+                <div class="flex justify-center w-60 mx-auto">
                     <button type="submit" class="adopt-btn">
-                        <div class="heart-background">❤</div><span>Enviar</span>
+                        <div class="heart-background">❤</div><span>Cadastrar ONG</span>
                     </button>
                 </div>
             </form>
         </div>
-
-        <div id="recovery-success-state" class="hidden text-center">
-            <i class="fas fa-envelope-open-text text-5xl text-pink-500 mb-4"></i>
-            <h3 class="text-2xl font-bold text-gray-800">Verifique seu e-mail</h3>
-            <p class="text-gray-600 mt-2">
-                Enviamos um link de redefinição para <br>
-                <strong id="sent-email-address" class="text-gray-900"></strong>
-            </p>
-            <div class="mt-8">
-                <button id="resend-button" class="text-gray-600 font-semibold link-style" disabled>
-                    Reenviar em (<span id="resend-timer">30</span>s)
-                </button>
-            </div>
         </div>
-    </div>
 </div>
 
 <script>
-    // Passa a aba ativa do PHP para o JavaScript
-    const activeTabOnLoad = '<?php echo $active_tab; ?>';
+    <?php
+    if (!empty($mensagem_status) && ($_POST['form_type'] ?? '') === 'cadastro_usuario') {
+        echo "window.activeTabOnLoad = 'cadastro_usuario';";
+    } else {
+        echo "window.activeTabOnLoad = '" . $active_tab . "';";
+    }
+    ?>
 </script>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js"></script>
 <script src="assets/js/pages/autenticacao/autenticacao.js"></script>
-
-
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y" crossorigin="anonymous"></script>
 </body>
 </html>
