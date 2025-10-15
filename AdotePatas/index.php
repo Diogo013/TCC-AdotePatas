@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adote Patas</title>
+  <link rel="stylesheet" href="assets/css/pages/index/index.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+</head>
+
+<body>
+
+  <!-- LOADING SCREEN DESATIVADO PARA MAIOR PRODUTIVIDADE
+  <div class="loading-screen" id="loading">
+    <lottie-player src="animações/loading.json" background="transparent" speed="1" style="width: 250px; height: 250px;"
+    loop autoplay>
+  </lottie-player>
+</div>
+!-->
+
+  <header>
+    <nav class="navbar navbar-expand-lg">
+      <div class="container">
+        <a class="navbar-brand" href="#">
+          <img src="./images/global/logo-AdotePatas.png" alt="Logo Adote Patas" class="navbar-logo">
+        </a>
+        <ul class="navbar-nav d-flex">
+          <li class="nav-item">
+            <a class="nav-link navlink" href="#">Sobre Nós</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link navlink" href="#">Ajuda</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link loginlink" href="login">Entrar</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+  </header>
+
+  <main class="hero">
+    <div class="container">
+      <div class="row align-items-center">
+
+        <div class="col-lg-6 order-1">
+          <div class="hero-text-content">
+            <h1 class="adote-patas">Adote Patas</h1>
+            <h2 class="adote-vidas">Adote Vidas</h2>
+            <p>
+              Adotar é um gesto de amor e responsabilidade, capaz de transformar vidas e criar laços de confiança e
+              felicidade. Mais do que uma escolha, a adoção é amor e compromisso.
+            </p>
+          </div>
+        </div>
+
+        <div class="col-lg-6 order-3">
+          <div class="btn-container">
+            <a href="autenticacao.php">
+              <button class="adopt-btn" id="adoptBtn">
+                <div class="heart-background" style="user-select: none;">❤</div>
+                <span>Quero adotar</span>
+              </button>
+            </a>
+            <div class="paw-prints" id="pawPrints"></div>
+          </div>
+        </div>
+
+        <div class="col-lg-6 order-2">
+          <div class="hero-image-container">
+            <img src="./images/index/cabeca-cachorro.png" style="user-select: none;"
+              alt="Cabeça de um cachorro sorrindo, com fundo de aquarela rosa e laranja." class="img-fluid">
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+
+
+  <main class="image-background">
+
+
+    <section class="cards-section">
+      <div class="container text-center">
+        <div class="row justify-content-center">
+
+          <div class="col-4">
+            <div class="card-item">
+              <div class="card-icon">
+                <i class="fa-solid fa-paw"></i>
+              </div>
+              <h3>Adote</h3>
+            </div>
+          </div>
+
+          <div class="col-4">
+            <div class="card-item">
+              <div class="card-icon">
+                <img src="./images/index/icone-ong.png" alt="Ícone de ONGs">
+              </div>
+              <h3>ONGs</h3>
+            </div>
+          </div>
+
+          <div class="col-4">
+            <div class="card-item">
+              <div class="card-icon">
+                <i class="fa-solid fa-heart"></i>
+              </div>
+              <h3>Doações</h3>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+
+    <section class="pets-section">
+      <div class="container">
+        <div class="row mb-4">
+          <div class="col-12">
+            <h1 class="titulo-adocao">Animais para Adoção</h1>
+          </div>
+        </div>
+        <div class="row justify-content-between">
+
+          <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+            <div class="pet-card">
+              <div class="pet-card-img">
+                <img src="images/index/baunilha.webp" alt="Foto da gata Baunilha">
+              </div>
+              <div class="pet-card-body">
+                <h2 class="pet-name">Baunilha</h2>
+                <i class="fa-solid fa-venus pet-gender-female"></i>
+                <i class="fa-regular fa-heart pet-like" data-pet-id="baunilha"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+            <div class="pet-card">
+              <div class="pet-card-img">
+                <img src="images/index/caramelo.webp" alt="Foto do cachorro caramelo">
+              </div>
+              <div class="pet-card-body">
+                <h2 class="pet-name">Caramelo</h2>
+                <i class="fa-solid fa-mars pet-gender-male"></i>
+                <i class="fa-regular fa-heart pet-like" data-pet-id="caramelo"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+            <div class="pet-card">
+              <div class="pet-card-img">
+                <img src="images/index/cookie.webp" alt="Foto da gata cookie">
+              </div>
+              <div class="pet-card-body">
+                <h2 class="pet-name">Cookie</h2>
+                <i class="fa-solid fa-venus pet-gender-female"></i>
+                <i class="fa-regular fa-heart pet-like" data-pet-id="cookie"></i>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <center>
+          <div class="btn-container">
+            <button class="adopt-btn" id="adoptBtn">
+              <div class="heart-background" style="user-select: none;">❤</div>
+              <span>Ver mais patinhas</span>
+            </button>
+          </div>
+        </center>
+
+      </div>
+    </section>
+
+    <div class="cachorro">
+      <lottie-player class="dog-walking" src="animações/animacao.json" background="transparent" speed="1"
+        style="width: 200px; height: 200px;" loop autoplay>
+      </lottie-player>
+    </div>
+
+  </main>
+
+  <section class="about container mt-5" style="margin-bottom: 3rem;">
+    <h1 class="titulo-about">Como nós surgimos?</h1>
+
+    <div class="row align-items-center" style="margin-bottom: 10rem;">
+      <div class="col-lg-8 col-md-12 mb-4">
+        <div class="about-content">
+          <p class="about-text">
+            Nosso projeto surgiu do amor pelos animais e do desejo de ajudá-los de forma concreta. Ao percebermos a
+            quantidade de
+            cães e gatos abandonados e ignorados pela sociedade, sentimos a necessidade de agir. Muitos desses animais
+            não são
+            adotados por falta de informação ou visibilidade. Assim, criamos este espaço com o objetivo de promover a
+            adoção
+            responsável, conectando pessoas dispostas a amar com animais que só precisam de uma chance.
+          </p>
+
+          <h3 class="conclusao-about m-4">
+            Aqui, cada adoção é celebrada como uma nova história de
+            <span class="destaque-amor">AMOR</span>,
+            <span class="destaque-confianca">CONFIANÇA</span>
+            e
+            <span class="destaque-recomeco">RECOMEÇO</span>
+          </h3>
+        </div>
+      </div>
+
+      <div class="col-lg-4 col-md-12">
+
+        <div class="card-carousel-container">
+          <div class="card-deck">
+
+            <div class="card-item-deck">
+              <div class="card-content" style="background-image: url(./images/index/cacau.webp);"></div>
+            </div>
+
+            <div class="card-item-deck">
+              <div class="card-content" style="background-image: url(./images/index/zeus.webp);"></div>
+            </div>
+
+            <div class="card-item-deck">
+              <div class="card-content" style="background-image: url(./images/index/kitty.jpg);"></div>
+            </div>
+
+          </div>
+
+        </div>
+
+
+
+
+      </div>
+    </div>
+  </section>
+
+
+  <svg width="0" height="0" style="position: absolute;">
+    <defs>
+      <clipPath id="footerConcavity" clipPathUnits="objectBoundingBox">
+        <path d="M0,0 Q 0.5,0.35 1,0 L1,1 L0,1 Z" />
+      </clipPath>
+      <clipPath id="footerConcavityShallow" clipPathUnits="objectBoundingBox">
+        <path d="M0,0 Q 0.5,0.15 1,0 L1,1 L0,1 Z" />
+      </clipPath>
+      <clipPath id="footerConcavityDeep" clipPathUnits="objectBoundingBox">
+        <path d="M0,0 Q 0.5,0.25 1,0 L1,1 L0,1 Z" />
+      </clipPath>
+      <clipPath id="footerConcavityExtraDeep" clipPathUnits="objectBoundingBox">
+        <path d="M0,0 Q 0.5,0.45 1,0 L1,1 L0,1 Z" />
+      </clipPath>
+    </defs>
+  </svg>
+
+  <footer class="site-footer">
+    <div class="container footer-container">
+      <div class="row">
+
+        <div class="col-lg-4 col-md-12 footer-column">
+          <h3>Links</h3>
+          <ul>
+            <li><a href="#">Home</a></li>
+            <li><a href="#">Adote</a></li>
+            <li><a href="#">Sobre nós</a></li>
+            <li><a href="#">ONGs</a></li>
+            <li><a href="#">Histórias</a></li>
+            <li><a href="#">Política de privacidade</a></li>
+            <li><a href="#">Termos de uso</a></li>
+          </ul>
+        </div>
+
+        <div class="col-lg-4 col-md-12 footer-column">
+          <h3>Contato</h3>
+          <p>Endereço</p>
+          <p><a href="mailto:adotepatas@gmail.com">adotepatas@gmail.com</a></p>
+          <p><a href="tel:+5513992007065">(13) 99200-7065</a></p>
+        </div>
+
+        <div class="col-lg-4 col-md-12 footer-column">
+          <h3>Redes Sociais</h3>
+          <p><a href="https://wa.me/5513992007065" target="_blank"><i class="fab fa-whatsapp"></i> 13992007065</a></p>
+          <p><a href="https://instagram.com/adotepatas.tcc" target="_blank"><i class="fab fa-instagram"></i>
+              @adotepatas.tcc</a></p>
+        </div>
+
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+    integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+    crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
+    integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
+    crossorigin="anonymous"></script>
+  <script src="assets/js/pages/index/patinhas.js"></script>
+  <script src="assets/js/pages/index/scroll.js"></script>
+  <script src="assets/js/pages/index/pet-likes.js"></script>
+  <script src="assets/js/pages/index/card-deck.js"></script>
+  <script src="assets/js/pages/index/loading.js"></script>
+</body>
+
+</html>

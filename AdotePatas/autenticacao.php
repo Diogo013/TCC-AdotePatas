@@ -2,6 +2,7 @@
 // Inclui a conexão com o banco de dados
 include_once 'conexao.php';
 
+
 // --- FUNÇÕES DE VALIDAÇÃO (PHP) ---
 
 // Valida a estrutura do CPF
@@ -227,43 +228,56 @@ case 'cadastro_usuario':
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4">
 
-<div id="modal-esqueci-senha" class="modal-overlay">
-    <div class="modal-content">
-        <button id="close-modal-btn" class="modal-close-btn">&times;</button>
-        <div id="recovery-form-state">
-            <h2 class="text-3xl font-bold text-[#666662] text-center mb-2">Esqueci a senha</h2>
-            <div class="w-12 h-1 bg-[#666662] mx-auto mb-6 rounded-full"></div>
+<!-- Modal de Recuperação de Senha -->
+    <div id="recovery-modal" class="fixed inset-0 z-50 bg-black bg-opacity-50 hidden items-center justify-center p-4" style="z-index: 1000;">
+        <div class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-md mx-auto">
+            <!-- Título e Botão de Fechar -->
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h2 class="text-xl font-semibold text-gray-800">Recuperar Senha</h2>
+                <button id="close-recovery-modal" class="text-gray-400 hover:text-gray-600 transition">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
 
-            <p class="text-center text-gray-600 mb-6">
-                Digite o <strong>E-mail</strong> cadastrado para receber o link de redefinição de senha:
-            </p>
+            <!-- 1. Estado do Formulário de Recuperação -->
+            <div id="recovery-form-state">
+                <p class="text-sm text-gray-600 mb-4">
+                    Insira o e-mail associado à sua conta para receber um link de redefinição de senha.
+                </p>
+                <form id="recuperar-form" action="recuperar-senha.php" method="POST">
+                    <div class="mb-4">
+                        <!-- ID do input é 'email_recuperar' conforme esperado no recuperar-senha.php -->
+                        <input type="email" id="email_recuperar" name="email_recuperar" placeholder="Seu E-mail" required
+                            class="input-style w-full">
+                        <p id="recovery-error-message" class="text-sm text-red-500 mt-1 hidden text-left"></p>
+                    </div>
+                    <div class="flex justify-center">
+                        <button type="submit" class="adopt-btn w-full justify-center">
+                            <span class="submit-text">Enviar Link</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
 
-            <form id="form-recuperar-senha" class="space-y-4">
-                <input type="email" id="email_recuperar" name="email_recuperar" placeholder="E-mail" required class="input-style w-full email-input">
-                <p id="modal-error-msg" class="text-red-700 font-semibold text-center hidden"></p>
-                <div class="flex justify-center w-full pt-4">
-                    <button type="submit" class="adopt-btn">
-                        <div class="heart-background">❤</div><span>Enviar</span>
-                    </button>
-                </div>
-            </form>
-        </div>
-
-        <div id="recovery-success-state" class="hidden text-center">
-            <i class="fas fa-envelope-open-text text-5xl text-pink-500 mb-4"></i>
+            <!-- 2. Estado de Sucesso (Enviado com sucesso) -->
+            <div id="success-state" class="hidden text-center">
+            <i class="fas fa-envelope-open-text text-5xl text-pink-500 mb-4" ></i>
             <h3 class="text-2xl font-bold text-gray-800">Verifique seu e-mail</h3>
             <p class="text-gray-600 mt-2">
                 Enviamos um link de redefinição para <br>
                 <strong id="sent-email-address" class="text-gray-900"></strong>
             </p>
             <div class="mt-8">
-                <button id="resend-button" class="text-gray-600 font-semibold link-style" disabled>
+                <button id="resend-btn" class="text-gray-600 font-semibold" disabled>
                     Reenviar em (<span id="resend-timer">30</span>s)
                 </button>
             </div>
         </div>
+
+             
+        </div>
     </div>
-</div>
+    <!-- Fim Modal -->
 
 
 <div id="toast-notification" class="toast p-0" style="display: none;">
@@ -321,7 +335,7 @@ case 'cadastro_usuario':
                         <i class="fas fa-eye toggle-senha" data-target="senha_login"></i>
                     </div>
                     <div class="flex justify-end pt-2">
-                        <a href="#" id="forgot-password-link" class="link-style">Esqueci a senha</a>
+                        <a href="#" id="open-recovery-modal" class="link-style">Esqueci a senha</a>
                     </div>
                     <div class="flex justify-center w-40 mx-auto">
                         <button type="submit" class="adopt-btn">
@@ -398,10 +412,13 @@ case 'cadastro_usuario':
 
 <script>
     <?php
+    // Essa lógica garante que, ao redirecionar após um erro de cadastro de usuário, a aba correta é reaberta
     if (!empty($mensagem_status) && ($_POST['form_type'] ?? '') === 'cadastro_usuario') {
         echo "window.activeTabOnLoad = 'cadastro_usuario';";
     } else {
-        echo "window.activeTabOnLoad = '" . $active_tab . "';";
+        // Se a aba 'recuperar' veio da URL, o JS deve tratar o modal, mas a aba principal deve ser 'login'
+        $tab_to_load = ($active_tab === 'recuperar') ? 'login' : $active_tab;
+        echo "window.activeTabOnLoad = '" . $tab_to_load . "';";
     }
     ?>
 </script>

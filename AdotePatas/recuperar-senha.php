@@ -1,83 +1,107 @@
 <?php
-// Carrega o autoloader do Composer
+// Certifique-se de ter rodado `composer require phpmailer/phpmailer`
 require 'vendor/autoload.php';
-include_once 'conexao.php'; // Sua conexão com o banco
+include_once 'conexao.php'; // Sua conexão PDO
+include_once 'session.php'; // Inclui session_start()
 
-// Importa as classes do PHPMailer
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-header('Content-Type: application/json');
+// CRÍTICO: Remove o cabeçalho JSON e usa redirecionamento
+// header('Content-Type: application/json');
 
+// Redireciona para a página de autenticação em caso de método não POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['status' => 'error', 'message' => 'Método não permitido.']);
+    header('Location: autenticacao.php');
     exit;
 }
 
+// ----------------------------------------------------
+// 1. Processa o E-mail Recebido
+// ----------------------------------------------------
 $email = $_POST['email_recuperar'] ?? '';
 
 if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    echo json_encode(['status' => 'error', 'message' => 'E-mail inválido ou não fornecido.']);
+    // Em caso de falha na validação, redireciona para a aba de recuperação com mensagem de erro
+    header('Location: autenticacao.php?active_tab=recuperar&recovery_error=invalid_email');
     exit;
 }
 
 try {
-    $user = null;
-    
-    // 1. Verifica em ambas as tabelas
-    $sql_usuario = "SELECT nome FROM usuario WHERE email = :email LIMIT 1";
-    $stmt_usuario = $conn->prepare($sql_usuario);
-    $stmt_usuario->bindParam(':email', $email);
-    $stmt_usuario->execute();
-    $user = $stmt_usuario->fetch(PDO::FETCH_ASSOC);
+    // Inicia a transação para garantir que a exclusão e inserção sejam atômicas
+    $conn->beginTransaction();
 
-    if (!$user) {
-        $sql_ong = "SELECT nome FROM ong WHERE email = :email LIMIT 1";
-        $stmt_ong = $conn->prepare($sql_ong);
-        $stmt_ong->bindParam(':email', $email);
-        $stmt_ong->execute();
-        $user = $stmt_ong->fetch(PDO::FETCH_ASSOC);
-    }
-    
-    // Se o e-mail não foi encontrado, retornamos sucesso para não revelar informações
-    if (!$user) {
-        echo json_encode(['status' => 'success', 'message' => 'Se uma conta com este e-mail existir, um link de recuperação foi enviado.']);
+    // ----------------------------------------------------
+    // 2. Tenta Encontrar o Usuário (Adotante ou ONG)
+    // ----------------------------------------------------
+    $stmtUser = $conn->prepare("SELECT email FROM usuario WHERE email = :email LIMIT 1");
+    $stmtUser->execute([':email' => $email]);
+    $userFound = $stmtUser->fetchColumn();
+
+    $stmtOng = $conn->prepare("SELECT email FROM ong WHERE email = :email LIMIT 1");
+    $stmtOng->execute([':email' => $email]);
+    $ongFound = $stmtOng->fetchColumn();
+
+    // ----------------------------------------------------
+    // 3. Gerencia o Token de Recuperação
+    // ----------------------------------------------------
+
+    if (!$userFound && !$ongFound) {
+        // Se o e-mail não for encontrado em NENHUMA tabela, retorna sucesso por segurança,
+        // mas não faz a operação de token/envio de email.
+        $conn->commit();
+        // Redirecionamento de Sucesso FALSO (segurança)
+        header('Location: autenticacao.php?active_tab=recuperar&recovery_success=true&email=' . urlencode($email));
         exit;
     }
 
-    // 2. (REMOVIDO) Não geramos nem salvamos token.
+    // CRÍTICO: Exclui qualquer token de recuperação anterior para este e-mail
+    $stmtDelete = $conn->prepare("DELETE FROM recuperar_senha_tolken WHERE email = :email");
+    $stmtDelete->execute([':email' => $email]);
 
-    // 3. Envia o e-mail com o PHPMailer
+    // Gera um token criptograficamente seguro (64 caracteres hexadecimais)
+    $token = bin2hex(random_bytes(32)); 
+    $expires = date("Y-m-d H:i:s", time() + 3600); // Expira em 1 hora
+
+    // Insere o novo token no banco de dados
+    $sqlInsert = "INSERT INTO recuperar_senha_tolken(email, token, expires_at) VALUES (:email, :token, :expires_at)";
+    $stmtInsert = $conn->prepare($sqlInsert);
+    $stmtInsert->execute([':email' => $email, ':token' => $token, ':expires_at' => $expires]);
+
+    // Se chegamos aqui, o token foi salvo. Confirma a transação.
+    $conn->commit();
+
+    // ----------------------------------------------------
+    // 4. Envio do E-mail com PHPMailer
+    // ----------------------------------------------------
+
+    $reset_link = "http://localhost/TCC-AdotePatas/TCC-AdotePatas/AdotePatas/trocar-senha.php?token=" . $token;
+
     $mail = new PHPMailer(true);
 
     // Configurações do Servidor
     $mail->isSMTP();
-    $mail->Host       = 'smtp.gmail.com';
-    $mail->SMTPAuth   = true;
-    $mail->Username   = 'adotepatastcc@gmail.com'; // SEU E-MAIL
-    $mail->Password   = 'adotepatastcc2025';    // SUA SENHA DE APP
-    $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-    $mail->Port       = 465;
+    $mail->Host = 'smtp.gmail.com';
+    $mail->SMTPAuth = true;
+    $mail->Username = 'adotepatastcc@gmail.com'; // O seu email
+    $mail->Password = 'ynzgbyiqaislwgme'; // Senha de App gerada
+    $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS; // Use SSL
+    $mail->Port = 465;
 
-    // Remetente e Destinatário
-    $mail->setFrom('nao-responda@adotepatas.com', 'Adote Patas');
-    $mail->addAddress($email, $user['nome']);
+    // Destinatário
+    $mail->setFrom('adotepatastcc@gmail.com', 'Adote Patas - Suporte');
+    $mail->addAddress($email);
 
-    // Conteúdo do E-mail
+    // Conteúdo
     $mail->isHTML(true);
-    $mail->CharSet = 'UTF-8';
-    $mail->Subject = 'Redefinição de Senha - Adote Patas';
-    
-    // Link de redefinição simplificado (com e-mail codificado em base64)
-    $user_identifier = base64_encode($email);
-    $reset_link = "http://localhost/seu-projeto/redefinir_senha.php?user=" . $user_identifier;
-
+    $mail->Subject = 'Redefinir Senha - Adote Patas';
     $mail->Body    = "
-        <div style='font-family: Arial, sans-serif; color: #333;'>
-            <h2>Olá, {$user['nome']}!</h2>
-            <p>Recebemos uma solicitação para redefinir sua senha na plataforma Adote Patas.</p>
-            <p>Clique no link abaixo para criar uma nova senha:</p>
-            <p style='margin: 20px 0;'>
+        <div style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
+            <h2 style='color: #bf6964;'>Recuperação de Senha Solicitada</h2>
+            <p>Olá,</p>
+            <p>Recebemos uma solicitação de redefinição de senha para sua conta associada ao e-mail <strong>{$email}</strong>.</p>
+            <p>Clique no link abaixo para criar uma nova senha. Este link expirará em 1 hora.</p>
+            <p style='margin: 30px 0;'>
                 <a href='{$reset_link}' style='background-color: #bf6964; color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: bold;'>
                     Redefinir Minha Senha
                 </a>
@@ -90,10 +114,27 @@ try {
     $mail->AltBody = "Para redefinir sua senha, copie e cole este link no seu navegador: {$reset_link}";
 
     $mail->send();
-    echo json_encode(['status' => 'success', 'message' => 'Link de recuperação enviado.']);
-
+    
+    // ----------------------------------------------------
+    // 5. Redirecionamento de Sucesso
+    // ----------------------------------------------------
+    // Redireciona para o login com a aba de recuperação ativada e exibe o e-mail
+    header('Location: autenticacao.php?active_tab=recuperar&recovery_success=true&email=' . urlencode($email));
+    exit;
+    
 } catch (Exception $e) {
-    error_log("PHPMailer/PDO Error: " . ($mail->ErrorInfo ?? $e->getMessage()));
-    echo json_encode(['status' => 'error', 'message' => 'Não foi possível enviar o e-mail. Tente novamente mais tarde.']);
+    // ----------------------------------------------------
+    // 6. Redirecionamento de Erro
+    // ----------------------------------------------------
+    // Em caso de falha, faz o rollback da transação e redireciona com erro genérico
+    if ($conn->inTransaction()) {
+        $conn->rollBack();
+    }
+    error_log("Erro ao processar recuperação de senha ou enviar e-mail: " . $e->getMessage());
+    // Redireciona com um erro genérico (para não expor detalhes)
+    header('Location: autenticacao.php?active_tab=recuperar&recovery_error=internal_error');
+    exit;
 }
+
+// O script deve sair antes de chegar aqui
 ?>
