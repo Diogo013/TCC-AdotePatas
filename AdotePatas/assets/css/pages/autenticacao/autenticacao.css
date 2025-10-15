@@ -316,7 +316,7 @@ img {
    ========================================================================== */
 .toast {
   position: fixed;
-  top: 2rem; /* 32px do topo */
+  top: 2rem;
   left: 50%;
   transform: translateX(-50%);
   z-index: 2000;
