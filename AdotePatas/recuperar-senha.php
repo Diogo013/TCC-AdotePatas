@@ -100,7 +100,7 @@ try {
             <h2 style='color: #bf6964;'>Recuperação de Senha Solicitada</h2>
             <p>Olá,</p>
             <p>Recebemos uma solicitação de redefinição de senha para sua conta associada ao e-mail <strong>{$email}</strong>.</p>
-            <p>Clique no link abaixo para criar uma nova senha. Este link expirará em 1 hora.</p>
+            <p>Clique no link abaixo para criar uma nova senha. Este link expirará em <strong>1 Hora</strong></p>
             <p style='margin: 30px 0;'>
                 <a href='{$reset_link}' style='background-color: #bf6964; color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: bold;'>
                     Redefinir Minha Senha

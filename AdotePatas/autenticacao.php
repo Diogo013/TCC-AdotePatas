@@ -1,6 +1,7 @@
 <?php
 // Inclui a conexão com o banco de dados
 include_once 'conexao.php';
+session_start();
 
 
 // --- FUNÇÕES DE VALIDAÇÃO (PHP) ---
@@ -67,7 +68,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $stmt->bindParam(':email', $email);
                     $stmt->execute();
                     $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
-
+                    
                     if ($usuario && password_verify($senha, $usuario['senha'])) {
                         session_start();
                         $_SESSION['nome'] = $usuario['nome'];
