@@ -391,6 +391,58 @@ ALTER TABLE `solicitacao`
   ADD CONSTRAINT `solicitacao_ibfk_2` FOREIGN KEY (`id_pet`) REFERENCES `pet` (`id_pet`) ON DELETE CASCADE;
 COMMIT;
 
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+
+--
+-- Estrutura para tabela `recuperar_senha_tolken`
+--
+
+CREATE TABLE `recuperar_senha_tolken` (
+  `id` int(11) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `token` varchar(64) NOT NULL,
+  `expires_at` datetime NOT NULL,
+  `created_at` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `recuperar_senha_tolken`
+--
+
+INSERT INTO `recuperar_senha_tolken` (`id`, `email`, `token`, `expires_at`, `created_at`) VALUES
+(16, 'moisesfdelima760@gmail.com', 'b84ce3911c669dcbb5fbfab168ea1c30193567f7f36d437a9607a6a6dcb20a92', '2025-10-16 00:57:36', '2025-10-15 18:57:36');
+
+--
+-- Índices para tabelas despejadas
+--
+
+--
+-- Índices de tabela `recuperar_senha_tolken`
+--
+ALTER TABLE `recuperar_senha_tolken`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `token` (`token`),
+  ADD KEY `email` (`email`),
+  ADD KEY `token_2` (`token`);
+
+--
+-- AUTO_INCREMENT para tabelas despejadas
+--
+
+--
+-- AUTO_INCREMENT de tabela `recuperar_senha_tolken`
+--
+ALTER TABLE `recuperar_senha_tolken`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+COMMIT;
+
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
