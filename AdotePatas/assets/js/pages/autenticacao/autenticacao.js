@@ -1,38 +1,68 @@
 // JAVASCRIPT CORRIGIDO E COMPLETO
 document.addEventListener("DOMContentLoaded", function () {
 
-  // --- MÓDULO DE CONTROLE DAS ABAS ---
-  const initTabs = () => {
+ // --- MÓDULO DE CONTROLE DAS ABAS (COM ROTEAMENTO) ---
+const initTabs = () => {
     const tabs = document.querySelectorAll(".tab-btn");
     const formContainers = document.querySelectorAll(".form-container");
     const pageTitle = document.getElementById("page-title");
     const titleMap = {
-      login: "Entrar",
-      cadastro_usuario: "Cadastro",
-      cadastro_ong: "Cadastro ONG",
+        login: "Entrar",
+        cadastro_usuario: "Cadastro",
+        cadastro_ong: "Cadastro ONG",
     };
-    
-    // Torna a função de switch global para ser usada na recuperação de senha, se necessário
-    window.switchTab = (tabId) => {
-      if (pageTitle && titleMap[tabId]) {
-        pageTitle.textContent = titleMap[tabId];
-      }
-      tabs.forEach((tab) =>
-        tab.classList.toggle("active", tab.dataset.tab === tabId)
-      );
-      formContainers.forEach((container) =>
-        container.classList.toggle("active", container.id === tabId)
-      );
+
+    // Objeto para mapear o ID da aba para a URL amigável
+    const urlMap = {
+        login: "login",
+        cadastro_usuario: "cadastro",
+        cadastro_ong: "cadastro-ong",
     };
-    
-    tabs.forEach((tab) =>
-      tab.addEventListener("click", () => switchTab(tab.dataset.tab))
-    );
-    
-    // Corrige a variável que vem do PHP
-    const activeTabOnLoad = window.activeTabOnLoad || "login";
-    switchTab(activeTabOnLoad);
-  };
+
+    // Função central para trocar de aba e URL
+    const switchTab = (tabId, pushToHistory = true) => {
+        // Atualiza o título da página
+        if (pageTitle && titleMap[tabId]) {
+            pageTitle.textContent = titleMap[tabId];
+        }
+
+        // Alterna a classe 'active' nos botões e containers
+        tabs.forEach((tab) =>
+            tab.classList.toggle("active", tab.dataset.tab === tabId)
+        );
+        formContainers.forEach((container) =>
+            container.classList.toggle("active", container.id === tabId)
+        );
+
+        // --- MÁGICA DO ROTEAMENTO ---
+        if (pushToHistory) {
+            const newUrl = urlMap[tabId] || 'login';
+            // Atualiza a URL na barra de endereço sem recarregar a página
+            history.pushState({ tabId: tabId }, '', newUrl);
+        }
+    };
+
+    // Adiciona o evento de clique para cada aba
+    tabs.forEach((tab) => {
+        tab.addEventListener("click", (e) => {
+            e.preventDefault(); // Previne qualquer comportamento padrão
+            const tabId = tab.dataset.tab;
+            switchTab(tabId, true); // Troca a aba e atualiza o histórico
+        });
+    });
+
+    // Ouve os botões "Voltar" e "Avançar" do navegador
+    window.addEventListener("popstate", (event) => {
+        // Se o histórico tiver um estado salvo, usa-o. Senão, volta para o login.
+        const tabId = event.state ? event.state.tabId : "login";
+        switchTab(tabId, false); // Troca a aba sem criar uma nova entrada no histórico
+    });
+
+    // --- CARREGAMENTO INICIAL ---
+    // Define a aba inicial com base na variável global que o PHP criou
+    const initialTab = window.activeTabOnLoad || "login";
+    switchTab(initialTab, false); // Mostra a aba correta sem mexer na URL inicial
+};
 
 const initPasswordToggle = () => {
     const togglePasswordIcons = document.querySelectorAll(".toggle-senha");
@@ -80,6 +110,166 @@ const initInputMasks = () => {
         });
     }
 }
+
+// --- INÍCIO DO CÓDIGO FALTANTE ---
+
+// --- MÓDULOS DE VALIDAÇÃO (CLIENT-SIDE) ---
+
+const exibirMensagem = (campoId, mensagem, ehValido) => {
+    const campo = document.getElementById(campoId);
+    const mensagemDiv = document.getElementById(`mensagem-${campoId}`);
+    if (mensagemDiv) {
+        mensagemDiv.textContent = mensagem;
+        mensagemDiv.classList.toggle('visivel', !ehValido && mensagem);
+    }
+    if (campo) {
+        campo.classList.toggle('invalido', !ehValido && mensagem);
+    }
+};
+
+const validarNome = (campo) => {
+    if (!campo) return false;
+    const nome = campo.value.trim();
+    const ehValido = nome.includes(" ");
+    exibirMensagem(campo.id, ehValido ? "" : "Digite seu nome completo.", ehValido);
+    return ehValido;
+};
+
+const validarCPF = (campo) => {
+    if (!campo) return false;
+    let cpf = campo.value.replace(/\D/g, "");
+    let ehValido = true;
+    if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) { ehValido = false; }
+    if (ehValido) {
+        let soma = 0, resto;
+        for (let i = 1; i <= 9; i++) soma += parseInt(cpf.substring(i - 1, i)) * (11 - i);
+        resto = (soma * 10) % 11;
+        if (resto === 10 || resto === 11) resto = 0;
+        if (resto !== parseInt(cpf.substring(9, 10))) ehValido = false;
+    }
+    if (ehValido) {
+        let soma = 0, resto;
+        for (let i = 1; i <= 10; i++) soma += parseInt(cpf.substring(i - 1, i)) * (12 - i);
+        resto = (soma * 10) % 11;
+        if (resto === 10 || resto === 11) resto = 0;
+        if (resto !== parseInt(cpf.substring(10, 11))) ehValido = false;
+    }
+    exibirMensagem(campo.id, ehValido ? "" : "CPF inválido.", ehValido);
+    return ehValido;
+};
+ 
+const validarEmail = (campo) => {
+    if (!campo) return false;
+    const email = campo.value.trim();
+    const regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+    const ehValido = regex.test(email);
+    exibirMensagem(campo.id, ehValido ? "" : "Formato de e-mail inválido.", ehValido);
+    return ehValido;
+};
+
+const validarSenha = (campo) => {
+    if (!campo) return false;
+    const senha = campo.value;
+    const mensagemDiv = document.getElementById('mensagem-senha-cadastro');
+    
+    const requisitos = [
+        { regex: /.{8,}/, texto: "mínimo 8 caracteres" },
+        { regex: /[A-Z]/, texto: "uma letra maiúscula" },
+        { regex: /[0-9]/, texto: "um número" },
+        { regex: /[\W_]/, texto: "um caractere especial" }
+    ];
+
+    const erros = requisitos
+        .filter(req => !req.regex.test(senha))
+        .map(req => req.texto);
+
+    const todosValidos = erros.length === 0;
+
+    let mensagem = "";
+    if (!todosValidos && senha.length > 0) {
+        mensagem = "A senha precisa ter: " + erros.join(', ') + ".";
+    }
+
+    if (mensagemDiv) {
+        mensagemDiv.textContent = mensagem;
+        mensagemDiv.classList.toggle('visivel', !todosValidos && senha.length > 0);
+    }
+    
+    campo.classList.toggle('invalido', !todosValidos && senha.length > 0);
+    
+    return todosValidos;
+};
+ 
+const validarConfirmaSenha = (campoSenha, campoConfirma) => {
+    if (!campoSenha || !campoConfirma) return false;
+    const ehValido = campoSenha.value === campoConfirma.value && campoConfirma.value !== "";
+    exibirMensagem(campoConfirma.id, ehValido ? "" : "As senhas não coincidem.", ehValido);
+    return ehValido;
+};
+
+// --- MÓDULO PARA INICIALIZAR A VALIDAÇÃO DO FORMULÁRIO DE CADASTRO ---
+const initCadastroUsuarioForm = () => {
+    const form = document.getElementById("form-cadastro");
+    if (!form) return;
+    const nomeCampo = document.getElementById("nome-completo");
+    const cpfCampo = document.getElementById("cpf-cadastro");
+    const emailCampo = document.getElementById("email-cadastro");
+    const senhaCampo = document.getElementById("senha-cadastro");
+    const confirmaSenhaCampo = document.getElementById("confirma-senha-cadastro");
+
+    // Adiciona os listeners para validação em tempo real
+    if(senhaCampo) senhaCampo.addEventListener("input", () => validarSenha(senhaCampo));
+    if(confirmaSenhaCampo) confirmaSenhaCampo.addEventListener("input", () => validarConfirmaSenha(senhaCampo, confirmaSenhaCampo));
+    
+    // Validação final antes do envio
+    form.addEventListener("submit", function (e) {
+        const nomeValido = validarNome(nomeCampo);
+        const cpfValido = validarCPF(cpfCampo);
+        const emailValido = validarEmail(emailCampo);
+        const senhaValida = validarSenha(senhaCampo);
+        const confirmaSenhaValida = validarConfirmaSenha(senhaCampo, confirmaSenhaCampo);
+
+        if (!nomeValido || !cpfValido || !emailValido || !senhaValida || !confirmaSenhaValida) {
+            e.preventDefault(); // Impede o envio do formulário se houver erros
+        }
+    });
+};
+
+// --- FIM DO CÓDIGO FALTANTE ---
+
+// --- MÓDULO DE NOTIFICAÇÃO (TOAST) ---
+    const initToastNotification = () => {
+        const phpData = document.getElementById("php-data");
+        if (phpData) {
+            const message = phpData.dataset.message;
+            const type = phpData.dataset.type;
+            const duration = 5000;
+
+            const toast = document.getElementById("toast-notification");
+            const toastIcon = document.getElementById("toast-icon");
+            const toastMessage = document.getElementById("toast-message");
+            
+            const lottieAnimations = {
+                success: "animações/gatinho-amor.json",
+                warning: "animações/gatinho-aviso.json",
+                danger: "animações/cachorro_agua_erro.json",
+            };
+
+            toastMessage.textContent = message;
+            const lottieSrc = lottieAnimations[type] || lottieAnimations.warning;
+            toastIcon.innerHTML = `<lottie-player src="${lottieSrc}" background="transparent" speed="1" style="width: 100%; height: 100%;" loop autoplay></lottie-player>`;
+            
+            toast.className = `toast toast--${type}`;
+            toast.style.display = "flex";
+            toast.classList.add("show");
+
+            setTimeout(() => {
+                toast.classList.remove("show");
+                toast.classList.add("hide");
+                setTimeout(() => { toast.style.display = "none"; }, 500);
+            }, duration);
+        }
+    };
 
 
 // --- MÓDULO DE RECUPERAÇÃO DE SENHA ---
@@ -285,7 +475,7 @@ const initRecoveryModal = () => {
         if (recoverySuccess === 'true' && emailFromUrl) {
             // Se for sucesso, exibimos o estado de sucesso
             showSuccessState(decodeURIComponent(emailFromUrl));
-        } else if (recoveryError === 'invalid_email') {
+        } else if (recoveryError === 'invalid_email') { 
             // Se for erro, exibimos o erro (o modal já está aberto por showModal())
             showErrorState("O formato do e-mail é inválido ou o campo está vazio. Por favor, tente novamente.");
         }
@@ -296,5 +486,7 @@ const initRecoveryModal = () => {
   initTabs();
   initPasswordToggle();
   initInputMasks();
+  initToastNotification();
   initRecoveryModal(); // Garante que a lógica de recuperação seja inicializada
+  initCadastroUsuarioForm();    
 });

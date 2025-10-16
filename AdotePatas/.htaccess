@@ -34,8 +34,8 @@ RewriteRule ^$ index.php [L]
 
 # --- FIM DAS REGRAS ATUALIZADAS ---
 
-# Redireciona "login" para a página de autenticação
-RewriteRule ^login/?$ autenticacao.php [NC,L]
+# Redireciona "login" para a página de autenticação com a aba de login ativa
+RewriteRule ^login/?$ autenticacao.php?tab=login [NC,L]
 
 # Redireciona "cadastro" para a página de autenticação com a aba de cadastro ativa
 RewriteRule ^cadastro/?$ autenticacao.php?tab=cadastro_usuario [NC,L]
@@ -46,5 +46,8 @@ RewriteRule ^cadastro-ong/?$ autenticacao.php?tab=cadastro_ong [NC,L]
 
 # --- REGRA GERAL (para arquivos e pastas existentes) ---
 
+# Se o arquivo ou diretório solicitado não existir, redireciona para o autenticacao.php
+# Isso permite que o JavaScript controle as rotas sem o servidor retornar erro 404
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . autenticacao.php [L]

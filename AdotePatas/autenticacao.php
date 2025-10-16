@@ -32,17 +32,26 @@ function validarForcaSenha($senha) {
 
 // --- INÍCIO DA PARTE ALTERADA ---
 
+// --- LÊ MENSAGENS E ABAS DA SESSÃO (PADRÃO PRG) ---
+$mensagem_status = $_SESSION['mensagem_status'] ?? '';
+$tipo_mensagem = $_SESSION['tipo_mensagem'] ?? '';
+$active_tab_from_session = $_SESSION['active_tab'] ?? null;
+
+// Limpa as mensagens da sessão para que não apareçam novamente se o usuário atualizar a página
+unset($_SESSION['mensagem_status']);
+unset($_SESSION['tipo_mensagem']);
+unset($_SESSION['active_tab']);
+
 // --- CONFIGURAÇÃO INICIAL ---
-// Verifica se uma aba específica foi solicitada pela URL amigável via .htaccess
+// --- Bloco Corrigido (Melhor Prática) ---
+// Define a aba ativa, priorizando a URL e usando a sessão como fallback
 if (isset($_GET['tab']) && in_array($_GET['tab'], ['login', 'cadastro_usuario', 'cadastro_ong'])) {
-    $active_tab = $_GET['tab'];
+    $active_tab = $_GET['tab']; // Prioridade 1: URL
+} elseif ($active_tab_from_session) {
+    $active_tab = $active_tab_from_session; // Prioridade 2: Sessão (após um POST)
 } else {
     $active_tab = 'login'; // Valor padrão
 }
-
-$mensagem_status = '';
-$tipo_mensagem = '';
-
 
 // --- PROCESSAMENTO DOS FORMULÁRIOS (POST) ---
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -176,40 +185,54 @@ case 'cadastro_usuario':
         }
     }
     
-    // --- Decisão Final ---
-    if (!empty($erros)) {
-        // Se, após todas as checagens, houver erros, configure a mensagem e mantenha a aba.
-        $mensagem_status = $erros[0];
+    // Em: autenticacao.php -> case 'cadastro_usuario'
+
+// --- Decisão Final ---
+if (!empty($erros)) {
+    // Se houver erros, o comportamento atual está correto:
+    // mostra a mensagem e mantém os dados na tela.
+    $mensagem_status = $erros[0];
+    $tipo_mensagem = 'danger';
+    $active_tab = 'cadastro_usuario';
+} else {
+    // Se NÃO houver erros, insere no banco e usa o padrão PRG.
+    $senha_hashed = password_hash($senha, PASSWORD_DEFAULT);
+    try {
+        $sql = "INSERT INTO usuario (nome, email, senha, cpf) VALUES (:nome, :email, :senha, :cpf)";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([
+            ':nome' => $nome, 
+            ':email' => $email, 
+            ':senha' => $senha_hashed, 
+            ':cpf' => preg_replace('/[^0-9]/', '', $cpf)
+        ]);
+
+        // --- INÍCIO DA LÓGICA PRG ---
+        // 1. Salva a mensagem de sucesso e a aba de destino na sessão.
+        $_SESSION['mensagem_status'] = "Cadastro realizado com sucesso! Você já pode fazer login.";
+        $_SESSION['tipo_mensagem'] = 'success';
+        $_SESSION['active_tab'] = 'login';
+
+        // 2. Redireciona para a mesma página para limpar os dados do POST.
+        header("Location: autenticacao.php");
+        exit();
+        // --- FIM DA LÓGICA PRG ---
+
+    } catch (PDOException $e) {
+        $mensagem_status = "Ocorreu uma falha no banco de dados. Tente novamente.";
         $tipo_mensagem = 'danger';
-        $active_tab = 'cadastro_usuario'; // Garante que a aba de cadastro será reexibida
-    } else {
-        // Se não houver nenhum erro, insere no banco.
-        $senha_hashed = password_hash($senha, PASSWORD_DEFAULT);
-        try {
-            $sql = "INSERT INTO usuario (nome, email, senha, cpf) VALUES (:nome, :email, :senha, :cpf)";
-            $stmt = $conn->prepare($sql);
-            $stmt->execute([
-                ':nome' => $nome, 
-                ':email' => $email, 
-                ':senha' => $senha_hashed, 
-                ':cpf' => preg_replace('/[^0-9]/', '', $cpf)
-            ]);
-            $mensagem_status = "Cadastro realizado com sucesso! Você já pode fazer login.";
-            $tipo_mensagem = 'success';
-            $active_tab = 'login'; // SÓ MUDA PARA LOGIN EM CASO DE SUCESSO TOTAL
-        } catch (PDOException $e) {
-            $mensagem_status = "Ocorreu uma falha no banco de dados. Tente novamente.";
-            $tipo_mensagem = 'danger';
-            $active_tab = 'cadastro_usuario'; // Mantém na aba de cadastro em caso de erro no BD
-            error_log("Erro no cadastro: " . $e->getMessage());
-        }
+        $active_tab = 'cadastro_usuario';
+        error_log("Erro no cadastro: " . $e->getMessage());
     }
-    break;
+}
+break; // Fim do 'case cadastro_usuario'
 
         // --- CASO 3: CADASTRO DE ONG ---
         case 'cadastro_ong':
             $active_tab = 'cadastro_ong';
-            // ... (seu código de cadastro de ONG aqui)
+            
+            
+
             break;
     }
 }
@@ -231,10 +254,10 @@ case 'cadastro_usuario':
 
 <!-- Modal de Recuperação de Senha -->
     <div id="recovery-modal" class="fixed inset-0 z-50 bg-black bg-opacity-50 hidden items-center justify-center p-4" style="z-index: 1000;">
-        <div class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-md mx-auto">
+        <div class="bg-white shadow-2xl p-6 w-full max-w-md mx-auto" style="margin-top: 10%; border-radius: 16px">
             <!-- Título e Botão de Fechar -->
             <div class="flex justify-between items-center border-b pb-3 mb-4">
-                <h2 class="text-xl font-semibold text-gray-800">Recuperar Senha</h2>
+                <h1 class="text-2xl font-bold text-gray-600">Recuperar Senha</h1>
                 <button id="close-recovery-modal" class="text-gray-400 hover:text-gray-600 transition">
                     <i class="fas fa-times text-2xl"></i>
                 </button>
@@ -242,19 +265,19 @@ case 'cadastro_usuario':
 
             <!-- 1. Estado do Formulário de Recuperação -->
             <div id="recovery-form-state">
-                <p class="text-sm text-gray-600 mb-4">
-                    Insira o e-mail associado à sua conta para receber um link de redefinição de senha.
+                <p class="text-md text-gray-600 mb-4">
+                    Insira o <strong style="color: var(--cor-vermelho);">e-mail</strong> associado à sua conta para receber um link de redefinição de senha.
                 </p>
                 <form id="recuperar-form" action="recuperar-senha.php" method="POST">
                     <div class="mb-4">
                         <!-- ID do input é 'email_recuperar' conforme esperado no recuperar-senha.php -->
-                        <input type="email" id="email_recuperar" name="email_recuperar" placeholder="Seu E-mail" required
+                        <input type="email" id="email_recuperar" name="email_recuperar" placeholder="E-mail" required
                             class="input-style w-full">
                         <p id="recovery-error-message" class="text-sm text-red-500 mt-1 hidden text-left"></p>
                     </div>
                     <div class="flex justify-center">
-                        <button type="submit" class="adopt-btn w-full justify-center">
-                            <span class="submit-text">Enviar Link</span>
+                        <button type="submit" class="adopt-btn w-48 justify-center">
+                            <div class="heart-background">❤</div><span>Enviar Link</span>
                         </button>
                     </div>
                 </form>
@@ -330,8 +353,9 @@ case 'cadastro_usuario':
             <div id="login" class="form-container">
                 <form action="autenticacao.php" method="post" class="space-y-6">
                     <input type="hidden" name="form_type" value="login">
-                    <input type="email" name="email" placeholder="E-mail" required class="input-style w-full email-input">
-                    <div class="relative">
+                    <input type="email" name="email" placeholder="E-mail" required class="input-style w-full email-input" 
+                        value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>">
+                           <div class="relative">
                         <input type="password" id="senha_login" name="senha" placeholder="Senha" required class="input-style w-full pr-12 senha-input">
                         <i class="fas fa-eye toggle-senha" data-target="senha_login"></i>
                     </div>
@@ -347,7 +371,7 @@ case 'cadastro_usuario':
             </div>
 
 <div id="cadastro_usuario" class="form-container">
-    <form action="autenticacao.php" method="post" id="form-cadastro" class="space-y-6">
+    <form action="cadastro" method="post" id="form-cadastro" class="space-y-6">
         <input type="hidden" name="form_type" value="cadastro_usuario">
         <div>
             <input type="text" name="nome-completo" id="nome-completo" placeholder="Nome Completo" required class="input-style w-full" 
@@ -388,10 +412,10 @@ case 'cadastro_usuario':
 
             
         <div id="cadastro_ong" class="form-container">
-            <form action="autenticacao.php" method="post" class="space-y-6">
+            <form action="cadastro-ong" method="post" class="space-y-6">
                 <input type="hidden" name="form_type" value="cadastro_ong">
                 <input type="text" name="nome_ong" placeholder="Nome Oficial da ONG" required class="input-style w-full">
-                <input type="text" name="cnpj" placeholder="CNPJ" required class="input-style w-full">
+                <input type="text" name="cnpj" id="cnpj" placeholder="CNPJ" required class="input-style w-full">
                 <input type="email" name="email_ong" placeholder="E-mail" required class="input-style w-full">
                 <div class="relative">
                     <input type="password" id="senha_ong" name="senha_ong" placeholder="Senha" required class="input-style w-full pr-12 senha-input">

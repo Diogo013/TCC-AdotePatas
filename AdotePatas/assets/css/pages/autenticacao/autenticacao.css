@@ -345,8 +345,8 @@ img {
 
 .toast-icon {
   flex-shrink: 0;
-  width: 150px;
-  height: 150px;
+  width: 100px;
+  height: 100px;
   margin-right: 1rem;
 }
 
