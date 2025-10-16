@@ -1,3 +1,15 @@
+<?php
+session_start();
+
+
+$logado = isset($_SESSION['user_id']);
+
+if ($logado){
+  $acesso = "pets-adocao.php";
+} else {
+  $acesso = "login";
+}
+?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -62,7 +74,9 @@
 
         <div class="col-lg-6 order-3">
           <div class="btn-container">
-            <a href="autenticacao.php">
+            <a href="<?php
+                echo  $acesso
+                ?>">
               <button class="adopt-btn" id="adoptBtn">
                 <div class="heart-background" style="user-select: none;">❤</div>
                 <span>Quero adotar</span>
@@ -308,7 +322,6 @@
     integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
     crossorigin="anonymous"></script>
   <script src="assets/js/pages/index/patinhas.js"></script>
-  <script src="assets/js/pages/index/scroll.js"></script>
   <script src="assets/js/pages/index/pet-likes.js"></script>
   <script src="assets/js/pages/index/card-deck.js"></script>
   <script src="assets/js/pages/index/loading.js"></script>

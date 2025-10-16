@@ -21,20 +21,18 @@ Options -Indexes
     Deny from all
 </Files>
 
-
 # --- REGRAS DE URL AMIGÁVEL ---
 
-# --- INÍCIO DAS NOVAS REGRAS PARA O INDEX ---
+# --- INÍCIO DAS REGRAS ATUALIZADAS PARA O INDEX ---
 
-# 1. Remove "index.html" da URL se ele for acessado diretamente
-RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /(.*/)?index\.html\ HTTP/
-RewriteRule ^((.*/)?index\.html)$ /$1 [R=301,L]
+# 1. Remove "index.php" da URL se ele for acessado diretamente
+RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /(.*/)?index\.php\ HTTP/
+RewriteRule ^((.*/)?index\.php)$ /$1 [R=301,L]
 
-# 2. Permite que a URL raiz "/" carregue o arquivo index.html internamente
-RewriteRule ^$ index.html [L]
+# 2. Permite que a URL raiz "/" carregue o arquivo index.php internamente
+RewriteRule ^$ index.php [L]
 
-# --- FIM DAS NOVAS REGRAS ---
-
+# --- FIM DAS REGRAS ATUALIZADAS ---
 
 # Redireciona "login" para a página de autenticação
 RewriteRule ^login/?$ autenticacao.php [NC,L]
