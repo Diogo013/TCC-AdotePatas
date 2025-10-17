@@ -1,13 +1,21 @@
 <?php
 session_start();
 
-
+// Verifica se o usuário está logado
 $logado = isset($_SESSION['user_id']);
 
-if ($logado){
+// Define o link do botão principal com base no status de login
+if ($logado) {
   $acesso = "pets-adocao.php";
 } else {
-  $acesso = "login";
+$acesso = "login";; // Se não estiver logado, o botão "Quero Adotar" leva para a tela de login
+}
+
+// Pega o primeiro nome do usuário se estiver logado
+$primeiro_nome = '';
+if ($logado && isset($_SESSION['nome'])) {
+    $partes_nome = explode(' ', $_SESSION['nome']);
+    $primeiro_nome = $partes_nome[0];
 }
 ?>
 <!DOCTYPE html>
@@ -42,6 +50,19 @@ if ($logado){
         <a class="navbar-brand" href="#">
           <img src="./images/global/logo-AdotePatas.png" alt="Logo Adote Patas" class="navbar-logo">
         </a>
+        <?php if ($logado): ?>
+          <!-- Navbar para usuário LOGADO -->
+          <div class="profile-container">
+            <a href="#" class="nav-icon"><i class="fas fa-search"></i></a>
+            <div class="profile-info">
+              <i class="fas fa-user profile-icon"></i>
+              <span class="profile-name"><?php echo htmlspecialchars($primeiro_nome); ?></span>
+            </div>
+            <button class="border-0 bg-transparent" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
+              <span class="fas fa-bars nav-icon"></span>
+            </button>
+          </div>
+        <?php else: ?>
         <ul class="navbar-nav d-flex">
           <li class="nav-item">
             <a class="nav-link navlink" href="#">Sobre Nós</a>
@@ -53,9 +74,32 @@ if ($logado){
             <a class="nav-link loginlink" href="autenticacao.php">Entrar</a>
           </li>
         </ul>
+        <?php endif; ?>
       </div>
     </nav>
   </header>
+  <!-- Offcanvas Menu (só aparece quando logado) -->
+  <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title" id="offcanvasNavbarLabel">Menu</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+      <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+        <li class="nav-item">
+          <a class="nav-link" href="#">Sobre Nós</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Ajuda</a>
+        </li>
+        <li class="nav-item mt-3">
+            <a class="nav-link logout-link" href="sair.php">Sair</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+
 
   <main class="hero">
     <div class="container">

@@ -101,6 +101,56 @@ body {
   transform: scaleX(1);
 }
 
+.profile-container {
+      display: flex;
+      align-items: center;
+      gap: 15px; /* Espaçamento entre os ícones e o perfil */
+    }
+    .profile-info {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      color: #555;
+    }
+    .profile-icon {
+      font-size: 24px; /* Tamanho do ícone de perfil */
+      color: #e87a7a;
+      border: 2px solid #e87a7a;
+      border-radius: 50%;
+      padding: 8px;
+    }
+    .profile-name {
+      font-size: 14px;
+      font-weight: bold;
+      margin-top: 4px;
+    }
+    .nav-icon {
+      font-size: 24px;
+      color: #555;
+    }
+    .offcanvas-header {
+      border-bottom: 1px solid #eee;
+    }
+    .offcanvas-title {
+        font-weight: bold;
+        color: #e87a7a;
+    }
+    .offcanvas-body .nav-link {
+        font-size: 18px;
+        padding: 10px 15px;
+        color: #333;
+        border-radius: 8px;
+    }
+    .offcanvas-body .nav-link:hover {
+        background-color: #f5f5f5;
+    }
+    .offcanvas-body .logout-link {
+        color: #e87a7a;
+        font-weight: bold;
+    }
+
+
 .loginlink {
   color: var(--cor-vermelho) !important;
   position: relative;
