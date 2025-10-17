@@ -50,7 +50,7 @@ if ($logado){
             <a class="nav-link navlink" href="#">Ajuda</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link loginlink" href="autenticacao.php">Entrar</a>
+            <a class="nav-link loginlink" href="login">Entrar</a>
           </li>
         </ul>
       </div>
