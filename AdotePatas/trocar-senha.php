@@ -61,8 +61,8 @@ if (!$token) {
         <!-- Exibe mensagem de erro se o token for inválido/expirado -->
         <div class="alert alert-danger text-center" role="alert">
             <?php echo htmlspecialchars($error_message); ?>
+            <p class="text-center mt-4"><a href="autenticacao.php">Voltar para Login</a></p>
         </div>
-        <p class="text-center mt-4"><a href="autenticacao.php">Voltar para Login</a></p>
     
     <?php else: ?>
         <!-- Exibe o formulário de troca de senha -->
