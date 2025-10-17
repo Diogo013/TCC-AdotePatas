@@ -371,7 +371,7 @@ break; // Fim do 'case cadastro_usuario'
             </div>
 
 <div id="cadastro_usuario" class="form-container">
-    <form action="cadastro" method="post" id="form-cadastro" class="space-y-6">
+    <form action="autenticacao.php" method="post" id="form-cadastro" class="space-y-6">
         <input type="hidden" name="form_type" value="cadastro_usuario">
         <div>
             <input type="text" name="nome-completo" id="nome-completo" placeholder="Nome Completo" required class="input-style w-full" 
@@ -412,7 +412,7 @@ break; // Fim do 'case cadastro_usuario'
 
             
         <div id="cadastro_ong" class="form-container">
-            <form action="cadastro-ong" method="post" class="space-y-6">
+            <form action="autenticacao.php" method="post" class="space-y-6">
                 <input type="hidden" name="form_type" value="cadastro_ong">
                 <input type="text" name="nome_ong" placeholder="Nome Oficial da ONG" required class="input-style w-full">
                 <input type="text" name="cnpj" id="cnpj" placeholder="CNPJ" required class="input-style w-full">
