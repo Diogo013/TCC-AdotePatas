@@ -1,0 +1,10 @@
+# Ignora a pasta de dependências do Composer
+/vendor/
+
+# Ignora arquivos de configuração de IDEs comuns
+.idea/
+.vscode/
+
+# Ignora arquivos de sistema operacional
+.DS_Store
+Thumbs.db

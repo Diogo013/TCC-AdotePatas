@@ -15,6 +15,19 @@ body {
 img {
   user-select: none;
 }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
 .container-card {
   background-color: rgba(180, 100, 89, 0.35);
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
@@ -148,7 +161,7 @@ img {
   right: 0;
   height: 24rem;
   width: 40rem;
-  opacity: 0.4;
+  opacity: 1;
   z-index: 0;
   pointer-events: none;
   display: none; /* Oculto por padrão */
@@ -275,9 +288,9 @@ img {
 /* Telas de tablet e menores */
 @media (max-width: 768px) {
   .btn-voltar {
-    top: 1rem; /* Menor distância do topo */
+    top: 0.1rem; /* Menor distância do topo */
     left: 1rem; /* Menor distância da esquerda */
-    padding: 0.6rem 1rem;
+    padding: 0.5rem;
     font-size: 0.9rem;
   }
 }
@@ -285,9 +298,17 @@ img {
 /* Telas de celular (bem pequenas) */
 @media (max-width: 480px) {
   .btn-voltar {
-    padding: 0.75rem;
-    top: 0.3rem;
-    left: 0.3rem;
+    padding: 0.5rem;
+    top: 0.2rem;
+    left: 0.2rem;
+  }
+}
+/* Telas de celular (bem pequenas) */
+@media (max-width: 380px) {
+  .btn-voltar {
+    padding: 0.25rem;
+    top: 0;
+    left: 0;
   }
 }
 
@@ -310,6 +331,8 @@ img {
 .input-style.invalido {
   border-color: #f87171;
 }
+
+
 
 /* ==========================================================================
    TOAST/MODAL DE NOTIFICAÇÃO - Estilos e Animações
@@ -345,8 +368,8 @@ img {
 
 .toast-icon {
   flex-shrink: 0;
-  width: 100px;
-  height: 100px;
+  width: 110px;
+  height: 110px;
   margin-right: 1rem;
 }
 

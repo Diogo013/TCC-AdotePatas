@@ -12,7 +12,7 @@ use PHPMailer\PHPMailer\Exception;
 
 // Redireciona para a página de autenticação em caso de método não POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: autenticacao.php');
+    header('Location: login');
     exit;
 }
 
@@ -23,7 +23,7 @@ $email = $_POST['email_recuperar'] ?? '';
 
 if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
     // Em caso de falha na validação, redireciona para a aba de recuperação com mensagem de erro
-    header('Location: autenticacao.php?active_tab=recuperar&recovery_error=invalid_email');
+    header('Location: login?active_tab=recuperar&recovery_error=invalid_email');
     exit;
 }
 
@@ -51,7 +51,7 @@ try {
         // mas não faz a operação de token/envio de email.
         $conn->commit();
         // Redirecionamento de Sucesso FALSO (segurança)
-        header('Location: autenticacao.php?active_tab=recuperar&recovery_success=true&email=' . urlencode($email));
+        header('Location: login?active_tab=recuperar&recovery_success=true&email=' . urlencode($email));
         exit;
     }
 
@@ -75,7 +75,7 @@ try {
     // 4. Envio do E-mail com PHPMailer
     // ----------------------------------------------------
 
-    $reset_link = "http://localhost/TCC-AdotePatas/TCC-AdotePatas/AdotePatas/trocar-senha.php?token=" . $token;
+    $reset_link = "http://localhost/TCC-AdotePatas/AdotePatas/trocar-senha.php?token=" . $token;
 
     $mail = new PHPMailer(true);
 
@@ -119,7 +119,7 @@ try {
     // 5. Redirecionamento de Sucesso
     // ----------------------------------------------------
     // Redireciona para o login com a aba de recuperação ativada e exibe o e-mail
-    header('Location: autenticacao.php?active_tab=recuperar&recovery_success=true&email=' . urlencode($email));
+    header('Location: login?active_tab=recuperar&recovery_success=true&email=' . urlencode($email));
     exit;
     
 } catch (Exception $e) {
@@ -132,7 +132,7 @@ try {
     }
     error_log("Erro ao processar recuperação de senha ou enviar e-mail: " . $e->getMessage());
     // Redireciona com um erro genérico (para não expor detalhes)
-    header('Location: autenticacao.php?active_tab=recuperar&recovery_error=internal_error');
+    header('Location: login?active_tab=recuperar&recovery_error=internal_error');
     exit;
 }
 

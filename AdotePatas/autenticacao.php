@@ -20,6 +20,38 @@ function validarCPF($cpf) {
     return true;
 }
 
+// Valida a estrutura do CNPJ
+function validarCNPJ($cnpj) {
+    $cnpj = preg_replace('/[^0-9]/', '', (string) $cnpj);
+
+    // Valida o tamanho e se todos os dígitos são iguais
+    if (strlen($cnpj) != 14 || preg_match('/(\d)\1{13}/', $cnpj)) {
+        return false;
+    }
+
+    // Valida o primeiro dígito verificador
+    for ($i = 0, $j = 5, $soma = 0; $i < 12; $i++) {
+        $soma += $cnpj[$i] * $j;
+        $j = ($j == 2) ? 9 : $j - 1;
+    }
+    $resto = $soma % 11;
+    if ($cnpj[12] != ($resto < 2 ? 0 : 11 - $resto)) {
+        return false;
+    }
+
+    // Valida o segundo dígito verificador
+    for ($i = 0, $j = 6, $soma = 0; $i < 13; $i++) {
+        $soma += $cnpj[$i] * $j;
+        $j = ($j == 2) ? 9 : $j - 1;
+    }
+    $resto = $soma % 11;
+    if ($cnpj[13] != ($resto < 2 ? 0 : 11 - $resto)) {
+        return false;
+    }
+
+    return true;
+}
+
 // Valida a força da senha
 function validarForcaSenha($senha) {
     $erros = [];
@@ -85,7 +117,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         $_SESSION['user_email'] = $email;
                         $_SESSION['user_tipo'] = 'adotante';
                         $logado = true;
-                        header("Location: home.php");
+                        header("Location:  ./");
                         exit;
                     }
                 } catch (PDOException $e) {
@@ -108,7 +140,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             $_SESSION['user_email'] = $email;
                             $_SESSION['user_tipo'] = 'protetor';
                             $logado = true;
-                            header("Location: home.php");
+                            header("Location: ./ ");
                             exit;
                         }
                     } catch (PDOException $e) {
@@ -185,7 +217,7 @@ case 'cadastro_usuario':
         }
     }
     
-    // Em: autenticacao.php -> case 'cadastro_usuario'
+    // Em: login -> case 'cadastro_usuario'
 
 // --- Decisão Final ---
 if (!empty($erros)) {
@@ -214,7 +246,7 @@ if (!empty($erros)) {
         $_SESSION['active_tab'] = 'login';
 
         // 2. Redireciona para a mesma página para limpar os dados do POST.
-        header("Location: autenticacao.php");
+        header("Location: login");
         exit();
         // --- FIM DA LÓGICA PRG ---
 
@@ -228,12 +260,90 @@ if (!empty($erros)) {
 break; // Fim do 'case cadastro_usuario'
 
         // --- CASO 3: CADASTRO DE ONG ---
-        case 'cadastro_ong':
-            $active_tab = 'cadastro_ong';
-            
-            
+        // --- CASO 3: CADASTRO DE ONG COM VALIDAÇÃO ROBUSTA ---
+case 'cadastro_ong':
+    $active_tab = 'cadastro_ong';
+    $nome_ong = trim($_POST['nome_ong'] ?? '');
+    $cnpj = trim($_POST['cnpj'] ?? '');
+    $email_ong = trim($_POST['email_ong'] ?? '');
+    $senha_ong = $_POST['senha_ong'] ?? '';
+    $confirma_senha_ong = $_POST['confirma_senha_ong'] ?? '';
 
-            break;
+    $erros = [];
+
+    // 1. Validação de campos vazios
+    if (empty($nome_ong) || empty($cnpj) || empty($email_ong) || empty($senha_ong) || empty($confirma_senha_ong)) {
+        $erros[] = "Todos os campos são obrigatórios.";
+    } else {
+        // 2. Validações de formato e regras
+        if (!validarCNPJ($cnpj)) {
+            $erros[] = "O CNPJ informado é inválido.";
+        }
+        if (!filter_var($email_ong, FILTER_VALIDATE_EMAIL)) {
+            $erros[] = "O formato do e-mail é inválido.";
+        }
+
+        // 3. Validação de força e confirmação de senha
+        $erros_senha = validarForcaSenha($senha_ong);
+        if (!empty($erros_senha)) {
+            $erros = array_merge($erros, $erros_senha);
+        } elseif ($senha_ong !== $confirma_senha_ong) {
+            $erros[] = "As senhas não coincidem.";
+        }
+    }
+
+    // 4. Verificação de duplicidade no banco (APENAS se não houver erros de formato)
+    if (empty($erros)) {
+        // Checa E-mail na tabela de ONGs
+        $sql = "SELECT id_ong FROM ong WHERE email = :email LIMIT 1";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([':email' => $email_ong]);
+        if ($stmt->fetch()) {
+            $erros[] = "Este e-mail já está cadastrado para uma ONG.";
+        }
+
+        // Checa CNPJ
+        $cnpj_limpo = preg_replace('/[^0-9]/', '', $cnpj);
+        $sql = "SELECT id_ong FROM ong WHERE cnpj = :cnpj LIMIT 1";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([':cnpj' => $cnpj_limpo]);
+        if ($stmt->fetch()) {
+            $erros[] = "Este CNPJ já está cadastrado.";
+        }
+    }
+
+    // 5. Decisão Final: Cadastrar ou mostrar erro
+    if (!empty($erros)) {
+        $mensagem_status = $erros[0]; // Mostra o primeiro erro encontrado
+        $tipo_mensagem = 'danger';
+    } else {
+        // Tudo certo, prossegue com o cadastro
+        $senha_hashed = password_hash($senha_ong, PASSWORD_DEFAULT);
+        try {
+            $sql = "INSERT INTO ong (nome, email, senha, cnpj) VALUES (:nome, :email, :senha, :cnpj)";
+            $stmt = $conn->prepare($sql);
+            $stmt->execute([
+                ':nome' => $nome_ong,
+                ':email' => $email_ong,
+                ':senha' => $senha_hashed,
+                ':cnpj' => preg_replace('/[^0-9]/', '', $cnpj)
+            ]);
+
+            // Padrão PRG: Salva mensagem na sessão e redireciona
+            $_SESSION['mensagem_status'] = "Cadastro de ONG realizado com sucesso! Você já pode fazer login.";
+            $_SESSION['tipo_mensagem'] = 'success';
+            $_SESSION['active_tab'] = 'login';
+
+            header("Location: login");
+            exit();
+
+        } catch (PDOException $e) {
+            $mensagem_status = "Ocorreu uma falha no banco de dados. Tente novamente.";
+            $tipo_mensagem = 'danger';
+            error_log("Erro no cadastro de ONG: " . $e->getMessage());
+        }
+    }
+    break;
     }
 }
 ?>
@@ -327,7 +437,7 @@ break; // Fim do 'case cadastro_usuario'
             </a>
         </div>
         <div class="absolute inset-x-0 text-center">
-            <h1 id="page-title" class="text-4xl sm:text-4xl font-bold text-[#666662]">Entrar</h1>
+            <h1 id="page-title" class="text-xl md:text-4xl font-bold text-[#666662]">Entrar</h1>
             <div class="w-24 h-1 bg-[#666662] mx-auto mt-1 rounded-full"></div>
         </div>
         <div class="h-16 w-16 invisible"></div>
@@ -336,9 +446,9 @@ break; // Fim do 'case cadastro_usuario'
     <div class="container-card w-full p-6 sm:p-10 rounded-3xl shadow-xl">
         
         <div class="flex border-b-2 border-white/20 mb-6">
-            <button data-tab="login" class="tab-btn flex-1 py-3 text-lg font-bold text-white/70 transition-all duration-300">Entrar</button>
-            <button data-tab="cadastro_usuario" class="tab-btn flex-1 py-3 text-lg font-bold text-white/70 transition-all duration-300">Cadastro</button>
-            <button data-tab="cadastro_ong" class="tab-btn flex-1 py-3 text-lg font-bold text-white/70 transition-all duration-300">Cadastro ONG</button>
+            <button data-tab="login" class="tab-btn flex-1 py-3 text-sm  md:text-xl font-bold text-white/70 transition-all duration-300">Entrar</button>
+            <button data-tab="cadastro_usuario" class="tab-btn flex-1 py-3 text-sm  md:text-xl  font-bold text-white/70 transition-all duration-300">Cadastro</button>
+            <button data-tab="cadastro_ong" class="tab-btn flex-1 py-3 text-sm  md:text-xl font-bold text-white/70 transition-all duration-300">Cadastro ONG</button>
         </div>
 
         <?php if (!empty($mensagem_status)): ?>
@@ -349,55 +459,58 @@ break; // Fim do 'case cadastro_usuario'
             </div>
         <?php endif; ?>
 
-        <div class="form-content">
-            <div id="login" class="form-container">
-                <form action="autenticacao.php" method="post" class="space-y-6">
-                    <input type="hidden" name="form_type" value="login">
-                    <input type="email" name="email" placeholder="E-mail" required class="input-style w-full email-input" 
-                        value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>">
-                           <div class="relative">
-                        <input type="password" id="senha_login" name="senha" placeholder="Senha" required class="input-style w-full pr-12 senha-input">
-                        <i class="fas fa-eye toggle-senha" data-target="senha_login"></i>
-                    </div>
-                    <div class="flex justify-end pt-2">
-                        <a href="#" id="open-recovery-modal" class="link-style">Esqueci a senha</a>
-                    </div>
-                    <div class="flex justify-center w-40 mx-auto">
-                        <button type="submit" class="adopt-btn">
-                            <div class="heart-background">❤</div><span>Entrar</span>
-                        </button>
-                    </div>
-                </form>
-            </div>
+<div id="login" class="form-container">
+    <form action="login" method="post" class="space-y-6">
+        <input type="hidden" name="form_type" value="login">
+        <div>
+            <label for="email_login" class="sr-only">E-mail</label> <input type="email" name="email" id="email_login" placeholder="E-mail" required class="input-style w-full email-input"
+                   value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>">
+        </div>
+        <div class="relative">
+             <label for="senha_login" class="sr-only">Senha</label> <input type="password" id="senha_login" name="senha" placeholder="Senha" required class="input-style w-full pr-12 senha-input">
+            <i class="fas fa-eye toggle-senha" data-target="senha_login"></i>
+        </div>
+        <div class="flex justify-end pt-2">
+            <a href="#" id="open-recovery-modal" class="link-style">Esqueci a senha</a>
+        </div>
+        <div class="flex justify-center w-40 mx-auto">
+            <button type="submit" class="adopt-btn">
+                <div class="heart-background">❤</div><span>Entrar</span>
+            </button>
+        </div>
+    </form>
+</div>
+
 
 <div id="cadastro_usuario" class="form-container">
-    <form action="autenticacao.php" method="post" id="form-cadastro" class="space-y-6">
+    <form action="login" method="post" id="form-cadastro" class="space-y-6">
         <input type="hidden" name="form_type" value="cadastro_usuario">
         <div>
-            <input type="text" name="nome-completo" id="nome-completo" placeholder="Nome Completo" required class="input-style w-full" 
+            <label for="nome-completo" class="sr-only">Nome Completo</label>
+            <input type="text" name="nome-completo" id="nome-completo" placeholder="Nome Completo" required class="input-style w-full"
                    value="<?php echo htmlspecialchars($nome ?? ''); ?>">
             <div id="mensagem-nome-completo" class="mensagem-validacao"></div>
         </div>
         <div>
-            <input type="text" name="cpf-cadastro" id="cpf-cadastro" placeholder="CPF" required class="input-style w-full" 
+            <label for="cpf-cadastro" class="sr-only">CPF</label> <input type="text" name="cpf-cadastro" id="cpf-cadastro" placeholder="CPF" required class="input-style w-full"
                    value="<?php echo htmlspecialchars($cpf ?? ''); ?>">
             <div id="mensagem-cpf-cadastro" class="mensagem-validacao"></div>
         </div>
         <div>
-            <input type="email" name="email-cadastro" id="email-cadastro" placeholder="E-mail" required class="input-style w-full"
+            <label for="email-cadastro" class="sr-only">E-mail</label> <input type="email" name="email-cadastro" id="email-cadastro" placeholder="E-mail" required class="input-style w-full"
                    value="<?php echo htmlspecialchars($email ?? ''); ?>">
             <div id="mensagem-email-cadastro" class="mensagem-validacao"></div>
         </div>
         <div>
             <div class="relative">
-                <input type="password" id="senha-cadastro" name="senha-cadastro" placeholder="Senha" required class="input-style w-full pr-12 senha-input">
+                <label for="senha-cadastro" class="sr-only">Senha</label> <input type="password" id="senha-cadastro" name="senha-cadastro" placeholder="Senha" required class="input-style w-full pr-12 senha-input">
                 <i class="fas fa-eye toggle-senha" data-target="senha-cadastro"></i>
             </div>
             <div id="mensagem-senha-cadastro" class="mensagem-validacao"></div>
         </div>
         <div>
             <div class="relative">
-                <input type="password" id="confirma-senha-cadastro" name="confirma-senha-cadastro" placeholder="Confirmar a Senha" required class="input-style w-full pr-12 senha-input">
+                <label for="confirma-senha-cadastro" class="sr-only">Confirmar a Senha</label> <input type="password" id="confirma-senha-cadastro" name="confirma-senha-cadastro" placeholder="Confirmar a Senha" required class="input-style w-full pr-12 senha-input">
                 <i class="fas fa-eye toggle-senha" data-target="confirma-senha-cadastro"></i>
             </div>
             <div id="mensagem-confirma-senha-cadastro" class="mensagem-validacao"></div>
@@ -410,29 +523,45 @@ break; // Fim do 'case cadastro_usuario'
     </form>
 </div>
 
-            
-        <div id="cadastro_ong" class="form-container">
-            <form action="autenticacao.php" method="post" class="space-y-6">
-                <input type="hidden" name="form_type" value="cadastro_ong">
-                <input type="text" name="nome_ong" placeholder="Nome Oficial da ONG" required class="input-style w-full">
-                <input type="text" name="cnpj" id="cnpj" placeholder="CNPJ" required class="input-style w-full">
-                <input type="email" name="email_ong" placeholder="E-mail" required class="input-style w-full">
-                <div class="relative">
-                    <input type="password" id="senha_ong" name="senha_ong" placeholder="Senha" required class="input-style w-full pr-12 senha-input">
-                    <i class="fas fa-eye toggle-senha" data-target="senha_ong"></i>
-                </div>
-                <div class="relative">
-                    <input type="password" id="confirma_senha_ong" name="confirma_senha_ong" placeholder="Confirmar a Senha" required class="input-style w-full pr-12 senha-input">
-                    <i class="fas fa-eye toggle-senha" data-target="confirma_senha_ong"></i>
-                </div>
-                <div class="flex justify-center w-60 mx-auto">
-                    <button type="submit" class="adopt-btn">
-                        <div class="heart-background">❤</div><span>Cadastrar ONG</span>
-                    </button>
-                </div>
-            </form>
+ 
+<div id="cadastro_ong" class="form-container">
+    <form action="cadastro-ong" method="post" id="form-cadastro-ong" class="space-y-6">
+        <input type="hidden" name="form_type" value="cadastro_ong">
+        <div>
+            <label for="nome_ong" class="sr-only">Nome Oficial da ONG</label> <input type="text" name="nome_ong" id="nome_ong" placeholder="Nome Oficial da ONG" required class="input-style w-full"
+                   value="<?php echo htmlspecialchars($_POST['nome_ong'] ?? ''); ?>">
+            <div id="mensagem-nome_ong" class="mensagem-validacao"></div>
         </div>
+        <div>
+            <label for="cnpj" class="sr-only">CNPJ</label> <input type="text" name="cnpj" id="cnpj" placeholder="CNPJ" required class="input-style w-full"
+                   value="<?php echo htmlspecialchars($_POST['cnpj'] ?? ''); ?>">
+            <div id="mensagem-cnpj" class="mensagem-validacao"></div>
         </div>
+        <div>
+            <label for="email_ong" class="sr-only">E-mail</label> <input type="email" name="email_ong" id="email_ong" placeholder="E-mail" required class="input-style w-full"
+                   value="<?php echo htmlspecialchars($_POST['email_ong'] ?? ''); ?>">
+            <div id="mensagem-email_ong" class="mensagem-validacao"></div>
+        </div>
+        <div>
+            <div class="relative">
+                <label for="senha_ong" class="sr-only">Senha</label> <input type="password" id="senha_ong" name="senha_ong" placeholder="Senha" required class="input-style w-full pr-12 senha-input">
+                <i class="fas fa-eye toggle-senha" data-target="senha_ong"></i>
+            </div>
+            <div id="mensagem-senha_ong" class="mensagem-validacao"></div>
+        </div>
+        <div>
+            <div class="relative">
+                <label for="confirma_senha_ong" class="sr-only">Confirmar a Senha</label> <input type="password" id="confirma_senha_ong" name="confirma_senha_ong" placeholder="Confirmar a Senha" required class="input-style w-full pr-12 senha-input">
+                <i class="fas fa-eye toggle-senha" data-target="confirma_senha_ong"></i>
+            </div>
+            <div id="mensagem-confirma_senha_ong" class="mensagem-validacao"></div>
+        </div>
+        <div class="flex justify-center w-55 mx-auto">
+            <button type="submit" class="adopt-btn">
+                <div class="heart-background">❤</div><span>Cadastrar ONG</span>
+            </button>
+        </div>
+    </form>
 </div>
 
 <script>
@@ -452,6 +581,6 @@ break; // Fim do 'case cadastro_usuario'
 
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js"></script>
-<script src="assets/js/pages/autenticacao/autenticacao.js"></script>
+<script src="assets/js/pages/autenticacao/autenticacao.js" type="module"></script>
 </body>
 </html>
