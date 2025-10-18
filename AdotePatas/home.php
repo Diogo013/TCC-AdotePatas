@@ -8,7 +8,7 @@ $logado = isset($_SESSION['user_id']);
 if ($logado) {
   $acesso = "pets-adocao.php";
 } else {
-$acesso = "login";; // Se não estiver logado, o botão "Quero Adotar" leva para a tela de login
+$acesso = "login";// Se não estiver logado, o botão "Quero Adotar" leva para a tela de login
 }
 
 // Pega o primeiro nome do usuário se estiver logado

@@ -75,6 +75,9 @@ try {
     // 4. Envio do E-mail com PHPMailer
     // ----------------------------------------------------
 
+    // 2. (Opcional, mas recomendado) Informa o PHP para usar UTF-8 internamente
+    mb_internal_encoding('UTF-8');
+
     $reset_link = "http://localhost/TCC-AdotePatas/AdotePatas/trocar-senha.php?token=" . $token;
 
     $mail = new PHPMailer(true);
@@ -87,8 +90,9 @@ try {
     $mail->Password = 'ynzgbyiqaislwgme'; // Senha de App gerada
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS; // Use SSL
     $mail->Port = 465;
-
+    
     // Destinatário
+    $mail->CharSet = 'UTF-8';
     $mail->setFrom('adotepatastcc@gmail.com', 'Adote Patas - Suporte');
     $mail->addAddress($email);
 
