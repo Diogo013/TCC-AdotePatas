@@ -8,3 +8,22 @@
 html {
     scroll-behavior: smooth; /* Rolagem suave na página inteira */
 }
+
+* {
+  padding: 0;
+  margin: 0;
+  border: none;
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Cor de seleção de texto personalizada */
+::selection {
+  background-color: var(--cor-rosa-escuro);
+  color: var(--cor-branca);
+}
+
+img {
+  user-select: none;
+}

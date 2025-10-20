@@ -6,31 +6,14 @@
 @import "./partials/loading-index.css";
 @import "../../global/global.css";
 
-* {
-  padding: 0;
-  margin: 0;
-  border: none;
-  box-sizing: border-box;
-}
-
-img {
-  user-select: none;
-}
-
 body {
   background-color: var(--cor-laranja-claro) !important;
   overflow-x: hidden;
   padding: 0;
 }
 
-/* Cor de seleção de texto personalizada */
-::selection {
-  background-color: var(--cor-rosa-escuro);
-  color: var(--cor-branca);
-}
-
 .navbar {
-  margin-bottom: -160px;
+ margin-bottom: -165px;
   background: transparent;
   padding: 0.5rem 1rem;
   transition: all 0.3s ease;
@@ -44,16 +27,6 @@ body {
   height: clamp(60px, 10vw, 80px);
   object-fit: contain;
   user-select: none;
-}
-
-.navbar-scrolled {
-  background-color: var(--cor-branca);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  padding: 0.2rem 0;
-}
-
-.navbar-scrolled .navbar-logo {
-  width: clamp(55px, 10vw, 70px);
 }
 
 .navbar-nav {
@@ -198,15 +171,14 @@ body {
   display: flex;
   width: 100%;
   min-height: 100vh;
-  background-image: url("../../../../images/index/fundo-header.svg");
+  background-image: url("../../../../images/index/fundo-header.jpg");
   background-size: cover;
-  background-position: center;
+  background-position: right bottom; /* Mude de 'center' para 'right bottom' */
   background-repeat: no-repeat;
   align-items: center;
-  padding-top: 140px;
-  padding-bottom: 2rem;
+  margin-bottom:  -5rem;
+  margin-top: 50px;
 }
-
 .hero .row {
   position: relative;
 }
@@ -230,77 +202,11 @@ body {
 
 .hero-text-content p {
   font-family: "Poppins", sans-serif;
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   line-height: 1.3;
   color: var(--cor-cinza);
   opacity: 0.7;
   max-width: 600px;
-  margin-bottom: 1rem;
-}
-
-.hero-image-container img {
-  position: absolute;
-  right: 0;
-  bottom: -40px;
-  width: 650px;
-  max-width: none;
-  z-index: 10;
-  bottom: -160px;
-  right: -16%;
-  width: 110%;
-  max-width: 1200px;
-}
-
-@media (max-width: 2000px) {
-  .hero-image-container img {
-    bottom: -210px;
-    right: -30%;
-    width: 140%;
-  }
-}
-
-@media (max-width: 1900px) {
-  .hero-image-container img {
-    bottom: -210px;
-    right: -30%;
-    width: 140%;
-  }
-}
-@media (max-width: 1800px) {
-  .hero-image-container img {
-    bottom: -210px;
-    right: -30%;
-    width: 140%;
-  }
-}
-@media (max-width: 1700px) {
-  .hero-image-container img {
-    bottom: -210px;
-    right: -30%;
-    width: 140%;
-  }
-}
-
-@media (max-width: 1600px) {
-  .hero-image-container img {
-    bottom: -220px;
-    right: -20%;
-    width: 130%;
-  }
-}
-@media (max-width: 1500px) {
-  .hero-image-container img {
-    bottom: -230px;
-    right: -10%;
-    width: 125%;
-  }
-}
-@media (max-width: 1400px) {
-  .hero-image-container img {
-    bottom: -170px;
-    right: -14%;
-    width: 110%;
-  }
 }
 
 .image-background::before {
@@ -316,6 +222,22 @@ body {
   background-repeat: no-repeat;
   opacity: 1;
   z-index: -5;
+}
+
+/* No seu index.css, adicione: */
+.hero {
+  position: relative;
+  z-index: 2;
+}
+
+.image-background {
+  position: relative;
+  z-index: 1;
+}
+
+.cards-section {
+  position: relative;
+  z-index: 2;
 }
 
 /* ==========================================================================
@@ -727,6 +649,9 @@ span.destaque-recomeco {
 }
 
 @media (max-width: 991.98px) {
+    .navbar{
+    margin-bottom: -195px !important;
+  }
   .footer-column {
     min-height: auto;
     margin-bottom: 2rem;
@@ -778,11 +703,11 @@ span.destaque-recomeco {
    MEDIA QUERIES - Estilos Responsivos
    ========================================================================== */
 
-@media (min-width: 1500px) {
-  .navbar {
-    margin-bottom: -180px;
-  }
-}
+   @media (max-width: 1500px){
+    .hero{
+      padding: -20rem;
+    }
+   }
 
 @media (min-width: 992px) {
   .hero {

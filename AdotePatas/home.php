@@ -101,12 +101,11 @@ if ($logado && isset($_SESSION['nome'])) {
 
 
 
-  <main class="hero">
-    <div class="container">
+ <main class="hero">
+    <div class="container" style="margin-top: 5rem;">
       <div class="row align-items-center">
 
-        <div class="col-lg-6 order-1">
-          <div class="hero-text-content">
+        <div class="col-lg-6 order-1"> <div class="hero-text-content">
             <h1 class="adote-patas">Adote Patas</h1>
             <h2 class="adote-vidas">Adote Vidas</h2>
             <p>
@@ -114,13 +113,11 @@ if ($logado && isset($_SESSION['nome'])) {
               felicidade. Mais do que uma escolha, a adoção é amor e compromisso.
             </p>
           </div>
-        </div>
 
-        <div class="col-lg-6 order-3">
           <div class="btn-container">
             <a href="<?php
-                echo  $acesso
-                ?>">
+                  echo  $acesso
+                  ?>">
               <button class="adopt-btn" id="adoptBtn">
                 <div class="heart-background" style="user-select: none;">❤</div>
                 <span>Quero adotar</span>
@@ -128,16 +125,8 @@ if ($logado && isset($_SESSION['nome'])) {
             </a>
             <div class="paw-prints" id="pawPrints"></div>
           </div>
-        </div>
 
-        <div class="col-lg-6 order-2">
-          <div class="hero-image-container">
-            <img src="./images/index/cabeca-cachorro.png" style="user-select: none;"
-              alt="Cabeça de um cachorro sorrindo, com fundo de aquarela rosa e laranja." class="img-fluid">
-          </div>
-        </div>
-
-      </div>
+        </div> </div>
     </div>
   </main>
 
