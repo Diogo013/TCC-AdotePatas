@@ -464,12 +464,12 @@ body {
 
 /* O conteúdo visual do card (a imagem, borda, etc.) */
 .card-item-deck .card-content {
-  width: 100%;
-  height: 100%;
+  width: 90%;
+  height: 90%;
   border-radius: 12px;
   background-size: cover;
   background-position: center;
-  border: solid 10px var(--cor-rosa-escuro);
+  border: solid 10px var(--cor-rosa-claro);
   box-shadow: rgba(0, 0, 0, 0.15) 0px 8px 20px -3px;
 
   /* Rotação única e "permanente" de cada card */

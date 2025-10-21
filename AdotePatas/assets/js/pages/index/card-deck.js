@@ -18,6 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
    * Função principal que atualiza a aparência de todos os cards
    * com base no card ativo e na interação do usuário.
    */
+  // ...existing code...
   function updateCards(isSnappingBack = false) {
     cards.forEach((card, i) => {
       const pos = i - activeIndex;
@@ -40,9 +41,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (pos > 0) {
         // cards à direita do ativo: empilhamento com deslocamento positivo
-        card.style.setProperty("--x-offset", `calc(${pos * 15}% + ${currentDragX}px)`);
+        card.style.setProperty("--x-offset", `calc(${pos * 1}% + ${currentDragX}px)`);
         card.style.setProperty("--y-offset", `${pos * 1}px`);
-        card.style.setProperty("--rotation", `${pos * 10}deg`);
+        card.style.setProperty("--rotation", `${pos * 20}deg`);
       } else {
         // cards à esquerda (ou o ativo): menor deslocamento
         card.style.setProperty("--x-offset", `calc(${pos * 10}% + ${currentDragX}px)`);
@@ -55,6 +56,12 @@ document.addEventListener("DOMContentLoaded", () => {
           // rotação baseada na posição relativa (pos é negativo para a esquerda)
           card.style.setProperty("--rotation", `${pos * -20}deg`);
         }
+      }
+
+      // Override: deixa o ÚLTIMO card (último do array) sem inclinação (0deg)
+      if (i === cards.length - 1) {
+        card.style.setProperty("--rotation", "0deg");
+        card.style.setProperty("--y-offset", "-20px")
       }
     });
         console.log(cards);
