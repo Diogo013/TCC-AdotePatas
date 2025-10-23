@@ -1,0 +1,173 @@
+/* GLOBAL*/
+@import "../../global/global.css";
+
+body {
+    font-family: "Poppins", sans-serif;
+    line-height: 1.5;
+    /* Melhoria de Performance: 
+      Definir a cor de fundo aqui evita um "flash" de tela branca 
+      enquanto o global.css é carregado. Use a cor de fundo principal do seu site.
+    */
+    background-color: var(--cor-laranja-claro, #f7f4f2); 
+}
+
+/* Header */
+.main-header .navbar {
+   box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+    /* Recomendação: Usar variáveis CSS globais (do seu variables.css) 
+      para cores, em vez de 'color: var(--cor-vermelho);' que pode não existir.
+      Vou presumir que você tem '--cor-vermelho' definido no seu global.
+    */
+    color: var(--cor-vermelho); 
+}
+
+.main-header .navbar-brand {
+    display: flex;
+    align-items: center;
+}
+
+.main-header .navbar-brand .logo-img {
+    width: 10rem; 
+    height: 5rem;
+    object-fit: contain; /* Evita distorção da logo */
+}
+
+.main-header .nav-link {
+    font-weight: 500;
+    color: var(--cor-cinza-texto);
+    transition: color 0.3s ease;
+}
+
+.main-header .nav-link:hover {
+    color: var(--cor-vermelho); /* Assumindo que esta é sua cor primária */
+}
+
+.main-header .nav-icon {
+    width: 24px;
+    height: 24px;
+}
+
+/* Título principal da seção */
+.titulo-adocao {
+    font-weight: 700;
+    color: var(--cor-cinza-texto);
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Sombra mais suave */
+    text-align: center; /* Centraliza o título */
+}
+
+/* =====================
+    NOVO CARD DE PET
+   ===================== */
+.pet-card {
+  background-color: var(--cor-branca, #ffffff);
+  border-radius: 20px;
+  box-shadow: 0 10px 25px -10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: box-shadow 0.3s ease, transform 0.3s ease; /* Adicionada transição de transform */
+  cursor: pointer;
+  text-align: center;
+}
+
+.pet-card:hover {
+  box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.15);
+  transform: translateY(-5px); /* Efeito "lift" no hover */
+}
+
+/* Área da imagem com recorte */
+.pet-card-img {
+  width: 100%;
+  aspect-ratio: 4 / 3; /* Ajustado para 4/3, mais comum para fotos */
+  position: relative;
+  overflow: hidden;
+}
+
+.pet-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  clip-path: ellipse(100% 95% at 50% 0%);
+  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.pet-card:hover .pet-card-img img {
+  transform: scale(1.08);
+}
+
+/* Corpo do card */
+.pet-card-body {
+  padding: 1rem 1.5rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Centraliza o conteúdo */
+  gap: 0.6rem;
+}
+
+/* Nome do pet */
+.pet-name {
+  font-family: "Poppins", sans-serif;
+  font-weight: 700;
+  font-size: 1.3rem;
+  color: var(--cor-cinza-texto);
+  margin: 0;
+  /* Garante que o nome não quebre o layout e vá para a direita */
+  flex-grow: 1; 
+  text-align: left;
+  padding-left: 10px; /* Alinha melhor o nome */
+}
+
+/* Ícones */
+.pet-gender-female,
+.pet-gender-male,
+.pet-like {
+  font-size: 1.2rem;
+  flex-shrink: 0; /* Impede que os ícones encolham */
+}
+
+.pet-gender-female {
+  /* Recomendação: Usar variáveis globais 
+    Vou supor que você tenha essas variáveis.
+  */
+  color: var(--cor-femea-simbolo); 
+}
+
+.pet-gender-male {
+  color: var(--cor-macho-simbolo); /* Cor placeholder se a variável falhar */
+}
+
+.pet-like {
+  color: var(--cor-vermelho, #9b0000);
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+/* Melhoria de UX: 
+   Microinteração ao clicar/passar o mouse no coração.
+*/
+.pet-like:hover {
+    transform: scale(1.2);
+}
+
+/* Classe de JS para 'favoritado' */
+.pet-like.favorited {
+    font-weight: 900; /* Usa o ícone 'solid' do Font Awesome */
+    color: var(--cor-vermelho, #9b0000);
+}
+
+/* Media Queries para manter a consistência do header */
+@media (min-width: 768px) { /* Tablets e acima */
+    .container {
+        max-width: 960px; 
+    }
+}
+
+@media (min-width: 992px) { /* Desktops e acima */
+    .container {
+        max-width: 1200px;
+    }
+}
+
+@media (min-width: 1200px) { /* Desktops grandes */
+    .container {
+        max-width: 1400px; 
+    }
+}

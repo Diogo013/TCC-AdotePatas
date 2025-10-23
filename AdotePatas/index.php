@@ -244,11 +244,11 @@ if ($logado && isset($_SESSION['nome'])) {
 
   </main>
 
-  <section class="about container mt-5" style="margin-bottom: 3rem;">
-    <h1 class="titulo-about">Como nós surgimos?</h1>
+  <section class="about container mt-5 gap-3" style="margin-bottom: 3rem;">
+    <h1 class="titulo-about" style="margin-bottom: 1rem">Como nós surgimos?</h1>
 
     <div class="row align-items-center" style="margin-bottom: 10rem;">
-      <div class="col-lg-8 col-md-12 mb-4">
+      <div class="col-lg-8 col-md-12 mb-2">
         <div class="about-content">
           <p class="about-text">
             Nosso projeto surgiu do amor pelos animais e do desejo de ajudá-los de forma concreta. Ao percebermos a
@@ -260,7 +260,7 @@ if ($logado && isset($_SESSION['nome'])) {
             responsável, conectando pessoas dispostas a amar com animais que só precisam de uma chance.
           </p>
 
-          <h3 class="conclusao-about m-4">
+          <h3 class="conclusao-about">
             Aqui, cada adoção é celebrada como uma nova história de
             <span class="destaque-amor">AMOR</span>,
             <span class="destaque-confianca">CONFIANÇA</span>
@@ -273,7 +273,7 @@ if ($logado && isset($_SESSION['nome'])) {
       <div class="col-lg-4 col-md-12">
 
         <div class="card-carousel-container">
-          <div class="card-deck">
+          <div class="card-deck ms-5 mb-5">
 
             <div class="card-item-deck">
               <div class="card-content" style="background-image: url(./images/index/cacau.webp);"></div>
