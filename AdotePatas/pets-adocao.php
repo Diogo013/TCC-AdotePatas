@@ -1,14 +1,13 @@
 <?php
-// INICIE A SESSÃO NO TOPO DE TODA PÁGINA QUE PRECISA SABER SE O USUÁRIO ESTÁ LOGADO
 session_start();
+include_once 'conexao.php'; // 1. Inclui a conexão com o banco
 
-// Supondo que, ao fazer login, você define $_SESSION['usuario_id'] ou algo similar.
-$logado = isset($_SESSION['usuario_id']);
-
-
-//if (!$logado){
-//    header("Location: login");
-//}
+// 2. Segurança: Verifica se o usuário está logado
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_tipo'])) {
+    // Se não estiver logado, redireciona para a página de login
+    header("Location: login");
+    exit;
+}
 
 ?>
 <!DOCTYPE html>

@@ -12,6 +12,13 @@ body {
   padding: 0;
 }
 
+.col-3{
+  background-color: #1565c0;
+}
+.col-9{
+  background-color: #6a1b9a;
+}
+
 .navbar {
  margin-bottom: -165px;
   background: transparent;
@@ -81,8 +88,8 @@ body {
 .btn-voltar {
   /* --- Posicionamento --- */
   position: absolute; /* Ou 'fixed' se quiser que ele permaneça mesmo com scroll */
-  top: 2rem; /* 32px do topo */
-  left: 2rem; /* 32px da esquerda */
+  top: 1rem; /* 32px do topo */
+  left: 1rem; /* 32px da esquerda */
   z-index: 100; /* Garante que fique acima de outros elementos */
   display: inline-flex; /* Alinha o ícone e o texto corretamente */
   align-items: center;
@@ -126,4 +133,53 @@ body {
     top: 0;
     left: 0;
   }
+}
+
+/* ==========================================================================
+   ESTILOS DO CARD DE PERFIL (Movidos do PHP)
+   ========================================================================== */
+.profile-card {
+    max-width: 700px;
+    margin: 4rem auto;
+    padding: 2.5rem;
+    background-color: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    border: 1px solid #eee;
+}
+
+.profile-card h1 {
+    border-bottom: 2px solid var(--cor-vermelho-claro); /* Assumindo que você tenha essa variável, se não, use a cor original */
+    padding-bottom: 10px;
+    margin-bottom: 25px;
+    font-weight: bold;
+    color: #444;
+}
+
+.profile-card p {
+    font-size: 1.15rem;
+    margin-bottom: 1.2rem;
+    color: #555;
+}
+
+.profile-card strong {
+    color: #222;
+    min-width: 100px;
+    display: inline-block;
+}
+
+/* Tag para o tipo de usuário */
+.user-type-tag {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-weight: bold;
+    text-transform: capitalize;
+    background-color: #f0e4ff; /* Cor lilás clara */
+    color: #6a1b9a; /* Cor roxa */
+}
+
+.user-type-tag.protetor {
+    background-color: #e3f2fd; /* Cor azul clara */
+    color: #1565c0; /* Cor azul escura */
 }

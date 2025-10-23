@@ -55,73 +55,39 @@ try {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" type="image/png" href="images/global/Logo-AdotePatas.png"/>
+    
     <link rel="stylesheet" href="assets/css/pages/perfil/perfil.css">
 
-    <style>
-        /* Estilos rápidos para a página de perfil */
-        body {
-            background-color: #f9f9f9;
-        }
-        .profile-card {
-            max-width: 700px;
-            margin: 4rem auto;
-            padding: 2.5rem;
-            background-color: #ffffff;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-            border: 1px solid #eee;
-        }
-        .profile-card h1 {
-            border-bottom: 2px solid var(--cor-vermelho-claro);
-            padding-bottom: 10px;
-            margin-bottom: 25px;
-            font-weight: bold;
-            color: #444;
-        }
-        .profile-card p {
-            font-size: 1.15rem;
-            margin-bottom: 1.2rem;
-            color: #555;
-        }
-        .profile-card strong {
-            color: #222;
-            min-width: 100px;
-            display: inline-block;
-        }
-        /* Tag para o tipo de usuário */
-        .user-type-tag {
-            display: inline-block;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-weight: bold;
-            text-transform: capitalize;
-            background-color: #f0e4ff; /* Cor lilás clara */
-            color: #6a1b9a; /* Cor roxa */
-        }
-        .user-type-tag.protetor {
-            background-color: #e3f2fd; /* Cor azul clara */
-            color: #1565c0; /* Cor azul escura */
-        }
-    </style>
 </head>
 <body>
 
-            <a href="./" class="btn-voltar" title="Voltar para a página inicial">
-                <i class="fa-solid fa-arrow-left"></i>
-                <span>Voltar</span>
-            </a>
+    <a href="./" class="btn-voltar" title="Voltar para a página inicial">
+        <i class="fa-solid fa-arrow-left"></i>
+        <span>Voltar</span>
+    </a>
 
-    <header>
-        <nav class="navbar navbar-expand-lg">
-          <div class="container">
-           
+ <div class="row">
+  <div class="col-3">
+    
+    <nav class="navbar navbar-expand-lg mt-5 bg-primary">
+      
+      <div class="container-fluid">
+        
+        <a class="navbar-brand" href="./"> 
+          <img src="./images/global/logo-AdotePatas.png" alt="Logo Adote Patas" class="navbar-logo">
+        </a>
 
-            <a class="navbar-brand" href="./"> <img src="./images/global/logo-AdotePatas.png" alt="Logo Adote Patas" class="navbar-logo">
-            </a>
-            <a class="nav-link logout-link" href="sair.php" style="font-size: 1rem; font-weight: bold;">Sair</a>
-          </div>
-        </nav>
-    </header>
+        <div class="foto-de-perfil">
+            <i class="fa-regular fa-circle-user" style="font-size: 3.8rem; color: var(--cor-vermelho)"></i>
+        </div>
+        
+      </div>
+    </nav>
+    
+  </div>
+
+
+    <div class="col-9">
 
     <main class="container">
         <div class="profile-card">
@@ -166,9 +132,19 @@ try {
                 <hr class="my-4">
                 
                 <a href="#" class="btn btn-primary">Editar Perfil</a>
-                <?php endif; ?>
+            <?php endif; ?>
+
+            <a class="nav-link logout-link" href="sair.php" style="font-size: 1rem; font-weight: bold;">Sair</a>
         </div>
+
+
     </main>
+    
+    </div>
+
+  </div>
+
+
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
