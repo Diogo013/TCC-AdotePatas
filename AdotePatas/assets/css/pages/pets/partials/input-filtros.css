@@ -1,0 +1,52 @@
+
+.input-filtros{
+  background-color: var(--cor-laranja-claro-pastel);
+  color:  var(--cor-vermelho-claro);
+  border-radius: 24px;
+  padding: 1rem;
+}
+.input-filtros input{
+  border-radius: 24px;
+  padding: 0.5rem;
+}
+.input-filtros input:focus{
+  border: none;
+  outline: none;
+}
+
+/* Estilização do botão de Filtros - Versão Corrigida */
+.input-filtros .btn-outline-primary {
+    color: var(--cor-laranja-pastel, #dea796); /* Cor do texto padrão (fallback adicionado) */
+    border-color: var(--cor-laranja-pastel, #dea796); /* Cor da borda padrão */
+    background-color: transparent; /* Garante fundo transparente no estado padrão */
+
+    /* Remove o brilho azul (box-shadow) padrão do Bootstrap no foco */
+    --bs-btn-focus-shadow-rgb: none;
+    box-shadow: none !important; /* Força a remoção do shadow */
+
+    /* Transição suave */
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+}
+
+/* Estado Hover (passar o mouse) */
+.input-filtros .btn-outline-primary:hover {
+    background-color: var(--cor-laranja-pastel, #dea796); /* Fundo laranja no hover */
+    border-color: var(--cor-laranja-pastel, #dea796); /* Borda laranja no hover */
+    color: var(--cor-branca, #ffffff); /* Texto branco no hover (fallback adicionado) */
+}
+
+/* Estado Focus (quando selecionado via teclado/clique) */
+.input-filtros .btn-outline-primary:focus {
+    background-color: var(--cor-laranja-pastel, #dea796); /* Fundo laranja no focus */
+    border-color: var(--cor-laranja-pastel, #dea796); /* Borda laranja no focus */
+    color: var(--cor-branca, #ffffff); /* Texto branco no focus */
+    box-shadow: none !important; /* Garante remoção do shadow no foco */
+}
+
+/* Estado Active (quando está sendo clicado) */
+.input-filtros .btn-outline-primary:active {
+    background-color: var(--cor-laranja-pastel, #dea796) !important; /* Fundo laranja no active (important para garantir override) */
+    border-color: var(--cor-laranja-pastel, #dea796) !important; /* Borda laranja no active */
+    color: var(--cor-branca, #ffffff) !important; /* Texto branco no active */
+    box-shadow: none !important; /* Garante remoção do shadow no active */
+}

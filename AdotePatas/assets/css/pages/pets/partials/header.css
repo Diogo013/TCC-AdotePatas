@@ -1,0 +1,32 @@
+
+/* Header */
+.main-header .navbar {
+   box-shadow: rgba(0, 0, 0, 0.08) 0px 10px 36px 0px, rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
+    color: var(--cor-vermelho);
+}
+/* ... (restante dos estilos do header - sem alterações) ... */
+.main-header .navbar-brand {
+    display: flex;
+    align-items: center;
+}
+
+.main-header .navbar-brand .logo-img {
+    width: 10rem;
+    height: 5rem;
+    object-fit: contain;
+}
+
+.main-header .nav-link {
+    font-weight: 500;
+    color: var(--cor-cinza-texto);
+    transition: color 0.3s ease;
+}
+
+.main-header .nav-link:hover {
+    color: var(--cor-vermelho);
+}
+
+.main-header .nav-icon {
+    width: 24px;
+    height: 24px;
+}

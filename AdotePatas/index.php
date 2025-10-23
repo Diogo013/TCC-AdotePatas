@@ -121,7 +121,7 @@ if ($logado && isset($_SESSION['nome'])) {
             <a href="<?php
                   echo  $acesso
                   ?>">
-              <button class="adopt-btn" id="adoptBtn">
+              <button class="adopt-btn mt-4" id="adoptBtn">
                 <div class="heart-background" style="user-select: none;">❤</div>
                 <span>Quero adotar</span>
               </button>

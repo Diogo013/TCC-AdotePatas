@@ -1,99 +1,41 @@
 /* ==========================================================================
    IMPORTS - Carregando todos os arquivos de estilo parciais
    ========================================================================== */
-@import "./partials/botao-patinhas.css";
-@import "./partials/cachorro-andando.css";
-@import "./partials/loading-index.css";
+/* @import "./partials/botao-patinhas.css"; */
+/* @import "./partials/cachorro-andando.css"; */
+/* @import "./partials/loading-index.css"; */
 @import "../../global/global.css";
 
+/* ==========================================================================
+   ESTILOS GLOBAIS DA PÁGINA
+   ========================================================================== */
 body {
   background-color: var(--cor-laranja-claro) !important;
   overflow-x: hidden;
   padding: 0;
 }
 
-.col-3{
-  background-color: #1565c0;
-}
-.col-9{
-  background-color: #6a1b9a;
+/* Garante que o body possa ter scroll se o conteúdo for maior que a tela */
+.profile-body {
+  overflow-y: auto;
 }
 
-.navbar {
- margin-bottom: -165px;
-  background: transparent;
-  padding: 0.5rem 1rem;
-  transition: all 0.3s ease;
-  font-size: 2em;
-  font-weight: bold;
-  z-index: 10;
+/* Limpando as cores de placeholder que você tinha */
+.col-3, .col-9 {
+  background-color: transparent;
 }
-
-.navbar-logo {
-  width: clamp(60px, 10vw, 80px);
-  height: clamp(60px, 10vw, 80px);
-  object-fit: contain;
-  user-select: none;
-}
-
-.navbar-nav {
-  gap: 1.5rem;
-  align-items: center;
-}
-
-.nav-link {
-  font-weight: 800;
-  cursor: pointer;
-  position: relative;
-  padding: 10px 15px;
-  transition: color 0.3s ease;
-  display: flex;
-  align-items: center;
-  font-size: 5rem;
-  white-space: nowrap;
-  border-radius: 4px;
-}
-
-.navlink {
-  color: var(--cor-cinza-texto);
-}
-
-.navlink::after {
-  content: "";
-  position: absolute;
-  bottom: 5px;
-  left: 15px;
-  width: calc(100% - 30px);
-  height: 2px;
-  background: var(--cor-rosa-escuro);
-  transform: scaleX(0);
-  transform-origin: center;
-  transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
-}
-
-.navlink:hover,
-.navlink:focus {
-  color: var(--cor-rosa-escuro) !important;
-}
-
-.navlink:hover::after,
-.navlink:focus::after {
-  transform: scaleX(1);
-}
-
 
 /* ==========================================================================
-   BOTÃO VOLTAR - Estilo e Posicionamento Fixo/Responsivo
+   BOTÃO VOLTAR
    ========================================================================== */
 .btn-voltar {
-  /* --- Posicionamento --- */
-  position: absolute; /* Ou 'fixed' se quiser que ele permaneça mesmo com scroll */
-  top: 1rem; /* 32px do topo */
-  left: 1rem; /* 32px da esquerda */
-  z-index: 100; /* Garante que fique acima de outros elementos */
-  display: inline-flex; /* Alinha o ícone e o texto corretamente */
+  position: absolute; 
+  top: 1rem; 
+  left: 1rem; 
+  z-index: 100; 
+  display: inline-flex; 
   align-items: center;
-  gap: 0.5rem; /* Espaço entre o ícone e o texto */
+  gap: 0.5rem; 
   padding: 0.75rem 1.25rem;
   color: var(--cor-vermelho);
   font-weight: 500;
@@ -106,19 +48,199 @@ body {
   outline-offset: 2px;
 }
 
-/* --- AJUSTES RESPONSIVOS (Mobile First) --- */
+/* ==========================================================================
+   LAYOUT DE ALTURA TOTAL (100vh)
+   ========================================================================== */
 
-/* Telas de tablet e menores */
+/* 1. Define uma altura mínima para a linha que contém o sidebar e o conteúdo.
+      Calculamos 100vh menos o 'margin-top' (mt-5) e 'padding-top' (pt-4) 
+      do .container-fluid */
+.full-height-row {
+  min-height: calc(100vh - 3rem - 1.5rem); /* mt-5 = 3rem, pt-4 = 1.5rem */
+}
+
+/* 2. Faz a coluna do sidebar esticar para preencher a altura da linha */
+.sidebar-wrapper-col {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 3. O wrapper interno cresce para preencher a coluna */
+.sidebar-sticky-wrapper {
+  flex-grow: 1;
+  position: relative; /* Necessário para o 'position: sticky' funcionar */
+}
+
+/* ==========================================================================
+   SIDEBAR DE PERFIL
+   ========================================================================== */
+.profile-sidebar {
+  background-color: var(--cor-branca);
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  position: sticky; /* Faz o sidebar "grudar" */
+  top: 2rem; /* Distância do topo ao "grudar" */
+  
+  /* Garante que o sidebar ocupe o espaço do wrapper */
+  min-height: calc(100% - 2rem); 
+  width: 100%;
+}
+
+.sidebar-header .sidebar-profile-icon {
+  font-size: 5rem; 
+  color: var(--cor-vermelho);
+}
+
+.sidebar-header h5 {
+  color: var(--cor-cinza-texto);
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+
+/* ... (restante dos estilos do sidebar que você já tinha) ... */
+.profile-nav .nav-link {
+  color: var(--cor-cinza-texto);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s ease;
+  margin-bottom: 0.25rem;
+  padding: 0.75rem 1rem;
+}
+
+.profile-nav .nav-link i {
+  font-size: 1.1rem;
+  color: var(--cor-rosa-escuro);
+  transition: color 0.2s ease;
+}
+
+.profile-nav .nav-link:hover {
+  background-color: var(--cor-laranja-claro);
+  color: var(--cor-rosa-escuro);
+}
+
+.profile-nav .nav-link.active {
+  background-color: var(--cor-vermelho);
+  color: var(--cor-branca);
+  font-weight: 600;
+}
+
+.profile-nav .nav-link.active i {
+  color: var(--cor-branca); 
+}
+
+.logout-link-sidebar {
+  color: var(--cor-vermelho) !important;
+}
+
+.logout-link-sidebar i {
+  color: var(--cor-vermelho) !important;
+}
+
+.logout-link-sidebar:hover {
+  background-color: #fcebeb !important; 
+  color: var(--cor-vermelho) !important;
+}
+
+/* ==========================================================================
+   CARD DE CONTEÚDO PRINCIPAL
+   ========================================================================== */
+.profile-card {
+  max-width: 100%; 
+  margin: 0 auto; 
+  padding: 2.5rem;
+  background-color: #ffffff;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  border: 1px solid #eee;
+}
+
+.profile-card h1 {
+  border-bottom: 2px solid var(--cor-rosa-pastel);
+  padding-bottom: 10px;
+  margin-bottom: 25px;
+  font-weight: bold;
+  color: #444;
+}
+
+.profile-card p {
+  font-size: 1.15rem;
+  margin-bottom: 1.2rem;
+  color: #555;
+}
+
+.profile-card strong {
+  color: #222;
+  min-width: 100px;
+  display: inline-block;
+}
+
+/* Estilo para campos quando estão editáveis */
+.form-control-editable {
+  border-color: var(--cor-rosa-escuro);
+  box-shadow: 0 0 0 0.25rem rgba(191, 105, 100, 0.25); /* Sombra de foco */
+}
+
+/* Estilos de validação */
+.form-control.is-invalid {
+  border-color: var(--cor-vermelho);
+  background-image: none; /* Remove o ícone padrão do Bootstrap */
+}
+.form-control.is-valid {
+  border-color: #198754; /* Verde sucesso */
+  background-image: none;
+}
+
+.user-type-tag {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-weight: bold;
+  text-transform: capitalize;
+  background-color: #f0e4ff;
+  color: #6a1b9a;
+}
+
+.user-type-tag.protetor {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+.profile-card .logout-link {
+  display: none;
+}
+
+/* ==========================================================================
+   AJUSTES RESPONSIVOS (Mobile)
+   ========================================================================== */
+@media (max-width: 991.98px) {
+  /* 1. Reseta a altura da linha */
+  .full-height-row {
+    min-height: auto;
+  }
+  
+  /* 2. O sidebar deixa de ser sticky e se comporta como um bloco normal */
+  .profile-sidebar {
+    position: static;
+    min-height: auto;
+    margin-bottom: 2rem; 
+  }
+
+  .profile-card {
+    margin-top: 0; 
+    padding: 1.5rem; 
+  }
+}
+
+/* Media query para o botão voltar */
 @media (max-width: 768px) {
   .btn-voltar {
-    top: 0.1rem; /* Menor distância do topo */
-    left: 1rem; /* Menor distância da esquerda */
+    top: 0.1rem; 
+    left: 1rem; 
     padding: 0.5rem;
     font-size: 0.9rem;
   }
 }
-
-/* Telas de celular (bem pequenas) */
 @media (max-width: 480px) {
   .btn-voltar {
     padding: 0.5rem;
@@ -126,7 +248,6 @@ body {
     left: 0.2rem;
   }
 }
-/* Telas de celular (bem pequenas) */
 @media (max-width: 380px) {
   .btn-voltar {
     padding: 0.25rem;
@@ -135,51 +256,116 @@ body {
   }
 }
 
+
 /* ==========================================================================
-   ESTILOS DO CARD DE PERFIL (Movidos do PHP)
+   TOAST/MODAL DE NOTIFICAÇÃO - Estilos e Animações
    ========================================================================== */
-.profile-card {
-    max-width: 700px;
-    margin: 4rem auto;
-    padding: 2.5rem;
-    background-color: #ffffff;
-    border-radius: 15px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-    border: 1px solid #eee;
+.toast {
+  position: fixed;
+  top: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  margin-top: 1.5rem;
+  min-width: 350px;
+  max-width: 90%;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  font-family: "Poppins", sans-serif;
 }
 
-.profile-card h1 {
-    border-bottom: 2px solid var(--cor-vermelho-claro); /* Assumindo que você tenha essa variável, se não, use a cor original */
-    padding-bottom: 10px;
-    margin-bottom: 25px;
-    font-weight: bold;
-    color: #444;
+.toast.show {
+  opacity: 1;
+  pointer-events: auto;
+  animation: slideIn 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
-.profile-card p {
-    font-size: 1.15rem;
-    margin-bottom: 1.2rem;
-    color: #555;
+.toast.hide {
+  animation: slideOut 0.5s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards;
 }
 
-.profile-card strong {
-    color: #222;
-    min-width: 100px;
-    display: inline-block;
+.toast-icon {
+  flex-shrink: 0;
+  width: 110px;
+  height: 110px;
+  margin-right: 1rem;
 }
 
-/* Tag para o tipo de usuário */
-.user-type-tag {
-    display: inline-block;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-weight: bold;
-    text-transform: capitalize;
-    background-color: #f0e4ff; /* Cor lilás clara */
-    color: #6a1b9a; /* Cor roxa */
+.toast-content {
+  flex-grow: 1;
 }
 
-.user-type-tag.protetor {
-    background-color: #e3f2fd; /* Cor azul clara */
-    color: #1565c0; /* Cor azul escura */
+.toast-message {
+  margin: 0;
+  font-weight: 500;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+/* --- Cores por tipo --- */
+.toast--success {
+  background-color: #d1fae5; /* Verde claro */
+  color: #065f46; /* Verde escuro */
+}
+.toast--warning,
+.toast--danger {
+  background-color: #fee2e2; /* Vermelho claro */
+  color: #991b1b; /* Vermelho escuro */
+}
+
+/* --- Barra de Progresso --- */
+.toast-progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 5px;
+}
+.toast--success .toast-progress-bar {
+  background-color: #34d399;
+}
+.toast--warning .toast-progress-bar,
+.toast--danger .toast-progress-bar {
+  background-color: #f87171;
+}
+
+.toast.show .toast-progress-bar {
+  animation: shrink 5s linear forwards;
+}
+
+/* --- Animações --- */
+@keyframes slideIn {
+  from {
+    top: -100px;
+    opacity: 0;
+  }
+  to {
+    top: 2rem;
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    top: 2rem;
+    opacity: 1;
+  }
+  to {
+    top: -100px;
+    opacity: 0;
+  }
+}
+
+@keyframes shrink {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
 }
