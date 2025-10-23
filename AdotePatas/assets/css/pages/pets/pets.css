@@ -4,32 +4,24 @@
 body {
     font-family: "Poppins", sans-serif;
     line-height: 1.5;
-    /* Melhoria de Performance: 
-      Definir a cor de fundo aqui evita um "flash" de tela branca 
-      enquanto o global.css é carregado. Use a cor de fundo principal do seu site.
-    */
-    background-color: var(--cor-laranja-claro, #f7f4f2); 
+    background-color: var(--cor-laranja-claro, #f7f4f2);
 }
 
 /* Header */
 .main-header .navbar {
    box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
-    /* Recomendação: Usar variáveis CSS globais (do seu variables.css) 
-      para cores, em vez de 'color: var(--cor-vermelho);' que pode não existir.
-      Vou presumir que você tem '--cor-vermelho' definido no seu global.
-    */
-    color: var(--cor-vermelho); 
+    color: var(--cor-vermelho);
 }
-
+/* ... (restante dos estilos do header - sem alterações) ... */
 .main-header .navbar-brand {
     display: flex;
     align-items: center;
 }
 
 .main-header .navbar-brand .logo-img {
-    width: 10rem; 
+    width: 10rem;
     height: 5rem;
-    object-fit: contain; /* Evita distorção da logo */
+    object-fit: contain;
 }
 
 .main-header .nav-link {
@@ -39,7 +31,7 @@ body {
 }
 
 .main-header .nav-link:hover {
-    color: var(--cor-vermelho); /* Assumindo que esta é sua cor primária */
+    color: var(--cor-vermelho);
 }
 
 .main-header .nav-icon {
@@ -51,32 +43,87 @@ body {
 .titulo-adocao {
     font-weight: 700;
     color: var(--cor-cinza-texto);
-    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Sombra mais suave */
-    text-align: center; /* Centraliza o título */
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+
+.input-filtros{
+  background-color: var(--cor-laranja-claro-pastel);
+  color:  var(--cor-vermelho-claro);
+  border-radius: 24px;
+  padding: 1rem;
+}
+.input-filtros input{
+  border-radius: 24px;
+  padding: 0.5rem;
+}
+.input-filtros input:focus{
+  border: none;
+  outline: none;
+}
+
+/* Estilização do botão de Filtros - Versão Corrigida */
+.input-filtros .btn-outline-primary {
+    color: var(--cor-laranja-pastel, #dea796); /* Cor do texto padrão (fallback adicionado) */
+    border-color: var(--cor-laranja-pastel, #dea796); /* Cor da borda padrão */
+    background-color: transparent; /* Garante fundo transparente no estado padrão */
+
+    /* Remove o brilho azul (box-shadow) padrão do Bootstrap no foco */
+    --bs-btn-focus-shadow-rgb: none;
+    box-shadow: none !important; /* Força a remoção do shadow */
+
+    /* Transição suave */
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+}
+
+/* Estado Hover (passar o mouse) */
+.input-filtros .btn-outline-primary:hover {
+    background-color: var(--cor-laranja-pastel, #dea796); /* Fundo laranja no hover */
+    border-color: var(--cor-laranja-pastel, #dea796); /* Borda laranja no hover */
+    color: var(--cor-branca, #ffffff); /* Texto branco no hover (fallback adicionado) */
+}
+
+/* Estado Focus (quando selecionado via teclado/clique) */
+.input-filtros .btn-outline-primary:focus {
+    background-color: var(--cor-laranja-pastel, #dea796); /* Fundo laranja no focus */
+    border-color: var(--cor-laranja-pastel, #dea796); /* Borda laranja no focus */
+    color: var(--cor-branca, #ffffff); /* Texto branco no focus */
+    box-shadow: none !important; /* Garante remoção do shadow no foco */
+}
+
+/* Estado Active (quando está sendo clicado) */
+.input-filtros .btn-outline-primary:active {
+    background-color: var(--cor-laranja-pastel, #dea796) !important; /* Fundo laranja no active (important para garantir override) */
+    border-color: var(--cor-laranja-pastel, #dea796) !important; /* Borda laranja no active */
+    color: var(--cor-branca, #ffffff) !important; /* Texto branco no active */
+    box-shadow: none !important; /* Garante remoção do shadow no active */
 }
 
 /* =====================
-    NOVO CARD DE PET
+    CARD DE PET
    ===================== */
 .pet-card {
   background-color: var(--cor-branca, #ffffff);
   border-radius: 20px;
   box-shadow: 0 10px 25px -10px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  transition: box-shadow 0.3s ease, transform 0.3s ease; /* Adicionada transição de transform */
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
   cursor: pointer;
   text-align: center;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
-
+/* ... (restante dos estilos do pet-card - sem alterações) ... */
 .pet-card:hover {
   box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.15);
-  transform: translateY(-5px); /* Efeito "lift" no hover */
+  transform: translateY(-5px);
 }
 
-/* Área da imagem com recorte */
 .pet-card-img {
   width: 100%;
-  aspect-ratio: 4 / 3; /* Ajustado para 4/3, mais comum para fotos */
+  aspect-ratio: 4 / 3;
   position: relative;
   overflow: hidden;
 }
@@ -94,45 +141,42 @@ body {
   transform: scale(1.08);
 }
 
-/* Corpo do card */
 .pet-card-body {
   padding: 1rem 1.5rem 1.5rem;
   display: flex;
   align-items: center;
-  justify-content: center; /* Centraliza o conteúdo */
+  justify-content: center;
   gap: 0.6rem;
+  flex-grow: 1;
 }
 
-/* Nome do pet */
 .pet-name {
   font-family: "Poppins", sans-serif;
   font-weight: 700;
   font-size: 1.3rem;
   color: var(--cor-cinza-texto);
   margin: 0;
-  /* Garante que o nome não quebre o layout e vá para a direita */
-  flex-grow: 1; 
+  flex-grow: 1;
   text-align: left;
-  padding-left: 10px; /* Alinha melhor o nome */
+  padding-left: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Ícones */
 .pet-gender-female,
 .pet-gender-male,
 .pet-like {
   font-size: 1.2rem;
-  flex-shrink: 0; /* Impede que os ícones encolham */
+  flex-shrink: 0;
 }
 
 .pet-gender-female {
-  /* Recomendação: Usar variáveis globais 
-    Vou supor que você tenha essas variáveis.
-  */
-  color: var(--cor-femea-simbolo); 
+  color: var(--cor-rosa-escuro, #bf6964);
 }
 
 .pet-gender-male {
-  color: var(--cor-macho-simbolo); /* Cor placeholder se a variável falhar */
+  color: var(--cor-macho-simbolo, #007bff);
 }
 
 .pet-like {
@@ -140,34 +184,185 @@ body {
   transition: transform 0.2s ease, color 0.2s ease;
 }
 
-/* Melhoria de UX: 
-   Microinteração ao clicar/passar o mouse no coração.
-*/
 .pet-like:hover {
     transform: scale(1.2);
 }
 
-/* Classe de JS para 'favoritado' */
 .pet-like.favorited {
-    font-weight: 900; /* Usa o ícone 'solid' do Font Awesome */
+    font-weight: 900;
     color: var(--cor-vermelho, #9b0000);
 }
 
-/* Media Queries para manter a consistência do header */
-@media (min-width: 768px) { /* Tablets e acima */
+
+/* ===========================
+    SPINNER EXTERNO
+   =========================== */
+#loadingSpinner {
+    color: var(--cor-vermelho, #9b0000); /* Cor do spinner */
+    /* Ajuste o tamanho se necessário */
+    width: 2rem;
+    height: 2rem;
+}
+
+
+/* ==========================================================
+    ESTILOS DO BOTÃO "VER MAIS/MENOS" (botao-patinhas.css)
+   ========================================================== */
+.btn-container {
+  position: relative;
+  display: inline-block; /* Importante para que o text-center funcione */
+}
+
+.adopt-btn {
+  position: relative; /* Essencial para o posicionamento dos filhos */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 3rem; /* Padding para dar tamanho, mais flexível que width/height */
+  background-color: #b92b2b; /* Um vermelho mais próximo da imagem */
+  color: #f0e9e9;
+  border: none; /* Remover borda padrão do button */
+  border-radius: 16px;
+  font-family: "Poppins", sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.3rem, 4vw, 1.8rem); /* Ajustado para caber melhor */
+  text-transform: none; /* Remove o uppercase */
+  cursor: pointer;
+  overflow: hidden; /* Garante que nada vaze das bordas arredondadas */
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+
+  /* Sombra principal do botão para dar o efeito de flutuação */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.19);
+}
+
+/* O texto do botão com efeito 3D */
+.adopt-btn span {
+  position: relative;
+  z-index: 2; /* O texto fica ACIMA do coração */
+  /* Sombra do texto para dar profundidade e destacá-lo */
+  text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* O coração com efeito de baixo-relevo (inset) */
+.heart-background {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1; /* Fica entre o fundo do botão e o texto */
+  font-size: 4.2rem; /* Menor */
+  line-height: 1;
+  color: #a82626; /* Cor base do coração, um pouco mais escura que o botão */
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3),
+    -1px -1px 2px rgba(255, 255, 255, 0.05);
+}
+
+/* Efeitos de Interação */
+.adopt-btn:hover:not(:disabled) { /* Não aplica hover quando desabilitado */
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25), 0 10px 25px rgba(0, 0, 0, 0.22);
+}
+
+.adopt-btn:active:not(:disabled) { /* Não aplica active quando desabilitado */
+  transform: translateY(1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.adopt-btn:focus-visible {
+  outline: 3px solid var(--cor-rosa-pastel, #ffc2c2); /* Adicionado fallback */
+  outline-offset: 3px;
+}
+
+/* Ajustes para o estado desabilitado durante o loading */
+.adopt-btn:disabled {
+    cursor: wait; /* Muda o cursor para indicar espera */
+    opacity: 0.7; /* Levemente transparente */
+}
+
+
+/* Sobrescreve a regra anterior para .heart-background para ser mais específico */
+.adopt-btn .heart-background {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  margin-top: 2px;
+  font-size: 4.5rem;
+  line-height: 1;
+  color: #a82626;
+  text-shadow: 1px 2px 2px rgba(255, 255, 255, 0.986),
+    -2px -2px 3px rgba(0, 0, 0, 0.363);
+}
+
+.adopt-btn span#loadMoreText { /* Específico para o span do texto */
+  position: relative;
+  z-index: 2; /* Garante que o texto fique sobre o coração */
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* ... (Animação pawAnimation e Media Queries do botao-patinhas.css) ... */
+@media (min-width: 1500px) {
+  .btn-container {
+    margin-top: 6rem;
+  }
+}
+
+
+@media (max-width: 992px) {
+  .adopt-btn .heart-background {
+    margin-top: 3px;
+    font-size: 6rem;
+  }
+}
+@media (max-width: 775px) {
+  .adopt-btn .heart-background {
+    margin-top: 3px;
+    font-size: 5.5rem;
+  }
+}
+@media (max-width: 575px) {
+  .adopt-btn .heart-background {
+    margin-top: 3px;
+    font-size: 5rem;
+  }
+  .adopt-btn {
+      padding: 0.8rem 2rem; /* Reduz padding em telas pequenas */
+      font-size: clamp(1.1rem, 3.5vw, 1.5rem); /* Reduz fonte */
+  }
+}
+
+
+/* ===========================
+    MEDIA QUERIES GERAIS
+   =========================== */
+/* ... (Media Queries existentes para .container) ... */
+@media (min-width: 768px) { /* Tablets */
     .container {
-        max-width: 960px; 
+        max-width: 960px;
     }
 }
 
-@media (min-width: 992px) { /* Desktops e acima */
+@media (min-width: 992px) { /* Desktops */
     .container {
         max-width: 1200px;
     }
 }
 
-@media (min-width: 1200px) { /* Desktops grandes */
+@media (min-width: 1200px) { /* Desktops Grandes */
     .container {
-        max-width: 1400px; 
+        max-width: 1400px; /* Ajustado para 4 colunas */
+    }
+}
+
+@media (max-width: 380px) {
+    .pet-name {
+        font-size: 1.1rem;
+        padding-left: 5px;
+    }
+    .pet-card-body {
+        padding: 0.75rem 1rem 1rem;
+        gap: 0.4rem;
     }
 }
