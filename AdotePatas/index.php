@@ -26,6 +26,7 @@ if ($logado && isset($_SESSION['nome'])) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Adote Patas</title>
   <link rel="stylesheet" href="assets/css/pages/index/index.css">
+  <link rel="icon" type="image/png" href="images/global/Logo-AdotePatas.png"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
     integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
     crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -54,10 +55,12 @@ if ($logado && isset($_SESSION['nome'])) {
           <!-- Navbar para usuário LOGADO -->
           <div class="profile-container">
             <a href="#" class="nav-icon"><i class="fas fa-search"></i></a>
-            <div class="profile-info">
-              <i class="fas fa-user profile-icon"></i>
-              <span class="profile-name"><?php echo htmlspecialchars($primeiro_nome); ?></span>
-            </div>
+            <a href="perfil.php" class="profile-info-link" title="Ver meu perfil">
+              <div class="profile-info">
+                <i class="fas fa-user profile-icon"></i>
+                <span class="profile-name"><?php echo htmlspecialchars($primeiro_nome); ?></span>
+              </div>
+            </a>
             <button class="border-0 bg-transparent" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
               <span class="fas fa-bars nav-icon"></span>
             </button>

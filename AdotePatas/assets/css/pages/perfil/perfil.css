@@ -1,0 +1,129 @@
+/* ==========================================================================
+   IMPORTS - Carregando todos os arquivos de estilo parciais
+   ========================================================================== */
+@import "./partials/botao-patinhas.css";
+@import "./partials/cachorro-andando.css";
+@import "./partials/loading-index.css";
+@import "../../global/global.css";
+
+body {
+  background-color: var(--cor-laranja-claro) !important;
+  overflow-x: hidden;
+  padding: 0;
+}
+
+.navbar {
+ margin-bottom: -165px;
+  background: transparent;
+  padding: 0.5rem 1rem;
+  transition: all 0.3s ease;
+  font-size: 2em;
+  font-weight: bold;
+  z-index: 10;
+}
+
+.navbar-logo {
+  width: clamp(60px, 10vw, 80px);
+  height: clamp(60px, 10vw, 80px);
+  object-fit: contain;
+  user-select: none;
+}
+
+.navbar-nav {
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.nav-link {
+  font-weight: 800;
+  cursor: pointer;
+  position: relative;
+  padding: 10px 15px;
+  transition: color 0.3s ease;
+  display: flex;
+  align-items: center;
+  font-size: 5rem;
+  white-space: nowrap;
+  border-radius: 4px;
+}
+
+.navlink {
+  color: var(--cor-cinza-texto);
+}
+
+.navlink::after {
+  content: "";
+  position: absolute;
+  bottom: 5px;
+  left: 15px;
+  width: calc(100% - 30px);
+  height: 2px;
+  background: var(--cor-rosa-escuro);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.navlink:hover,
+.navlink:focus {
+  color: var(--cor-rosa-escuro) !important;
+}
+
+.navlink:hover::after,
+.navlink:focus::after {
+  transform: scaleX(1);
+}
+
+
+/* ==========================================================================
+   BOTÃO VOLTAR - Estilo e Posicionamento Fixo/Responsivo
+   ========================================================================== */
+.btn-voltar {
+  /* --- Posicionamento --- */
+  position: absolute; /* Ou 'fixed' se quiser que ele permaneça mesmo com scroll */
+  top: 2rem; /* 32px do topo */
+  left: 2rem; /* 32px da esquerda */
+  z-index: 100; /* Garante que fique acima de outros elementos */
+  display: inline-flex; /* Alinha o ícone e o texto corretamente */
+  align-items: center;
+  gap: 0.5rem; /* Espaço entre o ícone e o texto */
+  padding: 0.75rem 1.25rem;
+  color: var(--cor-vermelho);
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-voltar:focus-visible {
+  outline: 2px solid var(--cor-branca);
+  outline-offset: 2px;
+}
+
+/* --- AJUSTES RESPONSIVOS (Mobile First) --- */
+
+/* Telas de tablet e menores */
+@media (max-width: 768px) {
+  .btn-voltar {
+    top: 0.1rem; /* Menor distância do topo */
+    left: 1rem; /* Menor distância da esquerda */
+    padding: 0.5rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* Telas de celular (bem pequenas) */
+@media (max-width: 480px) {
+  .btn-voltar {
+    padding: 0.5rem;
+    top: 0.2rem;
+    left: 0.2rem;
+  }
+}
+/* Telas de celular (bem pequenas) */
+@media (max-width: 380px) {
+  .btn-voltar {
+    padding: 0.25rem;
+    top: 0;
+    left: 0;
+  }
+}
