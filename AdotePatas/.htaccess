@@ -4,18 +4,19 @@ RewriteEngine On
 # Impede que os usuários listem o conteúdo das pastas
 Options -Indexes
 
-# [CORREÇÃO 1] Define a base do seu projeto com o case exato da URL
+# [CORREÇÃO 1] Define a base do seu projeto.
+# Parece que 'AdotePatas' é a pasta principal DENTRO de 'TCC-AdotePatas'.
+# Verifique se o acesso no navegador é http://localhost/TCC-AdotePatas/AdotePatas/
+# Se for apenas http://localhost/TCC-AdotePatas/, use /TCC-AdotePatas/
+# Se for apenas http://localhost/AdotePatas/, use /AdotePatas/
+# Vou assumir /TCC-AdotePatas/AdotePatas/ por enquanto. AJUSTE SE NECESSÁRIO.
 RewriteBase /TCC-AdotePatas/AdotePatas/
 
-# --- REGRAS DE SEGURANÇA (Boas práticas, mantenha!) ---
-
-# Bloqueia o acesso direto a arquivos de configuração sensíveis
+# --- REGRAS DE SEGURANÇA (Mantenha como estão) ---
 <Files "conexao.php">
     Order allow,deny
     Deny from all
 </Files>
-
-# Protege o próprio arquivo .htaccess
 <Files .htaccess>
     Order allow,deny
     Deny from all
@@ -23,27 +24,33 @@ RewriteBase /TCC-AdotePatas/AdotePatas/
 
 # --- REGRAS DE URL AMIGÁVEL ---
 
-# Remove "index.php" da URL para manter a URL limpa
+# Remove "index.php" da URL (Mantido)
 RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /index\.php\ HTTP/
-RewriteRule ^index\.php$ / [R=301,L]
+RewriteRule ^index\.php$ / [R=301,L] # Redireciona para a base definida acima
 
-# Redireciona URLs amigáveis para a página de autenticação
+# Redireciona URLs amigáveis para a página de autenticação (Mantido)
 RewriteRule ^login/?$ autenticacao.php?tab=login [NC,L]
 RewriteRule ^cadastro/?$ autenticacao.php?tab=cadastro_usuario [NC,L]
 RewriteRule ^cadastro-ong/?$ autenticacao.php?tab=cadastro_ong [NC,L]
 
-
 # --- REGRAS PRINCIPAIS DE ROTEAMENTO ---
 
-# [CORREÇÃO 2] Se o arquivo ou diretório solicitado EXISTIR, para de reescrever.
-# Isso impede que a regra final capture URLs de arquivos válidos (como index.php, CSS, JS).
+# [CORREÇÃO 2 - ORDEM CRUCIAL] Primeiro, ignora ficheiros e diretórios existentes.
+# Se o pedido for para um ficheiro (-f) OU diretório (-d) que existe fisicamente,
+# o Apache deve servi-lo diretamente e PARAR o processamento das regras (`[L]`).
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
 
-# Se a URL for a raiz, serve o index.php silenciosamente
+# [NOVO] Adiciona regra explícita para servir o index.php se a raiz for solicitada
+# (Isso pode ser necessário dependendo da configuração do Apache/DirectoryIndex)
 RewriteRule ^$ index.php [L]
 
-# [MELHORIA] Se nenhuma das regras acima corresponder, redireciona para a autenticação.
-# Agora, esta regra só será acionada para URLs que realmente não existem.
-RewriteRule . autenticacao.php [L]
+# [CORREÇÃO 3 - REGRA FINAL] Se NENHUMA das regras acima corresponder
+# E NÃO for um ficheiro/diretório existente (devido à condição anterior),
+# ENTÃO reescreve silenciosamente para autenticacao.php.
+# Usamos ^(.*)$ para capturar qualquer coisa e [L] para parar.
+RewriteRule ^(.*)$ autenticacao.php [L]
+
+# A regra antiga 'RewriteRule . autenticacao.php [L]' foi substituída pela acima,
+# que é mais explícita e só é acionada após a verificação de ficheiros/diretórios.

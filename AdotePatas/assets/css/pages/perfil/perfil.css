@@ -175,36 +175,16 @@ body {
   display: inline-block;
 }
 
-/* Estilo para campos quando estão editáveis */
-.form-control-editable {
-  border-color: var(--cor-rosa-escuro);
-  box-shadow: 0 0 0 0.25rem rgba(191, 105, 100, 0.25); /* Sombra de foco */
-}
-
-/* Estilos de validação */
-.form-control.is-invalid {
-  border-color: var(--cor-vermelho);
-  background-image: none; /* Remove o ícone padrão do Bootstrap */
-}
-.form-control.is-valid {
-  border-color: #198754; /* Verde sucesso */
-  background-image: none;
-}
-
-.user-type-tag {
-  display: inline-block;
-  padding: 5px 12px;
-  border-radius: 20px;
-  font-weight: bold;
-  text-transform: capitalize;
-  background-color: #f0e4ff;
-  color: #6a1b9a;
-}
-
-.user-type-tag.protetor {
-  background-color: #e3f2fd;
-  color: #1565c0;
-}
+.feedback-message {
+            width: 100%;
+            margin-top: 0.25rem;
+            font-size: 0.875em;
+            color: var(--bs-form-invalid-color); /* Usa a cor vermelha de erro do Bootstrap */
+            display: none; /* Começa escondido */
+        }
+        .feedback-message.show {
+            display: block; /* Mostra a mensagem quando a classe 'show' é adicionada */
+        }
 
 .profile-card .logout-link {
   display: none;

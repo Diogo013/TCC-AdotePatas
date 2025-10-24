@@ -24,7 +24,7 @@ $user_tipo = $_SESSION['user_tipo'];
 
 $usuario = null;
 
-$erro = '';
+$erro = ''; 
 
 
 
@@ -126,47 +126,50 @@ try {
                             <?php echo htmlspecialchars($erro); ?>
                         </div>
 
-                    <?php elseif ($usuario): ?>
+                   <?php elseif ($usuario): ?>
                         <form id="profileForm" novalidate>
                             <input type="hidden" name="user_id" value="<?php echo $user_id; ?>">
-                             <input type="hidden" name="user_tipo" value="<?php echo $user_tipo; ?>">
+                            <input type="hidden" name="user_tipo" value="<?php echo $user_tipo; ?>">
 
-                             <div class="mb-3">
-                                 <label for="inputNome" class="form-label"><strong>Nome:</strong></label>
-                                 <input type="text" class="form-control" id="inputNome" name="nome"
-                                        value="<?php echo htmlspecialchars($usuario['nome']); ?>" disabled data-profile-field>
-                             </div>
+                            <div class="mb-3">
+                                <label for="inputNome" class="form-label"><strong>Nome:</strong></label>
+                                <input type="text" class="form-control" id="inputNome" name="nome"
+                                       value="<?php echo htmlspecialchars($usuario['nome']); ?>" disabled data-profile-field>
+                                <div id="feedbackNome" class="feedback-message"></div>
+                            </div>
 
-                             <div class="mb-3">
-                                 <label for="inputEmail" class="form-label"><strong>E-mail:</strong></label>
-                                 <input type="email" class="form-control" id="inputEmail" name="email"
-                                        value="<?php echo htmlspecialchars($usuario['email']); ?>" disabled data-profile-field>
-                             </div>
+                            <div class="mb-3">
+                                <label for="inputEmail" class="form-label"><strong>E-mail:</strong></label>
+                                <input type="email" class="form-control" id="inputEmail" name="email"
+                                       value="<?php echo htmlspecialchars($usuario['email']); ?>" disabled data-profile-field>
+                                <div id="feedbackEmail" class="feedback-message"></div>
+                            </div>
 
-                             <?php if ($user_tipo == 'adotante'): ?>
-                                 <div class="mb-3">
-                                     <label for="inputDocumento" class="form-label"><strong>CPF:</strong></label>
-                                     <input type="text" class="form-control" id="inputDocumento" name="documento"
-                                            value="<?php echo htmlspecialchars($usuario['cpf']); ?>" disabled data-profile-field>
-                                 </div>
+                            <?php if ($user_tipo == 'adotante'): ?>
+                                <div class="mb-3">
+                                    <label for="inputDocumento" class="form-label"><strong>CPF:</strong></label>
+                                    <input type="text" class="form-control" id="inputDocumento" name="documento"
+                                           value="<?php echo htmlspecialchars($usuario['cpf']); ?>" disabled data-profile-field>
+                                    <div id="feedbackDocumento" class="feedback-message"></div>
+                                </div>
+                            <?php elseif ($user_tipo == 'protetor'): ?>
+                                <div class="mb-3">
+                                    <label for="inputDocumento" class="form-label"><strong>CNPJ:</strong></label>
+                                    <input type="text" class="form-control" id="inputDocumento" name="documento"
+                                           value="<?php echo htmlspecialchars($usuario['cnpj']); ?>" disabled data-profile-field>
+                                    <div id="feedbackDocumento" class="feedback-message"></div>
+                                </div>
+                            <?php endif; ?>
 
-                             <?php elseif ($user_tipo == 'protetor'): ?>
-                                 <div class="mb-3">
-                                     <label for="inputDocumento" class="form-label"><strong>CNPJ:</strong></label>
-                                     <input type="text" class="form-control" id="inputDocumento" name="documento"
-                                            value="<?php echo htmlspecialchars($usuario['cnpj']); ?>" disabled data-profile-field>
-                                 </div>
-                             <?php endif; ?>
+                            <hr class="my-4">
 
-                             <hr class="my-4">
-                             
-                             <button type="button" id="btnEditar" class="btn btn-primary">
-                                 <i class="fa-solid fa-pencil me-1"></i> Editar Perfil
-                             </button>
-                             
-                             <button type="submit" id="btnSalvar" class="btn btn-success d-none">
-                                 <i class="fa-solid fa-check me-1"></i> Salvar Alterações
-                             </button>
+                            <button type="button" id="btnEditar" class="btn btn-primary">
+                                <i class="fa-solid fa-pencil me-1"></i> Editar Perfil
+                            </button>
+
+                            <button type="submit" id="btnSalvar" class="btn btn-success d-none">
+                                <i class="fa-solid fa-check me-1"></i> Salvar Alterações
+                            </button>
                         </form>
                     <?php endif; ?>
                     
@@ -213,7 +216,7 @@ try {
     
     <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
     
-    <script src="assets/js/pages/perfil/editar.js"></script>
+  <script type="module" src="assets/js/pages/perfil/editar.js"></script>
 
 </body>
 </html>
