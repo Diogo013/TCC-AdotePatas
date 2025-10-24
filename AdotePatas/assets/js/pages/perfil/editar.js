@@ -54,6 +54,7 @@ const showCustomToast = (message, type = 'success') => {
 };
 
 
+// editar.js - Correção na aplicação da máscara
 document.addEventListener('DOMContentLoaded', () => {
     const profileForm = document.getElementById('profileForm');
     if (!profileForm) return;
@@ -61,20 +62,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnEditar = document.getElementById('btnEditar');
     const btnSalvar = document.getElementById('btnSalvar');
     const inputs = profileForm.querySelectorAll('[data-profile-field]');
-    // const alertContainer = document.getElementById('alertContainer'); // Não precisamos mais dele
-
     const inputNome = document.getElementById('inputNome');
     const inputEmail = document.getElementById('inputEmail');
     const inputDocumento = document.getElementById('inputDocumento');
-    
     const userTipo = profileForm.querySelector('input[name="user_tipo"]').value;
 
     // --- FUNÇÕES DE EXIBIÇÃO ---
-    // REMOVIDA: const showAlert = (...) 
-    // AGORA USAREMOS: showCustomToast(message, type)
+    const showCustomToast = (message, type = 'success') => {
+        // ... (mantenha a função showCustomToast como está)
+    };
 
     const setValidationState = (input, isValid) => {
-        if (!input) return; // Segurança caso o input não exista
+        if (!input) return;
         if (isValid) {
             input.classList.remove('is-invalid');
             input.classList.add('is-valid');
@@ -84,13 +83,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- FUNÇÕES DE VALIDAÇÃO --- 
-    // (As funções validarNome, validarEmail, validarCPF, validarCNPJ permanecem as mesmas da resposta anterior)
+    // --- FUNÇÕES DE VALIDAÇÃO ---
     const validarNome = () => {
         const nomeVal = inputNome.value.trim();
         let isValid = true;
         let message = "";
-
+        
         if (nomeVal.length === 0) {
             isValid = false;
             message = "O nome é obrigatório.";
@@ -114,12 +112,13 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const validarCPF = () => {
-        let cpf = inputDocumento.value.replace(/[^\d]/g, ''); // Remove máscara
+        let cpf = inputDocumento.value.replace(/[^\d]/g, '');
         let isValid = true;
         let message = "";
 
         if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) {
             isValid = false;
+            message = "CPF deve conter 11 dígitos.";
         } else {
             let soma = 0;
             for (let i = 0; i < 9; i++) {
@@ -127,8 +126,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             let resto = (soma * 10) % 11;
             if (resto === 10 || resto === 11) resto = 0;
-            if (resto !== parseInt(cpf.charAt(9))) isValid = false;
-
+            if (resto !== parseInt(cpf.charAt(9))) {
+                isValid = false;
+            }
+            
             if (isValid) {
                 soma = 0;
                 for (let i = 0; i < 10; i++) {
@@ -136,7 +137,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 resto = (soma * 10) % 11;
                 if (resto === 10 || resto === 11) resto = 0;
-                if (resto !== parseInt(cpf.charAt(10))) isValid = false;
+                if (resto !== parseInt(cpf.charAt(10))) {
+                    isValid = false;
+                }
             }
         }
         
@@ -146,12 +149,13 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const validarCNPJ = () => {
-        let cnpj = inputDocumento.value.replace(/[^\d]/g, ''); // Remove máscara
+        let cnpj = inputDocumento.value.replace(/[^\d]/g, '');
         let isValid = true;
         let message = "";
 
         if (cnpj.length !== 14 || /^(\d)\1{13}$/.test(cnpj)) {
             isValid = false;
+            message = "CNPJ deve conter 14 dígitos.";
         } else {
             // Validação Dígito 1
             let tamanho = cnpj.length - 2;
@@ -159,12 +163,16 @@ document.addEventListener('DOMContentLoaded', () => {
             let digitos = cnpj.substring(tamanho);
             let soma = 0;
             let pos = tamanho - 7;
+            
             for (let i = tamanho; i >= 1; i--) {
                 soma += parseInt(numeros.charAt(tamanho - i)) * pos--;
                 if (pos < 2) pos = 9;
             }
+            
             let resultado = soma % 11 < 2 ? 0 : 11 - (soma % 11);
-            if (resultado !== parseInt(digitos.charAt(0))) isValid = false;
+            if (resultado !== parseInt(digitos.charAt(0))) {
+                isValid = false;
+            }
 
             // Validação Dígito 2
             if (isValid) {
@@ -172,12 +180,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 numeros = cnpj.substring(0, tamanho);
                 soma = 0;
                 pos = tamanho - 7;
+                
                 for (let i = tamanho; i >= 1; i--) {
                     soma += parseInt(numeros.charAt(tamanho - i)) * pos--;
                     if (pos < 2) pos = 9;
                 }
+                
                 resultado = soma % 11 < 2 ? 0 : 11 - (soma % 11);
-                if (resultado !== parseInt(digitos.charAt(1))) isValid = false;
+                if (resultado !== parseInt(digitos.charAt(1))) {
+                    isValid = false;
+                }
             }
         }
         
@@ -186,23 +198,40 @@ document.addEventListener('DOMContentLoaded', () => {
         return { isValid, message };
     };
 
-    // --- MÁSCARAS ---
-    if (inputDocumento) {
-        if (userTipo === 'adotante') {
-            Inputmask("999.999.999-99").mask(inputDocumento);
-        } else if (userTipo === 'protetor') {
-            Inputmask("99.999.999/9999-99").mask(inputDocumento);
+    // --- CORREÇÃO: Aplicar máscara apenas quando habilitado ---
+    let inputmaskInstance = null;
+
+    const aplicarMascara = () => {
+        if (inputmaskInstance) {
+            inputmaskInstance.remove();
         }
-    }
+        
+        if (userTipo === 'adotante') {
+            inputmaskInstance = Inputmask("999.999.999-99");
+            inputmaskInstance.mask(inputDocumento);
+        } else if (userTipo === 'protetor') {
+            inputmaskInstance = Inputmask("99.999.999/9999-99");
+            inputmaskInstance.mask(inputDocumento);
+        }
+    };
+
+    const removerMascara = () => {
+        if (inputmaskInstance) {
+            inputmaskInstance.remove();
+            inputmaskInstance = null;
+        }
+    };
 
     // --- MODO DE EDIÇÃO ---
     btnEditar.addEventListener('click', () => {
         inputs.forEach(input => {
             input.disabled = false;
             input.classList.add('form-control-editable');
-             // Limpa estados de validação ao entrar no modo de edição
             input.classList.remove('is-valid', 'is-invalid');
         });
+
+        // Aplica máscara apenas quando habilitar edição
+        aplicarMascara();
         
         btnEditar.classList.add('d-none');
         btnSalvar.classList.remove('d-none');
@@ -213,27 +242,32 @@ document.addEventListener('DOMContentLoaded', () => {
     profileForm.addEventListener('submit', (e) => {
         e.preventDefault();
 
+        // Remove máscara temporariamente para validação
+        removerMascara();
+
         // 1. Validações
         const nomeVal = validarNome();
         const emailVal = validarEmail();
         const docVal = (userTipo === 'adotante') ? validarCPF() : validarCNPJ();
 
+        // Reaplica máscara após validação
+        aplicarMascara();
+
         // 2. Verifica se são válidas
         if (!nomeVal.isValid || !emailVal.isValid || !docVal.isValid) {
-            // USA O NOVO TOAST para erro de validação
             showCustomToast(nomeVal.message || emailVal.message || docVal.message, 'danger');
             return;
         }
 
         // 3. Envio AJAX
-        inputs.forEach(input => {
-            input.disabled = true;
-            input.classList.remove('form-control-editable', 'is-valid', 'is-invalid');
-        });
         btnSalvar.disabled = true;
         btnSalvar.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Salvando...';
 
         const formData = new FormData(profileForm);
+        
+        // Remove máscara do documento antes de enviar
+        const documentoValue = inputDocumento.value.replace(/[^\d]/g, '');
+        formData.set('documento', documentoValue);
 
         fetch('atualizar-perfil.php', {
             method: 'POST',
@@ -242,30 +276,37 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // USA O NOVO TOAST para sucesso
                 showCustomToast('Perfil atualizado com sucesso!', 'success');
                 document.querySelector('.sidebar-header h5').textContent = formData.get('nome');
+                
+                // Desabilita campos após sucesso
+                inputs.forEach(input => {
+                    input.disabled = true;
+                    input.classList.remove('form-control-editable', 'is-valid', 'is-invalid');
+                });
+                removerMascara();
+                
+                btnSalvar.classList.add('d-none');
+                btnEditar.classList.remove('d-none');
             } else {
-                // USA O NOVO TOAST para erro do backend
                 showCustomToast(data.message || 'Ocorreu um erro ao atualizar.', 'danger');
                 inputs.forEach(input => {
                     input.disabled = false;
                     input.classList.add('form-control-editable');
                 });
+                aplicarMascara();
             }
         })
         .catch(error => {
             console.error('Erro no fetch:', error);
-            // USA O NOVO TOAST para erro de conexão
             showCustomToast('Erro de conexão. Tente novamente.', 'danger');
             inputs.forEach(input => {
                 input.disabled = false;
                 input.classList.add('form-control-editable');
             });
+            aplicarMascara();
         })
         .finally(() => {
-            btnSalvar.classList.add('d-none');
-            btnEditar.classList.remove('d-none');
             btnSalvar.disabled = false;
             btnSalvar.innerHTML = '<i class="fa-solid fa-check me-1"></i> Salvar Alterações';
         });

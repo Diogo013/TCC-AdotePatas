@@ -16,9 +16,6 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_tipo'])) {
     exit;
 
 }
-
-
-
 // 3. Pega os dados básicos da sessão
 
 $user_id = $_SESSION['user_id'];
@@ -184,7 +181,7 @@ try {
                             <h5 class="mt-2 mb-0">
                                 <?php echo htmlspecialchars($usuario['nome'] ?? 'Usuário'); ?>
                             </h5>
-                            <small class="text-muted">
+                            <small class="text-muted fs-6">
                                 <?php echo htmlspecialchars(ucfirst($user_tipo)); ?>
                             </small>
                         </div>
