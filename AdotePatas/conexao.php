@@ -31,6 +31,3 @@ try {
             <br>Verifique as configurações em 'conexao.php'.
           </div>");
 }
-
-// O objeto $conn está disponível para uso nos outros arquivos.
-?>

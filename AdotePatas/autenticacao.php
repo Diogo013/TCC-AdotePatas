@@ -3,7 +3,6 @@
 include_once 'conexao.php';
 session_start();
 
-
 // --- FUNÇÕES DE VALIDAÇÃO (PHP) ---
 
 // Valida a estrutura do CPF

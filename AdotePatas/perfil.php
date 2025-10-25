@@ -10,11 +10,8 @@ include_once 'conexao.php'; // 1. Inclui a conexão com o banco
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_tipo'])) {
 
     // Se não estiver logado, redireciona para a página de login
-
     header("Location: login");
-
     exit;
-
 }
 // 3. Pega os dados básicos da sessão
 
@@ -134,7 +131,7 @@ try {
                             <div class="mb-3">
                                 <label for="inputNome" class="form-label"><strong>Nome:</strong></label>
                                 <input type="text" class="form-control" id="inputNome" name="nome"
-                                       value="<?php echo htmlspecialchars($usuario['nome']); ?>" disabled data-profile-field>
+                                       value="<?php echo htmlspecialchars($usuario['nome']); ?>"  data-profile-field>
                                 <div id="feedbackNome" class="feedback-message"></div>
                             </div>
 
@@ -163,7 +160,7 @@ try {
 
                             <hr class="my-4">
 
-                            <button type="button" id="btnEditar" class="btn btn-primary">
+                            <button type="button" id="btnEditar" class="btn btn-danger">
                                 <i class="fa-solid fa-pencil me-1"></i> Editar Perfil
                             </button>
 
@@ -214,9 +211,7 @@ try {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/5.0.8/jquery.inputmask.min.js"></script>
     
-    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
-    
-  <script type="module" src="assets/js/pages/perfil/editar.js"></script>
+  <script src="assets/js/pages/perfil/editar.js"  type="module"></script>
 
 </body>
 </html>

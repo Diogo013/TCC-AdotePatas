@@ -163,31 +163,53 @@ try {
     if ($user_tipo == 'adotante') {
         $sql = "UPDATE usuario SET nome = :nome, email = :email, cpf = :cpf WHERE id_usuario = :id";
         $stmt = $conn->prepare($sql);
-        $stmt->execute([
-            ':nome' => $nome,
-            ':email' => $email,
-            ':cpf' => $documento,
-            ':id' => $user_id
-        ]);
+        // Garanta que os parâmetros estão corretos e correspondem aos placeholders
+        $stmt->bindParam(':nome', $nome, PDO::PARAM_STR);
+        $stmt->bindParam(':email', $email, PDO::PARAM_STR);
+        $stmt->bindParam(':cpf', $documento, PDO::PARAM_STR); // $documento contém o CPF limpo
+        $stmt->bindParam(':id', $user_id, PDO::PARAM_INT);
+        $stmt->execute(); // Removido o array daqui, já que usamos bindParam
+
     } elseif ($user_tipo == 'protetor') {
         $sql = "UPDATE ong SET nome = :nome, email = :email, cnpj = :cnpj WHERE id_ong = :id";
         $stmt = $conn->prepare($sql);
-        $stmt->execute([
-            ':nome' => $nome,
-            ':email' => $email,
-            ':cnpj' => $documento,
-            ':id' => $user_id
-        ]);
+         // Garanta que os parâmetros estão corretos e correspondem aos placeholders
+        $stmt->bindParam(':nome', $nome, PDO::PARAM_STR);
+        $stmt->bindParam(':email', $email, PDO::PARAM_STR);
+        $stmt->bindParam(':cnpj', $documento, PDO::PARAM_STR); // $documento contém o CNPJ limpo
+        $stmt->bindParam(':id', $user_id, PDO::PARAM_INT);
+        $stmt->execute(); // Removido o array daqui
     }
-    
-    // Atualiza o nome na sessão
-    $_SESSION['user_nome'] = $nome;
-    $response['success'] = true;
-    $response['message'] = 'Perfil atualizado com sucesso!';
+
+    // Se chegou aqui sem exceção PDO, a atualização ocorreu (ou não afetou linhas se os dados eram iguais)
+    if ($stmt->rowCount() > 0) {
+         // Atualiza o nome na sessão APENAS se a atualização teve efeito
+         $_SESSION['user_nome'] = $nome;
+         $response['success'] = true;
+         $response['message'] = 'Perfil atualizado com sucesso!';
+    } else {
+         // Se rowCount for 0, pode ser que os dados eram idênticos ou o ID não foi encontrado (improvável aqui)
+         $response['success'] = true; // Considera sucesso, pois não houve erro
+         $response['message'] = 'Nenhuma alteração detectada.';
+    }
+
     echo json_encode($response);
-    
+
 } catch (PDOException $e) {
-    error_log("Erro no banco de dados: " . $e->getMessage());
-    $response['message'] = 'Erro no banco de dados. Tente novamente.';
+    error_log("Erro no banco de dados ao atualizar perfil: " . $e->getMessage());
+    // Verifica se é erro de chave duplicada (código 23000)
+    if ($e->getCode() == 23000) {
+         if (strpos($e->getMessage(), 'cpf') !== false) {
+              $response['message'] = 'Erro: Este CPF já está em uso por outra conta.';
+         } elseif (strpos($e->getMessage(), 'email') !== false) {
+               $response['message'] = 'Erro: Este E-mail já está em uso por outra conta.';
+         } elseif (strpos($e->getMessage(), 'cnpj') !== false) {
+             $response['message'] = 'Erro: Este CNPJ já está em uso por outra conta.';
+         } else {
+              $response['message'] = 'Erro ao salvar: Violação de chave única.';
+         }
+    } else {
+        $response['message'] = 'Erro no banco de dados ao salvar. Tente novamente.';
+    }
     echo json_encode($response);
 }
