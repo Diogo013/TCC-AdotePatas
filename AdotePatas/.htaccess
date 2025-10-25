@@ -19,12 +19,17 @@ RewriteBase /TCC-AdotePatas/AdotePatas/
 
 # Remove "index.php" da URL
 RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /index\.php\ HTTP/
-RewriteRule ^index\.php$ ./ [R=301,L] # Redireciona para a base
+RewriteRule ^index.php$ ./ [R=301,L] # Redireciona para a base
 
 # URLs amigáveis para autenticacao.php
 RewriteRule ^login/?$ autenticacao.php?tab=login [NC,L]
 RewriteRule ^cadastro/?$ autenticacao.php?tab=cadastro_usuario [NC,L]
 RewriteRule ^cadastro-ong/?$ autenticacao.php?tab=cadastro_ong [NC,L]
+
+# <!-- REGRA ADICIONADA -->
+# URL amigável para o cadastro de pet
+RewriteRule ^cadastrar-pet/?$ cadastrar-pet.php [NC,L]
+
 
 # --- REGRAS PRINCIPAIS DE ROTEAMENTO ---
 

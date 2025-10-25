@@ -15,7 +15,7 @@ if (session_status() === PHP_SESSION_NONE) {
  * de usuário válido na sessão.
  */
 function requerer_login() {
-    if (empty($_SESSION['id_usuario'])) {
+    if (empty($_SESSION['user_id'])) {
         // Redireciona para a página de login
         header('Location: login.php');
         exit;
@@ -27,7 +27,7 @@ function requerer_login() {
  * Útil para páginas de login e cadastro.
  */
 function impedir_acesso_logado() {
-    if (!empty($_SESSION['id_usuario'])) {
+    if (!empty($_SESSION['user_id'])) {
         // Define o destino padrão, que pode ser ajustado com base no tipo
         $destino = 'home.php'; 
         
