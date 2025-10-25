@@ -83,10 +83,13 @@ if (empty($documento)) {
 
 // Se não há erros de campos obrigatórios, valida o formato
 if (empty($erros)) {
-    // Valida nome
-    if (strpos($nome, ' ') === false) {
-        $erros[] = "Por favor, digite seu nome completo.";
+    // ✅ CORREÇÃO: Valida nome APENAS para adotantes
+    if ($user_tipo == 'adotante') {
+        if (strpos($nome, ' ') === false) {
+            $erros[] = "Por favor, digite seu nome completo.";
+        }
     }
+    // Protetor pode ter nome com uma única palavra - não faz validação adicional
     
     // Valida email
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {

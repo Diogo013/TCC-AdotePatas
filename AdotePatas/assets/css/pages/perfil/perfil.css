@@ -191,6 +191,41 @@ body {
 }
 
 /* ==========================================================================
+   BANNER DO PERFIL
+   ========================================================================== */
+.profile-card .banner {
+  width: 100%;
+  height: 250px; /* << ALTURA DO SEU BANNER (Ajuste este valor como quiser) */
+  
+  overflow: hidden; /* ESSENCIAL: Corta o que sobrar da imagem */
+  border-radius: 15px; /* O 'rounded' que estava na imagem, agora vai no container */
+  margin-bottom: 1.5rem; /* Espaço entre o banner e o título "Meu Perfil" */
+  background-color: var(--cor-laranja-claro); /* Cor de fundo enquanto a imagem carrega */
+}
+
+.profile-card .banner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;   /* MÁGICA 1: Faz a imagem preencher o container, mantendo a proporção e cortando o excesso */
+  object-position: center; /* MÁGICA 2: Garante que o corte seja centralizado */
+}
+
+/* Remove a cor padrão do Bootstrap e aplica a sua variável */
+#btnEditar {
+  background-color: var(--cor-vermelho);
+  border-color: var(--cor-vermelho);
+  color: var(--cor-branca); /* Garante que o texto fique legível */
+}
+
+/* Adiciona um efeito 'hover' sutil escurecendo o botão */
+#btnEditar:hover {
+  background-color: #8a0000; /* Um tom um pouco mais escuro que --cor-vermelho */
+  border-color: #8a0000;
+}
+
+
+
+/* ==========================================================================
    AJUSTES RESPONSIVOS (Mobile)
    ========================================================================== */
 @media (max-width: 991.98px) {

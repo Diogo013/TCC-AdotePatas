@@ -40,8 +40,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const feedbackEmail = document.getElementById('feedbackEmail');
     const feedbackDocumento = document.getElementById('feedbackDocumento');
 
-    // --- FUNÇÃO AUXILIAR PARA EXIBIR/LIMPAR FEEDBACK NAS DIVS ---
-const showFeedback = (element, message) => {
+    const clearAllFeedback = () => {
+    showFeedback(feedbackNome, '', inputNome);
+    showFeedback(feedbackEmail, '', inputEmail);
+    showFeedback(feedbackDocumento, '', inputDocumento);
+    
+    inputs.forEach(input => input.classList.remove('is-invalid'));
+};
+
+   const showFeedback = (element, message, inputElement = null) => {
     if (!element) {
         console.error("Elemento de feedback não encontrado:", element?.id);
         return;
@@ -53,34 +60,24 @@ const showFeedback = (element, message) => {
     // Mostra a div apenas se houver mensagem
     if (message && message.trim() !== "") {
         element.classList.add('show');
+        // Adiciona classe de erro no input correspondente, se fornecido
+        if (inputElement) {
+            inputElement.classList.add('is-invalid');
+        }
     } else {
         element.classList.remove('show');
-    }
-
-    // ✅ Dispara toast se houver erro
-    // Só dispara se alguma das mensagens principais estiver presente
-    if (feedbackNome.textContent || feedbackEmail.textContent || feedbackDocumento.textContent) {
-        showProfileToast('Por favor, corrija os campos indicados.', 'danger');
+        // Remove classe de erro do input correspondente, se fornecido
+        if (inputElement) {
+            inputElement.classList.remove('is-invalid');
+        }
     }
 };
-
-// Limpa todos os feedbacks e erros visuais
-const clearAllFeedback = () => {
-    showFeedback(feedbackNome, '');
-    showFeedback(feedbackEmail, '');
-    showFeedback(feedbackDocumento, '');
-    
-    // Remove classe de erro de todos os inputs (incluindo inputNome)
-    inputs.forEach(input => input.classList.remove('is-invalid'));
-};
-
 
 
 const validarNome = () => {
-    const inputNome = profileForm.querySelector('#inputNome');
-const tipoUsuarioInput = profileForm.querySelector('input[name="user_tipo"]');
-const tipoUsuario = tipoUsuarioInput ? tipoUsuarioInput.value.trim().toLowerCase() : '';
-
+    const inputNome = document.getElementById('inputNome');
+    const tipoUsuarioInput = document.querySelector('input[name="user_tipo"]');
+    const tipoUsuario = tipoUsuarioInput ? tipoUsuarioInput.value.trim().toLowerCase() : '';
     const nomeVal = inputNome ? inputNome.value.trim() : '';
 
     console.log("Tipo de usuário:", tipoUsuario, "| Nome digitado:", `"${nomeVal}"`);
@@ -95,7 +92,7 @@ const tipoUsuario = tipoUsuarioInput ? tipoUsuarioInput.value.trim().toLowerCase
 
     // Se for adotante, exige nome completo
     if (tipoUsuario === 'adotante') {
-        const partes = nomeVal.split(/\s+/);
+        const partes = nomeVal.split(/\s+/).filter(part => part.length > 0);
         if (partes.length < 2) return "Por favor, digite seu nome completo (nome e sobrenome).";
     }
 
@@ -212,30 +209,30 @@ const tipoUsuario = tipoUsuarioInput ? tipoUsuarioInput.value.trim().toLowerCase
 profileForm.addEventListener('submit', (e) => {
     e.preventDefault();
 
-    // 1️⃣ Limpa classes de erro e feedbacks
     clearAllFeedback();
     inputs.forEach(input => input.classList.remove('is-invalid'));
 
     removerMascara(); // Remove máscara antes de validar
 
-    // 2️⃣ Valida campos
     const nomeMsg = validarNome();
     const emailMsg = validarEmail();
     const docMsg = validarDocumento();
 
-    // 3️⃣ Aplica feedback apenas se houver mensagem
-    if (nomeMsg) showFeedback(feedbackNome, nomeMsg);
-    if (emailMsg) showFeedback(feedbackEmail, emailMsg);
-    if (docMsg) showFeedback(feedbackDocumento, docMsg);
+if (nomeMsg) showFeedback(feedbackNome, nomeMsg, inputNome);
+if (emailMsg) showFeedback(feedbackEmail, emailMsg, inputEmail);
+if (docMsg) showFeedback(feedbackDocumento, docMsg, inputDocumento);
 
-    // 4️⃣ Determina se houve erro real
-    const houveErro = nomeMsg || emailMsg || docMsg;
+const houveErro = nomeMsg || emailMsg || docMsg;
 
-    if (houveErro) {
-        showProfileToast('Por favor, corrija os campos indicados.', 'danger');
-        return; // interrompe o submit
+if (houveErro) {
+    showProfileToast('Por favor, corrija os campos indicados.', 'danger');
+    
+    // Reaplica máscara imediatamente em caso de erro
+    if (inputDocumento) {
+        aplicarMascara();
     }
-
+    return; // interrompe o submit
+}
     // 5️⃣ Prepara botão salvar
     btnSalvar.disabled = true;
     btnSalvar.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Salvando...';
