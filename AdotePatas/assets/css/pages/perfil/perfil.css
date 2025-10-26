@@ -380,7 +380,7 @@ body {
 
 .section-title-pets {
     font-size: 2.2rem; /* Título maior */
-    color: var(--cor-dark); /* Cor mais escura para o título */
+    color: var(--cor-branca); /* Cor mais escura para o título */
     font-weight: 700;
 }
 
@@ -402,7 +402,6 @@ body {
 /* Estilos para a seção de "Nenhum Pet Cadastrado" (Refatorado)              */
 /* -------------------------------------------------------------------------- */
 .no-pets-section {
-    background-color: var(--cor-light); /* Uma cor de fundo mais suave ou branco */
     border-radius: 12px; /* Bordas mais arredondadas */
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); /* Sombra mais sutil */
     padding: 40px 30px; /* Aumenta o padding */
@@ -433,7 +432,7 @@ body {
 .no-pets-section .section-description { /* Especificidade para este texto */
     font-size: 1.15rem; /* Tamanho da fonte para a descrição */
     line-height: 1.6;
-    color: var(--cor-secundaria); /* Cor secundária para o texto */
+    color: var(--cor-cinza-texto); /* Cor secundária para o texto */
     max-width: 700px; /* Limita a largura do texto para melhor leitura */
     margin-bottom: 30px !important;
 }
@@ -595,7 +594,21 @@ body {
         padding: 12px 25px;
     }
 }
+.modal-header{
+  display: flex;
+  flex-direction: column !important;
+}
 
+.modal-header i{
+  width: 70px;
+  height: 70px;
+  background-color: var(--cor-vermelho);
+  border-radius: 50%;
+  color: var(--cor-branca);
+  font-size: 1.8rem;
+  padding: 19.5px;
+  margin-top: -70px;
+}
 
 /* ==========================================================================
    TOAST/MODAL DE NOTIFICAÇÃO - Estilos e Animações

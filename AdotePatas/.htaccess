@@ -4,10 +4,11 @@ RewriteEngine On
 # Impede que os usuários listem o conteúdo das pastas
 Options -Indexes
 
-# Define a base do seu projeto (AJUSTE CONFORME NECESSÁRIO!)
+# Define a base do seu projeto
 RewriteBase /TCC-AdotePatas/AdotePatas/
 
 # --- REGRAS DE SEGURANÇA ---
+# Protege arquivos sensíveis de acesso direto
 <Files "conexao.php">
     Require all denied
 </Files>
@@ -15,7 +16,7 @@ RewriteBase /TCC-AdotePatas/AdotePatas/
     Require all denied
 </Files>
 
-# --- REGRAS DE URL AMIGÁVEL ---
+# --- REGRAS DE URL AMIGÁVEL (REGRAS DE "ALIAS") ---
 
 # Remove "index.php" da URL
 RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /index\.php\ HTTP/
@@ -26,14 +27,25 @@ RewriteRule ^login/?$ autenticacao.php?tab=login [NC,L]
 RewriteRule ^cadastro/?$ autenticacao.php?tab=cadastro_usuario [NC,L]
 RewriteRule ^cadastro-ong/?$ autenticacao.php?tab=cadastro_ong [NC,L]
 
-# <!-- REGRA ADICIONADA -->
 # URL amigável para o cadastro de pet
 RewriteRule ^cadastrar-pet/?$ cadastrar-pet.php [NC,L]
 
+# [REGRA AJUSTADA]
+# /pets -> pets-adocao.php
+# Esta regra também vai funcionar para /pets?alguma=coisa
+RewriteRule ^pets/?$ pets-adocao.php [NC,L]
 
-# --- REGRAS PRINCIPAIS DE ROTEAMENTO ---
+# [REGRA AJUSTADA]
+# /perfil -> perfil.php
+# Esta regra captura /perfil e passa automaticamente qualquer
+# query string (como ?page=meus-pets) para o perfil.php.
+RewriteRule ^perfil/?$ perfil.php [NC,L]
 
-# IGNORA ficheiros e diretórios existentes ANTES da regra final
+
+# --- REGRAS PRINCIPAIS DE ROTEAMENTO (Catch-all) ---
+
+# IGNORA requisições que correspondem a arquivos ou diretórios físicos existentes
+# (Ex: /assets/css/style.css, /images/logo.png, etc.)
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
@@ -41,6 +53,6 @@ RewriteRule ^ - [L]
 # Regra para a raiz (serve index.php)
 RewriteRule ^$ index.php [L]
 
-# Regra final: Se não for ficheiro/diretório existente nem URL amigável,
-# redireciona para autenticacao.php (como estava antes)
+# Regra final: Se não for nenhuma das regras acima E não for um arquivo/dir,
+# redireciona para o seu roteador padrão (autenticacao.php)
 RewriteRule . autenticacao.php [L]

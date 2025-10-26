@@ -234,13 +234,13 @@ if ($pagina == 'meus-pets') {
         </div>
 
     <?php elseif (empty($pets)): ?>
-        <div class="no-pets-section d-flex flex-column align-items-center justify-content-center text-center p-4 p-md-5" style="margin-top: -20px;">
+        <div class="no-pets-section d-flex flex-column align-items-center justify-content-center text-center p-4 p-md-5" style="margin-top: -30px;">
             <div class="no-pets-illustration mb-4">
                  <lottie-player src="animações/pets.json" background="transparent" speed="1" style="width: 250px; height: 250px;"
     loop autoplay>
   </lottie-player>
             </div>
-            <h2 class="section-title mb-3">Ainda não tem um pet registrado?</h2>
+            <h2 class="section-title mb-3" style="color: var(--cor-cinza-texto)">Ainda não tem um pet registrado?</h2>
             <p class="section-description mb-4">
                 Que tal adicionar seu Pet e começar a aproveitar todos os benefícios? É rápido e fácil!
             </p>
@@ -331,19 +331,19 @@ if ($pagina == 'meus-pets') {
                         <nav class="nav nav-pills flex-column profile-nav">
                             
                             <a class="nav-link <?php echo ($pagina == 'perfil') ? 'active' : ''; ?>" 
-                               href="perfil.php?page=perfil" 
+                               href="perfil?page=perfil" 
                                <?php echo ($pagina == 'perfil') ? 'aria-current="page"' : ''; ?>>
                                 <i class="fa-regular fa-circle-user fa-fw me-2"></i> Meu Perfil
                             </a>
                             
                             <a class="nav-link <?php echo ($pagina == 'meus-pets') ? 'active' : ''; ?>" 
-                               href="perfil.php?page=meus-pets"
+                               href="perfil?page=meus-pets"
                                <?php echo ($pagina == 'meus-pets') ? 'aria-current="page"' : ''; ?>>
                                 <i class="fa-solid fa-paw fa-fw me-2"></i> Meus Pets
                             </a>
                             
                             <a class="nav-link <?php echo ($pagina == 'pets-curtidos') ? 'active' : ''; ?>" 
-                               href="perfil.php?page=pets-curtidos"
+                               href="perfil?page=pets-curtidos"
                                <?php echo ($pagina == 'pets-curtidos') ? 'aria-current="page"' : ''; ?>>
                                 <i class="fa-regular fa-heart fa-fw me-2"></i> Pets Curtidos
                             </a>
@@ -364,13 +364,12 @@ if ($pagina == 'meus-pets') {
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Exclusão</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
+                    <i class="fa-solid fa-trash"></i>
+                    <h4 class="modal-title mt-3" id="confirmDeleteModalLabel">Confirmar Exclusão</h4>
                     Você tem certeza que deseja excluir este pet?
                     <br>
-                    <strong>Esta ação não pode ser desfeita.</strong>
+                    <strong style="color: var(--cor-vermelho);">Esta ação não pode ser desfeita.</strong>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>

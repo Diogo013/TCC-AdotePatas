@@ -162,7 +162,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['tipo_mensagem'] = 'success';
 
             // Redireciona para o dashboard ou para a página "meus pets"
-            header("Location: index.php"); // posteriormente alterar para "meus-pets.php"
+            header("Location: perfi?page=meus-pets"); // posteriormente alterar para "meus-pets.php"
             exit();
             
         } catch (PDOException $e) {

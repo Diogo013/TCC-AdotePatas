@@ -106,7 +106,7 @@ $pagina = "";
           </li>
         </ul>
 
-            <a href="perfil.php" class="profile-info-link" title="Ver meu perfil">
+            <a href="perfil?page=perfil" class="profile-info-link" title="Ver meu perfil">
               <div class="profile-info">
                 <i class="fa-regular fa-circle-user profile-icon"></i>
                 <!--<span class="profile-name"><?php //echo htmlspecialchars($primeiro_nome); ?></span>!-->
@@ -177,12 +177,14 @@ $pagina = "";
         <div class="row justify-content-center">
 
           <div class="col-4">
-            <div class="card-item">
-              <div class="card-icon">
-                <i class="fa-solid fa-paw"></i>
+            <a href="pets" style="text-decoration: none;">
+              <div class="card-item">
+                <div class="card-icon">
+                  <i class="fa-solid fa-paw"></i>
+                </div>
+                <h3>Adote</h3>
               </div>
-              <h3>Adote</h3>
-            </div>
+            </a>
           </div>
 
           <div class="col-4">
