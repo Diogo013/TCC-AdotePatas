@@ -117,7 +117,7 @@ if ($pagina == 'meus-pets') {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="icon" type="image/png" href="images/global/Logo-AdotePatas.png"/>
-    
+      <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
     <link rel="stylesheet" href="assets/css/pages/perfil/perfil.css">
     <link rel="stylesheet" href="assets/css/global/toast.css">
 </head>
@@ -220,86 +220,82 @@ if ($pagina == 'meus-pets') {
                     case 'meus-pets':
                 ?>
                         <main class="profile-card pets-grid-container">
-                            
-                            <div class="d-flex justify-content-between align-items-center mb-4">
-                                <h1 class="mb-0">Meus Pets</h1>
-                                <a href="cadastrar-pet.php" class="btn btn-danger">
-                                    <i class="fa-solid fa-plus me-1"></i> Cadastrar Pet
-                                </a>
-                            </div>
+    
+    <div class="d-flex justify-content-between align-items-center m-0 header-pets-section" style="border-bottom: 2px solid var(--cor-rosa-pastel); padding-bottom: 10px;">
+        <h1 class="mb-0 border border-0 section-title-pets">Meus Pets</h1>
+        <a href="cadastrar-pet.php" class="btn btn-danger btn-add-pet-header">
+            <i class="fa-solid fa-plus me-1"></i> Cadastrar Pet
+        </a>
+    </div>
 
-                            <?php if (!empty($erro_pets)): ?>
-                                <!-- Mostra erro se a busca falhar -->
-                                <div class="alert alert-danger">
-                                    <?php echo htmlspecialchars($erro_pets); ?>
-                                </div>
+    <?php if (!empty($erro_pets)): ?>
+        <div class="alert alert-danger">
+            <?php echo htmlspecialchars($erro_pets); ?>
+        </div>
 
-                            <?php elseif (empty($pets)): ?>
-                                <!-- Mensagem se o usuário não tiver pets -->
-                                <div class="alert alert-info text-center">
-                                    <i class="fa-solid fa-paw fa-3x mb-3"></i>
-                                    <h5 class="mb-1">Você ainda não cadastrou nenhum pet.</h5>
-                                    <p>Que tal começar agora?</p>
-                                    <a href="cadastrar-pet.php" class="btn btn-primary mt-2">Cadastrar meu primeiro pet</a>
-                                </div>
+    <?php elseif (empty($pets)): ?>
+        <div class="no-pets-section d-flex flex-column align-items-center justify-content-center text-center p-4 p-md-5" style="margin-top: -20px;">
+            <div class="no-pets-illustration mb-4">
+                 <lottie-player src="animações/pets.json" background="transparent" speed="1" style="width: 250px; height: 250px;"
+    loop autoplay>
+  </lottie-player>
+            </div>
+            <h2 class="section-title mb-3">Ainda não tem um pet registrado?</h2>
+            <p class="section-description mb-4">
+                Que tal adicionar seu Pet e começar a aproveitar todos os benefícios? É rápido e fácil!
+            </p>
+            <a href="cadastrar-pet.php" class="btn btn-success btn-lg custom-btn-add-pet">
+                <i class="fas fa-plus-circle me-2"></i> Cadastrar Novo Pet
+            </a>
+            <p class="mt-3 text-muted">
+                <em>Encontre a felicidade em cada patinha cadastrada!</em>
+            </p>
+        </div>
 
-                            <?php else: ?>
-                                <!-- Grid de Pets (Estilo de pets-adocao.php) -->
-                            
-                                <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4" id="petsGrid">
-                                
-                                    <?php foreach ($pets as $pet): ?>
-                                    <div class="col">
-                                        
-                                        <div class="pet-card">
-                                            
-                                            <!-- Imagem -->
-                                            
-                                            <div class="pet-card-img">
-                                                <img src="<?php echo htmlspecialchars($pet['foto'] ?? 'images/global/placeholder-pet.png'); ?>" 
-                                                     alt="Foto de <?php echo htmlspecialchars($pet['nome']); ?>"
-                                                     onerror="this.src='images/perfil/teste.jpg';"> <!-- Fallback de imagem -->
-                                            </div>
+    <?php else: ?>
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4" id="petsGrid">
+            <?php foreach ($pets as $pet): ?>
+            <div class="col">
+                <div class="pet-card">
+                    <div class="pet-card-img">
+                        <img src="<?php echo htmlspecialchars($pet['foto'] ?? 'images/global/placeholder-pet.png'); ?>" 
+                             alt="Foto de <?php echo htmlspecialchars($pet['nome']); ?>"
+                             onerror="this.src='images/perfil/teste.jpg';"> </div>
 
-                                            <!-- Corpo do Card -->
-                                            
-                                            <div class="pet-card-body">
-                                                <!-- Nome -->
-                                                <h2 class="pet-name"><?php echo htmlspecialchars($pet['nome']); ?></h2>
-                                                
-                                               
-                                                <?php if (!empty($pet['sexo'])): ?>
-                                                    <?php if ($pet['sexo'] == 'femea'): ?>
-                                                        
-                                                        <i class="fa-solid fa-venus pet-gender-female" aria-label="Fêmea" title="Fêmea"></i>
-                                                    <?php else: // 'macho' ?>
-                                                        
-                                                        <i class="fa-solid fa-mars pet-gender-male" aria-label="Macho" title="Macho"></i>
-                                                    <?php endif; ?>
-                                                <?php endif; ?>
-                                            </div>
-
-                                            <!-- (BLOCO NOVO) Botões de Ação -->
-                                            <div class="pet-card-actions">
-                                                <span class="badge bg-<?php echo ($pet['status_disponibilidade'] == 'disponivel') ? 'success' : 'secondary'; ?> me-auto">
-                                                    <?php echo ucfirst($pet['status_disponibilidade']); ?>
-                                                </span>
-                                                <a href="editar-pet.php?id=<?php echo $pet['id_pet']; ?>" class="btn btn-sm btn-outline-primary">
-                                                    <i class="fa-solid fa-pencil"></i>
-                                                </a>
-                                                <a href="excluir-pet.php?id=<?php echo $pet['id_pet']; ?>" class="btn btn-sm btn-outline-danger btn-excluir-pet" title="Excluir Pet">
-                                                    <i class="fa-solid fa-trash"></i>
-                                                </a>
-                                            </div>
-
-                                        </div>
-                                    </div>
-                                    <?php endforeach; ?>
-
-                                </div>
+                    <div class="pet-card-body">
+                        <div class="d-flex align-items-center mb-2">
+                            <h2 class="pet-name me-2 mb-0"><?php echo htmlspecialchars($pet['nome']); ?></h2>
+                            <?php if (!empty($pet['sexo'])): ?>
+                                <?php if ($pet['sexo'] == 'femea'): ?>
+                                    <i class="fa-solid fa-venus pet-gender-female" aria-label="Fêmea" title="Fêmea"></i>
+                                <?php else: // 'macho' ?>
+                                    <i class="fa-solid fa-mars pet-gender-male" aria-label="Macho" title="Macho"></i>
+                                <?php endif; ?>
                             <?php endif; ?>
+                        </div>
+                        <p class="pet-info text-muted small"><?php echo htmlspecialchars($pet['raca'] ?? 'Raça Desconhecida'); ?> - <?php echo htmlspecialchars($pet['idade'] ?? 'Idade Desconhecida'); ?></p>
+                    </div>
 
-                        </main>
+                    <div class="pet-card-actions d-flex justify-content-between align-items-center p-3 border-top">
+                        <span class="badge bg-<?php echo ($pet['status_disponibilidade'] == 'disponivel') ? 'success' : 'secondary'; ?> status-badge">
+                            <?php echo ucfirst($pet['status_disponibilidade']); ?>
+                        </span>
+                        <div class="action-buttons">
+                            <a href="editar-pet.php?id=<?php echo $pet['id_pet']; ?>" class="btn btn-sm btn-outline-primary me-2" title="Editar Pet">
+                                <i class="fa-solid fa-pencil"></i>
+                            </a>
+                            <a href="excluir-pet.php?id=<?php echo $pet['id_pet']; ?>" class="btn btn-sm btn-outline-danger btn-excluir-pet" title="Excluir Pet">
+                                <i class="fa-solid fa-trash"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
+
+</main>
                 <?php
                     break; // Fim do 'case meus-pets'
 

@@ -3,45 +3,50 @@ session_start();
 
 include_once 'conexao.php'; // 1. Inclui a conexão com o banco
 
-// 3. Pega os dados básicos da sessão
-$user_id = $_SESSION['user_id'];
-$user_tipo = $_SESSION['user_tipo'];
+// Verifica se o usuário está logado ANTES de tentar acessar as variáveis de sessão
+$logado = isset($_SESSION['user_id']);
 $usuario = null;
 $erro = '';
+$user_id = null;
+$user_tipo = null;
 
-// 4. Busca os dados completos do usuário no banco (Isso só executa UMA VEZ)
-try {
-    if ($user_tipo == 'adotante') {
-        $sql = "SELECT nome, email, cpf FROM usuario WHERE id_usuario = :id LIMIT 1";
-    } elseif ($user_tipo == 'protetor') {
-        $sql = "SELECT nome, email, cnpj FROM ong WHERE id_ong = :id LIMIT 1";
-    } else {
-        $erro = "Tipo de usuário inválido.";
-    }
+// SÓ busca dados do usuário se estiver logado
+if ($logado) {
+    // 3. Pega os dados básicos da sessão (agora com segurança)
+    $user_id = $_SESSION['user_id'];
+    $user_tipo = $_SESSION['user_tipo'];
 
-    if (empty($erro)) {
-        $stmt = $conn->prepare($sql);
-        $stmt->bindParam(':id', $user_id, PDO::PARAM_INT);
-        $stmt->execute();
-        $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if (!$usuario) {
-            $erro = "Usuário não encontrado no banco de dados.";
+    // 4. Busca os dados completos do usuário no banco
+    try {
+        if ($user_tipo == 'adotante') {
+            $sql = "SELECT nome, email, cpf FROM usuario WHERE id_usuario = :id LIMIT 1";
+        } elseif ($user_tipo == 'protetor') {
+            $sql = "SELECT nome, email, cnpj FROM ong WHERE id_ong = :id LIMIT 1";
+        } else {
+            $erro = "Tipo de usuário inválido.";
         }
-    }
-} catch (PDOException $e) {
-    $erro = "Ocorreu um erro ao buscar seus dados. Tente novamente.";
-    // Para debug: error_log("Erro no perfil.php: " . $e->getMessage());
-}
 
-// Verifica se o usuário está logado
-$logado = isset($_SESSION['user_id']);
+        if (empty($erro)) {
+            $stmt = $conn->prepare($sql);
+            $stmt->bindParam(':id', $user_id, PDO::PARAM_INT);
+            $stmt->execute();
+            $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$usuario) {
+                $erro = "Usuário não encontrado no banco de dados.";
+            }
+        }
+    } catch (PDOException $e) {
+        $erro = "Ocorreu um erro ao buscar seus dados. Tente novamente.";
+        // Para debug: error_log("Erro no perfil.php: " . $e->getMessage());
+    }
+}
 
 // Define o link do botão principal com base no status de login
 if ($logado) {
   $acesso = "pets-adocao.php";
 } else {
-$acesso = "login";// Se não estiver logado, o botão "Quero Adotar" leva para a tela de login
+  $acesso = "login";// Se não estiver logado, o botão "Quero Adotar" leva para a tela de login
 }
 
 // Pega o primeiro nome do usuário se estiver logado
@@ -390,55 +395,56 @@ $pagina = "";
   <script src="assets/js/pages/index/pet-likes.js"></script>
   <script src="assets/js/pages/index/card-deck.js"></script>
   <script src="assets/js/pages/index/loading.js"></script>
+  <script src="assets/js/pages/index/offcanvas-fix.js"></script>
 
-  
   <!-- Offcanvas Menu (só aparece quando logado) -->
+  <?php if ($logado): ?>
   <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
-    <div class="offcanvas-header">
+    <div class="offcanvas-header border-bottom">
       <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-      </div>
-
-<aside class="profile-sidebar p-3">
-                        <div class="sidebar-header text-center mb-4">
-                            <i class="fa-regular fa-circle-user sidebar-profile-icon"></i>
-                            <h5 class="mt-2 mb-0">
-                                <?php echo htmlspecialchars($usuario['nome'] ?? 'Usuário'); ?>
-                            </h5>
-                            <small class="text-muted fs-6">
-                                <?php echo htmlspecialchars(ucfirst($user_tipo)); ?>
-                            </small>
-                        </div>
-                        
-                        <nav class="nav nav-pills flex-column profile-nav">
-                            
-                            <a class="nav-link <?php echo ($pagina == 'perfil') ? 'active' : ''; ?>" 
-                               href="perfil.php?page=perfil" 
-                               <?php echo ($pagina == 'perfil') ? 'aria-current="page"' : ''; ?>>
-                                <i class="fa-regular fa-circle-user fa-fw me-2"></i> Meu Perfil
-                            </a>
-                            
-                            <a class="nav-link <?php echo ($pagina == 'meus-pets') ? 'active' : ''; ?>" 
-                               href="perfil.php?page=meus-pets"
-                               <?php echo ($pagina == 'meus-pets') ? 'aria-current="page"' : ''; ?>>
-                                <i class="fa-solid fa-paw fa-fw me-2"></i> Meus Pets
-                            </a>
-                            
-                            <a class="nav-link <?php echo ($pagina == 'pets-curtidos') ? 'active' : ''; ?>" 
-                               href="perfil.php?page=pets-curtidos"
-                               <?php echo ($pagina == 'pets-curtidos') ? 'aria-current="page"' : ''; ?>>
-                                <i class="fa-regular fa-heart fa-fw me-2"></i> Pets Curtidos
-                            </a>
-                            
-                            <hr class="my-2">
-                            
-                            <a class="nav-link logout-link-sidebar" href="sair.php">
-                                <i class="fa-solid fa-right-from-bracket fa-fw me-2"></i> Sair
-                            </a>
-                        </nav>
-                    </aside>
+    </div>
+    
+    <div class="offcanvas-body p-0">
+      <aside class="profile-sidebar p-3">
+        <div class="sidebar-header text-center mb-4">
+          <i class="fa-regular fa-circle-user sidebar-profile-icon"></i>
+          <h5 class="mt-2 mb-0">
+            <?php echo htmlspecialchars($usuario['nome'] ?? 'Usuário'); ?>
+          </h5>
+          <small class="text-muted fs-6">
+            <?php echo htmlspecialchars(ucfirst($user_tipo)); ?>
+          </small>
+        </div>
+        
+        <nav class="nav nav-pills flex-column profile-nav">
+          <a class="nav-link <?php echo ($pagina == 'perfil') ? 'active' : ''; ?>" 
+             href="perfil.php?page=perfil" 
+             <?php echo ($pagina == 'perfil') ? 'aria-current="page"' : ''; ?>>
+            <i class="fa-regular fa-circle-user fa-fw me-2"></i> Meu Perfil
+          </a>
+          
+          <a class="nav-link <?php echo ($pagina == 'meus-pets') ? 'active' : ''; ?>" 
+             href="perfil.php?page=meus-pets"
+             <?php echo ($pagina == 'meus-pets') ? 'aria-current="page"' : ''; ?>>
+            <i class="fa-solid fa-paw fa-fw me-2"></i> Meus Pets
+          </a>
+          
+          <a class="nav-link <?php echo ($pagina == 'pets-curtidos') ? 'active' : ''; ?>" 
+             href="perfil.php?page=pets-curtidos"
+             <?php echo ($pagina == 'pets-curtidos') ? 'aria-current="page"' : ''; ?>>
+            <i class="fa-regular fa-heart fa-fw me-2"></i> Pets Curtidos
+          </a>
+          
+          <hr class="my-2">
+          
+          <a class="nav-link logout-link-sidebar" href="sair.php">
+            <i class="fa-solid fa-right-from-bracket fa-fw me-2"></i> Sair
+          </a>
+        </nav>
+      </aside>
+    </div>
   </div>
-
-
+  <?php endif; ?>
 
 </body>
 

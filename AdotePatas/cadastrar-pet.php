@@ -220,7 +220,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <div class="toast-progress-bar"></div>
 </div>
 
-<a href="./" class="btn-voltar" title="Voltar para a página inicial">
+<a href="perfil.php?page=meus-pets" class="btn-voltar" title="Voltar para a página inicial">
     <i class="fa-solid fa-arrow-left"></i>
     <span>Voltar</span>
 </a>
