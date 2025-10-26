@@ -1,6 +1,39 @@
 <?php
 session_start();
 
+include_once 'conexao.php'; // 1. Inclui a conexão com o banco
+
+// 3. Pega os dados básicos da sessão
+$user_id = $_SESSION['user_id'];
+$user_tipo = $_SESSION['user_tipo'];
+$usuario = null;
+$erro = '';
+
+// 4. Busca os dados completos do usuário no banco (Isso só executa UMA VEZ)
+try {
+    if ($user_tipo == 'adotante') {
+        $sql = "SELECT nome, email, cpf FROM usuario WHERE id_usuario = :id LIMIT 1";
+    } elseif ($user_tipo == 'protetor') {
+        $sql = "SELECT nome, email, cnpj FROM ong WHERE id_ong = :id LIMIT 1";
+    } else {
+        $erro = "Tipo de usuário inválido.";
+    }
+
+    if (empty($erro)) {
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':id', $user_id, PDO::PARAM_INT);
+        $stmt->execute();
+        $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$usuario) {
+            $erro = "Usuário não encontrado no banco de dados.";
+        }
+    }
+} catch (PDOException $e) {
+    $erro = "Ocorreu um erro ao buscar seus dados. Tente novamente.";
+    // Para debug: error_log("Erro no perfil.php: " . $e->getMessage());
+}
+
 // Verifica se o usuário está logado
 $logado = isset($_SESSION['user_id']);
 
@@ -17,6 +50,9 @@ if ($logado && isset($_SESSION['nome'])) {
     $partes_nome = explode(' ', $_SESSION['nome']);
     $primeiro_nome = $partes_nome[0];
 }
+
+$pagina = "";
+
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -51,20 +87,33 @@ if ($logado && isset($_SESSION['nome'])) {
         <a class="navbar-brand" href="#">
           <img src="./images/global/logo-AdotePatas.png" alt="Logo Adote Patas" class="navbar-logo">
         </a>
+
         <?php if ($logado): ?>
           <!-- Navbar para usuário LOGADO -->
           <div class="profile-container">
-            <a href="#" class="nav-icon"><i class="fas fa-search"></i></a>
+            
+        <ul class="navbar-nav d-flex">
+          <li class="nav-item">
+            <a class="nav-link navlink" href="#">Sobre Nós</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link navlink" href="#">Ajuda</a>
+          </li>
+        </ul>
+
             <a href="perfil.php" class="profile-info-link" title="Ver meu perfil">
               <div class="profile-info">
-                <i class="fas fa-user profile-icon"></i>
-                <span class="profile-name"><?php echo htmlspecialchars($primeiro_nome); ?></span>
+                <i class="fa-regular fa-circle-user profile-icon"></i>
+                <!--<span class="profile-name"><?php //echo htmlspecialchars($primeiro_nome); ?></span>!-->
               </div>
             </a>
+
             <button class="border-0 bg-transparent" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
-              <span class="fas fa-bars nav-icon"></span>
+              <span class="fas fa-bars nav-icon" style="font-size: 2rem;"></span>
             </button>
+
           </div>
+
         <?php else: ?>
         <ul class="navbar-nav d-flex">
           <li class="nav-item">
@@ -78,31 +127,11 @@ if ($logado && isset($_SESSION['nome'])) {
           </li>
         </ul>
         <?php endif; ?>
+
+
       </div>
     </nav>
   </header>
-  <!-- Offcanvas Menu (só aparece quando logado) -->
-  <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
-    <div class="offcanvas-header">
-      <h5 class="offcanvas-title" id="offcanvasNavbarLabel">Menu</h5>
-      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-    </div>
-    <div class="offcanvas-body">
-      <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
-        <li class="nav-item">
-          <a class="nav-link" href="#">Sobre Nós</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Ajuda</a>
-        </li>
-        <li class="nav-item mt-3">
-            <a class="nav-link logout-link" href="sair.php">Sair</a>
-        </li>
-      </ul>
-    </div>
-  </div>
-
-
 
  <main class="hero">
     <div class="container" style="margin-top: 5rem;">
@@ -135,7 +164,7 @@ if ($logado && isset($_SESSION['nome'])) {
 
 
 
-  <main class="image-background">
+  <section class="image-background">
 
 
     <section class="cards-section">
@@ -242,7 +271,7 @@ if ($logado && isset($_SESSION['nome'])) {
       </lottie-player>
     </div>
 
-  </main>
+  </section>
 
   <section class="about container mt-5 gap-3" style="margin-bottom: 3rem;">
     <h1 class="titulo-about" style="margin-bottom: 1rem">Como nós surgimos?</h1>
@@ -361,6 +390,56 @@ if ($logado && isset($_SESSION['nome'])) {
   <script src="assets/js/pages/index/pet-likes.js"></script>
   <script src="assets/js/pages/index/card-deck.js"></script>
   <script src="assets/js/pages/index/loading.js"></script>
+
+  
+  <!-- Offcanvas Menu (só aparece quando logado) -->
+  <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+    <div class="offcanvas-header">
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+
+<aside class="profile-sidebar p-3">
+                        <div class="sidebar-header text-center mb-4">
+                            <i class="fa-regular fa-circle-user sidebar-profile-icon"></i>
+                            <h5 class="mt-2 mb-0">
+                                <?php echo htmlspecialchars($usuario['nome'] ?? 'Usuário'); ?>
+                            </h5>
+                            <small class="text-muted fs-6">
+                                <?php echo htmlspecialchars(ucfirst($user_tipo)); ?>
+                            </small>
+                        </div>
+                        
+                        <nav class="nav nav-pills flex-column profile-nav">
+                            
+                            <a class="nav-link <?php echo ($pagina == 'perfil') ? 'active' : ''; ?>" 
+                               href="perfil.php?page=perfil" 
+                               <?php echo ($pagina == 'perfil') ? 'aria-current="page"' : ''; ?>>
+                                <i class="fa-regular fa-circle-user fa-fw me-2"></i> Meu Perfil
+                            </a>
+                            
+                            <a class="nav-link <?php echo ($pagina == 'meus-pets') ? 'active' : ''; ?>" 
+                               href="perfil.php?page=meus-pets"
+                               <?php echo ($pagina == 'meus-pets') ? 'aria-current="page"' : ''; ?>>
+                                <i class="fa-solid fa-paw fa-fw me-2"></i> Meus Pets
+                            </a>
+                            
+                            <a class="nav-link <?php echo ($pagina == 'pets-curtidos') ? 'active' : ''; ?>" 
+                               href="perfil.php?page=pets-curtidos"
+                               <?php echo ($pagina == 'pets-curtidos') ? 'aria-current="page"' : ''; ?>>
+                                <i class="fa-regular fa-heart fa-fw me-2"></i> Pets Curtidos
+                            </a>
+                            
+                            <hr class="my-2">
+                            
+                            <a class="nav-link logout-link-sidebar" href="sair.php">
+                                <i class="fa-solid fa-right-from-bracket fa-fw me-2"></i> Sair
+                            </a>
+                        </nav>
+                    </aside>
+  </div>
+
+
+
 </body>
 
 </html>

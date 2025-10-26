@@ -15,10 +15,6 @@ body {
   padding: 0;
 }
 
-/* Garante que o body possa ter scroll se o conteúdo for maior que a tela */
-.profile-body {
-  overflow-y: auto;
-}
 
 /* Limpando as cores de placeholder que você tinha */
 .col-3, .col-9 {
@@ -299,10 +295,6 @@ body {
         .feedback-message.show {
             display: block; /* Mostra a mensagem quando a classe 'show' é adicionada */
         }
-
-.profile-card .logout-link {
-  display: none;
-}
 
 /* ==========================================================================
    BANNER DO PERFIL

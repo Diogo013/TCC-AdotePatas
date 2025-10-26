@@ -9,6 +9,6 @@ $_SESSION = array();
 session_destroy();
 
 // Redireciona o usuário para a página inicial
-header("Location: home.php");
+header("Location: ./");
 exit;
 ?>

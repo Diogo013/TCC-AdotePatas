@@ -4,6 +4,7 @@
 @import "./partials/botao-patinhas.css";
 @import "./partials/cachorro-andando.css";
 @import "./partials/loading-index.css";
+@import "../perfil/perfil.css";
 @import "../../global/global.css";
 
 body {
@@ -12,11 +13,12 @@ body {
   padding: 0;
 }
 
+
+
 .navbar {
  margin-bottom: -165px;
   background: transparent;
   padding: 0.5rem 1rem;
-  transition: all 0.3s ease;
   font-size: 2em;
   font-weight: bold;
   z-index: 10;
@@ -87,11 +89,8 @@ body {
   color: #555;
 }
 .profile-icon {
-  font-size: 24px; /* Tamanho do ícone de perfil */
-  color: #e87a7a;
-  border: 2px solid #e87a7a;
-  border-radius: 50%;
-  padding: 8px;
+  font-size: 3rem; /* Tamanho do ícone de perfil */
+  color: var(--cor-vermelho);
 }
 .profile-name {
   font-size: 14px;
