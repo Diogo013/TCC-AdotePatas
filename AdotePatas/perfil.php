@@ -62,7 +62,34 @@ if ($pagina == 'perfil') {
     $nomeBannerSorteado = $listaDeBanners[array_rand($listaDeBanners)];
     $caminhoBanner = 'images/perfil/' . $nomeBannerSorteado;
 }
-
+// ==========================================================
+// INÍCIO DO BLOCO ADICIONADO
+// Lógica para buscar os pets do usuário (APENAS se a página for 'meus-pets')
+// ==========================================================
+$pets = [];
+$erro_pets = '';
+if ($pagina == 'meus-pets') {
+    try {
+        $sql_pets = "SELECT id_pet, nome, foto, sexo, status_disponibilidade FROM pet WHERE ";
+        
+        if ($user_tipo == 'adotante') {
+            // [Cite: adote_patas.sql, Tabela pet, Coluna id_usuario_fk]
+            $sql_pets .= "id_usuario_fk = :id_usuario"; 
+        } elseif ($user_tipo == 'protetor') {
+            // [Cite: adote_patas.sql, Tabela pet, Coluna id_ong_fk]
+            $sql_pets .= "id_ong_fk = :id_usuario";
+        } else {
+            throw new Exception("Tipo de usuário inválido para buscar pets.");
+        }
+        $stmt_pets = $conn->prepare($sql_pets);
+        $stmt_pets->bindParam(':id_usuario', $user_id, PDO::PARAM_INT);
+        $stmt_pets->execute();
+        $pets = $stmt_pets->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) {
+        $erro_pets = "Erro ao buscar seus pets: " . $e->getMessage();
+        // Para debug: error_log("Erro ao buscar pets: " . $e->getMessage());
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -192,10 +219,87 @@ if ($pagina == 'perfil') {
                     // ==========================================================
                     case 'meus-pets':
                 ?>
-                        <main class="profile-card">
-                            <h1>Meus Pets</h1>
-                            <p>Aqui você poderá gerenciar os pets que cadastrou para adoção.</p>
-                            </main>
+                        <main class="profile-card pets-grid-container">
+                            
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h1 class="mb-0">Meus Pets</h1>
+                                <a href="cadastrar-pet.php" class="btn btn-danger">
+                                    <i class="fa-solid fa-plus me-1"></i> Cadastrar Pet
+                                </a>
+                            </div>
+
+                            <?php if (!empty($erro_pets)): ?>
+                                <!-- Mostra erro se a busca falhar -->
+                                <div class="alert alert-danger">
+                                    <?php echo htmlspecialchars($erro_pets); ?>
+                                </div>
+
+                            <?php elseif (empty($pets)): ?>
+                                <!-- Mensagem se o usuário não tiver pets -->
+                                <div class="alert alert-info text-center">
+                                    <i class="fa-solid fa-paw fa-3x mb-3"></i>
+                                    <h5 class="mb-1">Você ainda não cadastrou nenhum pet.</h5>
+                                    <p>Que tal começar agora?</p>
+                                    <a href="cadastrar-pet.php" class="btn btn-primary mt-2">Cadastrar meu primeiro pet</a>
+                                </div>
+
+                            <?php else: ?>
+                                <!-- Grid de Pets (Estilo de pets-adocao.php) -->
+                            
+                                <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4" id="petsGrid">
+                                
+                                    <?php foreach ($pets as $pet): ?>
+                                    <div class="col">
+                                        
+                                        <div class="pet-card">
+                                            
+                                            <!-- Imagem -->
+                                            
+                                            <div class="pet-card-img">
+                                                <img src="<?php echo htmlspecialchars($pet['foto'] ?? 'images/global/placeholder-pet.png'); ?>" 
+                                                     alt="Foto de <?php echo htmlspecialchars($pet['nome']); ?>"
+                                                     onerror="this.src='images/perfil/teste.jpg';"> <!-- Fallback de imagem -->
+                                            </div>
+
+                                            <!-- Corpo do Card -->
+                                            
+                                            <div class="pet-card-body">
+                                                <!-- Nome -->
+                                                <h2 class="pet-name"><?php echo htmlspecialchars($pet['nome']); ?></h2>
+                                                
+                                               
+                                                <?php if (!empty($pet['sexo'])): ?>
+                                                    <?php if ($pet['sexo'] == 'femea'): ?>
+                                                        
+                                                        <i class="fa-solid fa-venus pet-gender-female" aria-label="Fêmea" title="Fêmea"></i>
+                                                    <?php else: // 'macho' ?>
+                                                        
+                                                        <i class="fa-solid fa-mars pet-gender-male" aria-label="Macho" title="Macho"></i>
+                                                    <?php endif; ?>
+                                                <?php endif; ?>
+                                            </div>
+
+                                            <!-- (BLOCO NOVO) Botões de Ação -->
+                                            <div class="pet-card-actions">
+                                                <span class="badge bg-<?php echo ($pet['status_disponibilidade'] == 'disponivel') ? 'success' : 'secondary'; ?> me-auto">
+                                                    <?php echo ucfirst($pet['status_disponibilidade']); ?>
+                                                </span>
+                                                <a href="editar-pet.php?id=<?php echo $pet['id_pet']; ?>" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fa-solid fa-pencil"></i>
+                                                </a>
+                                                <a href="excluir-pet.php?id=<?php echo $pet['id_pet']; ?>" class="btn btn-sm btn-outline-danger btn-excluir-pet" title="Excluir Pet">
+                                                    <i class="fa-solid fa-trash"></i>
+                                                </a>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                    <?php endforeach; ?>
+
+                                </div>
+                            <?php endif; ?>
+
+                        </main>
                 <?php
                     break; // Fim do 'case meus-pets'
 
@@ -258,6 +362,30 @@ if ($pagina == 'perfil') {
                 </div>
             </div>
 
+
+            <!--MODAL DE DELETAR PET-->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Exclusão</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Você tem certeza que deseja excluir este pet?
+                    <br>
+                    <strong>Esta ação não pode ser desfeita.</strong>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <!-- Este botão 'Confirmar' receberá o link de exclusão via JS -->
+                     <a href="#" id="confirmDeleteBtn"><button type="button" class="btn btn-danger">Excluir</button></a>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
             
         </div>
     </div>
@@ -267,6 +395,48 @@ if ($pagina == 'perfil') {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/5.0.8/jquery.inputmask.min.js"></script>
     
     <script src="assets/js/pages/perfil/editar.js" type="module"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Só executa se estivermos na página 'meus-pets'
+            <?php if ($pagina == 'meus-pets'): ?>
+            
+            const deleteModalElement = document.getElementById('confirmDeleteModal');
+            
+            // Verifica se o modal existe na página
+            if (deleteModalElement) {
+                const deleteModal = new bootstrap.Modal(deleteModalElement);
+                const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+                const petsGrid = document.getElementById('petsGrid');
+
+                // Usa "event delegation" para ouvir cliques nos botões de excluir
+                if (petsGrid) {
+                    petsGrid.addEventListener('click', function(event) {
+                        // Encontra o botão de excluir mais próximo que foi clicado
+                        const deleteButton = event.target.closest('.btn-excluir-pet');
+
+                        if (deleteButton) {
+                            // Previne a ação padrão do link (ir para a página)
+                            event.preventDefault(); 
+                            
+                            // Pega a URL de exclusão do link clicado
+                            const deleteUrl = deleteButton.href;
+                            
+                            // Define a URL no botão "Confirmar" do modal
+                            if (confirmDeleteBtn) {
+                                confirmDeleteBtn.href = deleteUrl;
+                            }
+                            
+                            // Abre o modal
+                            deleteModal.show();
+                        }
+                    });
+                }
+            }
+            
+            <?php endif; ?>
+        });
+    </script>
 
 </body>
 </html>

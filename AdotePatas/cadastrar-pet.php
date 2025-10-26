@@ -20,6 +20,7 @@ $nome = '';
 $especie = '';
 $idade = '';
 $porte = '';
+$sexo = ''; 
 $raca = '';
 $cor = '';
 $status_vacinacao = '';
@@ -34,6 +35,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $especie = trim($_POST['especie'] ?? ''); //
     $idade = trim($_POST['idade'] ?? ''); //
     $porte = trim($_POST['porte'] ?? ''); //
+    $sexo = trim($_POST['sexo'] ?? '');
     $raca = trim($_POST['raca'] ?? 'Não definida'); //
     $cor = trim($_POST['cor'] ?? ''); //
     $status_vacinacao = trim($_POST['status_vacinacao'] ?? ''); //
@@ -53,6 +55,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (empty($nome)) $erros[] = "O campo 'Nome' é obrigatório.";
     if (empty($especie)) $erros[] = "O campo 'Espécie' é obrigatório.";
     if (empty($idade)) $erros[] = "O campo 'Idade' é obrigatório.";
+    if (empty($sexo)) $erros[] = "O campo 'Sexo' é obrigatório.";
     if (empty($porte)) $erros[] = "O campo 'Porte' é obrigatório.";
     if (empty($status_vacinacao)) $erros[] = "O campo 'Vacinado' é obrigatório.";
     if (empty($status_castracao)) $erros[] = "O campo 'Castrado' é obrigatório.";
@@ -66,6 +69,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $portes_validos = ['pequeno', 'medio', 'grande'];
     $especies_validas = ['cachorro', 'gato'];
     $status_validos = ['sim', 'nao'];
+    $sexos_validos = ['macho', 'femea'];
 
     if (!empty($porte) && !in_array($porte, $portes_validos)) $erros[] = "Porte inválido.";
     if (!empty($especie) && !in_array($especie, $especies_validas)) $erros[] = "Espécie inválida.";
@@ -132,13 +136,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         try {
-            $sql = "INSERT INTO pet (nome, especie, idade, porte, raca, cor, status_vacinacao, status_castracao, comportamento, foto, id_usuario_fk, id_ong_fk, status_disponibilidade) 
-                    VALUES (:nome, :especie, :idade, :porte, :raca, :cor, :status_vacinacao, :status_castracao, :comportamento, :foto, :id_usuario_fk, :id_ong_fk, 'disponivel')";
-            
+            $sql = "INSERT INTO pet (nome, especie, sexo, idade, porte, raca, cor, status_vacinacao, status_castracao, comportamento, foto, id_usuario_fk, id_ong_fk, status_disponibilidade) 
+                    VALUES (:nome, :especie, :sexo, :idade, :porte, :raca, :cor, :status_vacinacao, :status_castracao, :comportamento, :foto, :id_usuario_fk, :id_ong_fk, 'disponivel')";
+
             $stmt = $conn->prepare($sql);
             $stmt->execute([
                 ':nome' => $nome,
                 ':especie' => $especie,
+                ':sexo' => $sexo, 
                 ':idade' => $idade,
                 ':porte' => $porte,
                 ':raca' => $raca,
@@ -245,8 +250,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
         <?php endif; ?>
 
-        <form action="cadastrar-pet.php" method="post" enctype="multipart/form-data" id="form-cadastro-pet" class="space-y-6">
+         <form action="cadastrar-pet.php" method="post" enctype="multipart/form-data" id="form-cadastro-pet" class="space-y-6">
             
+            <!-- Linha 1: Nome e Idade -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label for="nome" class="sr-only">Nome do Pet</label>
@@ -254,21 +260,35 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                            value="<?php echo htmlspecialchars($nome); ?>">
                 </div>
                 <div>
+                    <label for="idade" class="sr-only">Idade (anos)</label>
+                    <input type="number" name="idade" id="idade" placeholder="Idade (anos)" required min="0" class="input-style w-full"
+                           value="<?php echo htmlspecialchars($idade); ?>">
+                </div>
+            </div>
+
+            <!-- Linha 2: Espécie e Gênero (NOVA) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
                     <label for="especie" class="sr-only">Espécie</label>
                     <select name="especie" id="especie" required class="input-style w-full">
                         <option value="" disabled <?php echo empty($especie) ? 'selected' : ''; ?>>Espécie</option>
                         <option value="cachorro" <?php echo ($especie == 'cachorro') ? 'selected' : ''; ?>>Cachorro</option>
                         <option value="gato" <?php echo ($especie == 'gato') ? 'selected' : ''; ?>>Gato</option>
+                        <option value="outro" <?php echo ($especie == 'outro') ? 'selected' : ''; ?>>Outro</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="sexo" class="sr-only">Sexo</label>
+                    <select name="sexo" id="sexo" required class="input-style w-full">
+                        <option value="" disabled <?php echo empty($sexo) ? 'selected' : ''; ?>>Gênero</option>
+                        <option value="macho" <?php echo ($sexo == 'macho') ? 'selected' : ''; ?>>Macho</option>
+                        <option value="femea" <?php echo ($sexo == 'femea') ? 'selected' : ''; ?>>Fêmea</option>
                     </select>
                 </div>
             </div>
 
+            <!-- Linha 3: Porte e Raça -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label for="idade" class="sr-only">Idade (anos)</label>
-                    <input type="number" name="idade" id="idade" placeholder="Idade (anos)" required min="0" class="input-style w-full"
-                           value="<?php echo htmlspecialchars($idade); ?>">
-                </div>
                 <div>
                     <label for="porte" class="sr-only">Porte</label>
                     <select name="porte" id="porte" required class="input-style w-full">
@@ -278,22 +298,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <option value="grande" <?php echo ($porte == 'grande') ? 'selected' : ''; ?>>Grande</option>
                     </select>
                 </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label for="raca" class="sr-only">Raça (Opcional: SRD)</label>
+                    <label for="raca" class="sr-only">Raça (Ex: SRD)</label>
                     <input type="text" name="raca" id="raca" placeholder="Raça (Ex: SRD)" class="input-style w-full"
                            value="<?php echo htmlspecialchars($raca); ?>">
                 </div>
+            </div>
+
+            <!-- Linha 4: Cor e Vacinado -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label for="cor" class="sr-only">Cor</label>
                     <input type="text" name="cor" id="cor" placeholder="Cor (Ex: Caramelo)" class="input-style w-full"
                            value="<?php echo htmlspecialchars($cor); ?>">
                 </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label for="status_vacinacao" class="sr-only">Vacinado?</label>
                     <select name="status_vacinacao" id="status_vacinacao" required class="input-style w-full">
@@ -302,6 +320,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <option value="nao" <?php echo ($status_vacinacao == 'nao') ? 'selected' : ''; ?>>Não</option>
                     </select>
                 </div>
+            </div>
+            
+            <!-- Linha 5: Castrado e Foto -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label for="status_castracao" class="sr-only">Castrado?</label>
                     <select name="status_castracao" id="status_castracao" required class="input-style w-full">
@@ -310,22 +332,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <option value="nao" <?php echo ($status_castracao == 'nao') ? 'selected' : ''; ?>>Não</option>
                     </select>
                 </div>
-            </div>
-
-            <!-- Desativado temporariamente
+        <!-- desativado temporariamente 
             <div>
                 <label for="foto" class="input-style w-full file-input-label">
                     <i class="fas fa-upload"></i>
                     <span id="file-name-span">Escolher foto do pet... (Obrigatório)</span>
                 </label>
                 <input type="file" name="foto" id="foto" class="hidden" required accept="image/png, image/jpeg">
-            </div>-->
+            </div>
+        </div>
+        -->
 
+            <!-- Linha 6: Comportamento -->
             <div>
                 <label for="comportamento" class="sr-only">Comportamento (Ex: Dócil, adora crianças...)</label>
                 <textarea name="comportamento" id="comportamento" rows="4" placeholder="Conte um pouco sobre o pet (Ex: Dócil, adora crianças...)" class="input-style w-full"><?php echo htmlspecialchars($comportamento); ?></textarea>
             </div>
 
+            <!-- Linha 7: Botão de Envio -->
             <div class="flex justify-center w-55 mx-auto">
                 <button type="submit" class="adopt-btn">
                     <div class="heart-background">❤</div><span>Cadastrar Pet</span>

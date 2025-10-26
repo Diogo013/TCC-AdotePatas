@@ -43,6 +43,120 @@ body {
   text-decoration: none;
 }
 
+ /* Garante que o card de pets não tenha o fundo rosa do .profile-card */
+        .pets-grid-container {
+            background: none;
+            box-shadow: none;
+            padding: 0;
+        }
+
+        /* Container para os botões de ação no card */
+        .pet-card-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px; /* Espaçamento acima dos botões */
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
+        
+        /* Remove o ícone de like e ajusta o nome */
+        .pet-card-body .pet-name {
+            flex-grow: 1; /* O nome ocupa o espaço */
+        }
+        .pet-card-body .pet-like {
+            display: none; /* Esconde o coração de "like" */
+        }
+
+.pet-card {
+  background-color: var(--cor-branca, #ffffff);
+  border-radius: 20px;
+  box-shadow: 0 10px 25px -10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  cursor: pointer;
+  text-align: center;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+/* ... (restante dos estilos do pet-card - sem alterações) ... */
+.pet-card:hover {
+  box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.15);
+  transform: translateY(-5px);
+}
+
+.pet-card-img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  position: relative;
+  overflow: hidden;
+}
+
+.pet-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  clip-path: ellipse(100% 95% at 50% 0%);
+  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.pet-card:hover .pet-card-img img {
+  transform: scale(1.08);
+}
+
+.pet-card-body {
+  padding: 1rem 1.5rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  flex-grow: 1;
+}
+
+.pet-name {
+  font-family: "Poppins", sans-serif;
+  font-weight: 700;
+  font-size: 1.3rem;
+  color: var(--cor-cinza-texto);
+  margin: 0;
+  flex-grow: 1;
+  text-align: left;
+  padding-left: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pet-gender-female,
+.pet-gender-male,
+.pet-like {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.pet-gender-female {
+  color: var(--cor-rosa-escuro, #bf6964);
+}
+
+.pet-gender-male {
+  color: var(--cor-macho-simbolo, #007bff);
+}
+
+.pet-like {
+  color: var(--cor-vermelho, #9b0000);
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.pet-like:hover {
+    transform: scale(1.2);
+}
+
+.pet-like.favorited {
+    font-weight: 900;
+    color: var(--cor-vermelho, #9b0000);
+}
+
 .btn-voltar:focus-visible {
   outline: 2px solid var(--cor-branca);
   outline-offset: 2px;
