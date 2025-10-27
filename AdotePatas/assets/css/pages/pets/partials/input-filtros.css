@@ -1,52 +1,159 @@
+/* ==========================================================
+   ESTILOS DA BARRA DE PESQUISA E FILTROS (Existente)
+   ========================================================== */
 
-.input-filtros{
-  background-color: var(--cor-rosa-claro);
-  color:  var(--cor-vermelho-claro);
-  border-radius: 24px;
-  padding: 1rem;
+/* ... (Seus estilos existentes para .search-filter-container, .search-input, .filter-btn, etc. permanecem aqui) ... */
+.search-filter-container {
+    display: flex;
+    flex-wrap: wrap; 
+    gap: 1rem;       
+    align-items: center;
 }
-.input-filtros input{
-  border-radius: 24px;
-  padding: 0.5rem;
+.search-bar-wrapper {
+    position: relative;
+    flex-grow: 1;      
+    min-width: 250px; 
 }
-.input-filtros input:focus{
-  border: none;
-  outline: none;
+.search-input {
+    width: 100%;
+    height: 52px; 
+    border-radius: 16px; 
+    background-color: var(--cor-rosa-pastel); /* Usando sua variável */
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px; /* Sombra sutil */
+    border: none; /* Removendo borda padrão */
+    color: var(--cor-branca, #ffffff);
+    font-size: 1rem;
+    font-weight: 500;
+    padding: 0.5rem 3.25rem 0.5rem 1.5rem;
+    transition: box-shadow 0.2s ease;
+}
+.search-input::placeholder {
+    color: var(--cor-branca, #ffffff);
+    opacity: 1; 
+    font-weight: 500;
+}
+.search-input:focus {
+    background-color: var(--cor-rosa-pastel);
+    border: none;
+    color: var(--cor-branca, #ffffff);
+    box-shadow: 0 0 0 0.25rem rgba(255, 194, 194, 0.5); /* Usando cor-rosa-pastel com alpha */
+    outline: none;
+}
+.search-icon {
+    position: absolute;
+    top: 50%;
+    right: 1.5rem; 
+    transform: translateY(-50%);
+    color: var(--cor-branca, #ffffff);
+    font-size: 1.1rem;
+    pointer-events: none; 
+}
+.filter-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem; 
+    height: 52px; 
+    background-color: var(--cor-branca); /* Fundo branco */
+    border: 2px solid var(--cor-laranja-pastel, #dea796);
+    color: var(--cor-cinza-texto, #5C5C57);
+    border-radius: 16px; /* Bordas arredondadas */
+    padding: 0.5rem 1.5rem;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    flex-shrink: 0; 
+}
+.filter-btn i {
+    font-size: 1rem;
+    color: var(--cor-rosa-escuro, #bf6964); 
+}
+.filter-btn:hover {
+    background-color: #f8f9fa; 
+    border-color: var(--cor-rosa-escuro, #bf6964);
+    color: var(--cor-cinza-texto, #5C5C57);
+}
+.filter-btn:focus,
+.filter-btn:active {
+    background-color: var(--cor-branca, #ffffff);
+    border-color: var(--cor-rosa-escuro, #bf6964);
+    color: var(--cor-cinza-texto, #5C5C57);
+    box-shadow: 0 0 0 0.25rem rgba(191, 105, 100, 0.4); /* Usando cor-rosa-escuro com alpha */
+    outline: none;
 }
 
-/* Estilização do botão de Filtros - Versão Corrigida */
-.input-filtros .btn-outline-primary {
-    color: var(--cor-laranja-pastel, #dea796); /* Cor do texto padrão (fallback adicionado) */
-    border-color: var(--cor-laranja-pastel, #dea796); /* Cor da borda padrão */
-    background-color: transparent; /* Garante fundo transparente no estado padrão */
+/* ==========================================================
+   ESTILOS PARA A SEÇÃO DE FILTROS COLLAPSE (NOVO)
+   ========================================================== */
 
-    /* Remove o brilho azul (box-shadow) padrão do Bootstrap no foco */
-    --bs-btn-focus-shadow-rgb: none;
-    box-shadow: none !important; /* Força a remoção do shadow */
-
-    /* Transição suave */
-    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+/* Container geral dos filtros */
+.filter-options-container {
+    background-color: var(--cor-rosa); /* Cor de fundo suave */
+    border: none; /* Remover borda padrão do card */
+    border-radius: 16px; /* Bordas arredondadas */
+    padding: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); /* Sombra suave */
 }
 
-/* Estado Hover (passar o mouse) */
-.input-filtros .btn-outline-primary:hover {
-    background-color: var(--cor-laranja-pastel, #dea796); /* Fundo laranja no hover */
-    border-color: var(--cor-laranja-pastel, #dea796); /* Borda laranja no hover */
-    color: var(--cor-branca, #ffffff); /* Texto branco no hover (fallback adicionado) */
+/* Título de cada categoria de filtro (h5) */
+.filter-category h5 {
+    font-weight: 600;
+    color: var(--cor-vermelho); /* Cor do título */
+    margin-bottom: 0.25rem;
+    font-size: 1.1rem;
 }
 
-/* Estado Focus (quando selecionado via teclado/clique) */
-.input-filtros .btn-outline-primary:focus {
-    background-color: var(--cor-laranja-pastel, #dea796); /* Fundo laranja no focus */
-    border-color: var(--cor-laranja-pastel, #dea796); /* Borda laranja no focus */
-    color: var(--cor-branca, #ffffff); /* Texto branco no focus */
-    box-shadow: none !important; /* Garante remoção do shadow no foco */
+/* Descrição da categoria (parágrafo pequeno) */
+.filter-category-description {
+    font-size: 0.85rem;
+    color: var(--cor-branca);
+    margin-bottom: 0.75rem;
+    opacity: 0.8;
 }
 
-/* Estado Active (quando está sendo clicado) */
-.input-filtros .btn-outline-primary:active {
-    background-color: var(--cor-laranja-pastel, #dea796) !important; /* Fundo laranja no active (important para garantir override) */
-    border-color: var(--cor-laranja-pastel, #dea796) !important; /* Borda laranja no active */
-    color: var(--cor-branca, #ffffff) !important; /* Texto branco no active */
-    box-shadow: none !important; /* Garante remoção do shadow no active */
+/* Container dos checkboxes dentro de uma categoria */
+.filter-category-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem; /* Espaçamento entre os checkboxes */
+}
+
+/* Wrapper de cada checkbox (Bootstrap .form-check) */
+.form-check {
+    padding-left: 1.75em; /* Espaço para o checkbox customizado */
+    min-height: auto; /* Remover altura mínima padrão */
+    margin-bottom: 0; /* Remover margem padrão */
+}
+
+/* Input do checkbox (oculto, usamos o label para estilizar) */
+.form-check-input {
+    margin-top: 0.15em; /* Ajuste vertical fino */
+    margin-left: -1.75em; /* Posiciona sobre o espaço criado no .form-check */
+    width: 1.25em; /* Tamanho do checkbox */
+    height: 1.25em; /* Tamanho do checkbox */
+    cursor: pointer;
+    border: 2px solid var(--cor-laranja-pastel, #dea796); /* Borda do checkbox */
+    background-color: var(--cor-branca, #ffffff); /* Fundo branco */
+    transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+/* Estilo quando o checkbox está MARCADO */
+.form-check-input:checked {
+    background-color: var(--cor-rosa-escuro, #bf6964); /* Cor de fundo quando marcado */
+    border-color: var(--cor-rosa-escuro, #bf6964); /* Cor da borda quando marcado */
+    /* Ícone de check (SVG embutido do Bootstrap) com cor branca */
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e");
+}
+
+/* Estilo do foco (acessibilidade) */
+.form-check-input:focus {
+    border-color: var(--cor-rosa-escuro, #bf6964);
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(191, 105, 100, 0.3); /* Sombra de foco com cor rosa-escuro */
+}
+
+/* Estilo do label (texto ao lado do checkbox) */
+.form-check-label {
+    color: var(--cor-branca);
+    font-size: 0.95rem;
+    cursor: pointer;
 }

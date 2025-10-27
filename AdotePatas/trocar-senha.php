@@ -29,6 +29,7 @@ if (!$token) {
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -41,11 +42,43 @@ if (!$token) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="images/global/Logo-AdotePatas.png"/>
     
-    <link rel="stylesheet" href="assets/css/pages/autenticacao/autenticacao.css">
+    <link rel="stylesheet" href="assets/css/pages/troca-senha/troca-senha.css">
+
+    <!-- Lottie Player -->
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4">
 
-<a href="autenticacao.php?tab=login" class="btn-voltar" title="Voltar para o Login">
+<!-- ANIMAÇÃO DE REDIRECIONAMENTO -->
+<?php if (isset($_GET['animation']) && $_GET['animation'] === 'success'): ?>
+<div id="redirect-animation" class="fixed inset-0 bg-white z-50 flex items-center justify-center">
+    <div class="text-center">
+        <lottie-player 
+            src="animações/pet-run.json" 
+            background="transparent" 
+            speed="1" 
+            style="width: 500px; height: 500px;" 
+            autoplay
+            loop>
+        </lottie-player>
+        <p class="text-[#666662] text-lg font-semibold mt-4">Redirecionando...</p>
+    </div>
+</div>
+<script>
+    setTimeout(() => {
+        const animationElement = document.getElementById('redirect-animation');
+        if (animationElement) {
+            animationElement.style.opacity = '0';
+            animationElement.style.transition = 'opacity 0.5s ease';
+            setTimeout(() => {
+                animationElement.style.display = 'none';
+            }, 500);
+        }
+    }, 2500);
+</script>
+<?php endif; ?>
+
+<a href="login?tab=login" class="btn-voltar" title="Voltar para o Login">
     <i class="fa-solid fa-arrow-left"></i>
     <span>Voltar</span>
 </a>
@@ -68,12 +101,25 @@ if (!$token) {
 
     <div class="container-card w-full p-6 sm:p-10 rounded-3xl shadow-xl">
 
-        <div id="reset-message" class="alert hidden" role="alert"></div>
+        <!-- Toast Notification - ESTRUTURA COMPATÍVEL COM O CSS EXISTENTE -->
+        <div id="toast-notification" class="toast" style="display: none;">
+            <div class="toast-icon">
+                <div id="toast-icon"></div>
+            </div>
+            <div class="toast-content">
+                <p id="toast-message" class="toast-message"></p>
+            </div>
+            <div class="toast-progress-bar"></div>
+        </div>
+
+        <!-- Elemento para mensagens do PHP -->
+        <div id="php-data" 
+             data-message="<?php echo $error_message ? htmlspecialchars($error_message) : ''; ?>" 
+             data-type="<?php echo $error_message ? 'danger' : ''; ?>" 
+             style="display: none;">
+        </div>
 
         <?php if ($error_message): ?>
-            <div class="alert alert-danger text-center" role="alert">
-                <?php echo htmlspecialchars($error_message); ?>
-            </div>
             <div class="text-center mt-4">
                 <a href="autenticacao.php?tab=login" id="open-recovery-modal" class="link-style">Solicitar Novo Link</a>
             </div>
@@ -118,16 +164,19 @@ if (!$token) {
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js"></script>
 
 <script type="module">
-    // Importa as funções de validação do seu arquivo JS
+    // Importa as funções de validação e toast
     import { validarSenha, validarConfirmaSenha, initPasswordToggle } from './assets/js/pages/autenticacao/modules/forms/validation.js';
+    import { showToast, initToastNotification } from './assets/js/pages/troca-senha/toast-troca-senha.js';
 
     // Inicializa os ícones de "mostrar/ocultar" senha
     initPasswordToggle();
 
+    // Mostra toast se houver mensagem do PHP
+    initToastNotification();
+
     const resetForm = document.getElementById("reset-password-form");
     if (resetForm) {
         const submitBtn = document.getElementById("reset-submit-btn");
-        const messageDiv = document.getElementById("reset-message");
         const spinner = submitBtn.querySelector('.spinner-border');
         const buttonText = submitBtn.querySelector('.button-text');
 
@@ -138,18 +187,15 @@ if (!$token) {
         // --- Adiciona validação em tempo real ---
         if (novaSenhaInput) {
             novaSenhaInput.addEventListener('input', () => {
-                // Valida a força da senha e mostra na div "mensagem-nova_senha"
                 validarSenha(novaSenhaInput, 'mensagem-nova_senha');
             });
         }
         if (confirmaSenhaInput) {
             confirmaSenhaInput.addEventListener('input', () => {
-                // Valida a confirmação e mostra na div "mensagem-confirma_senha"
                 validarConfirmaSenha('nova_senha', 'confirma_senha');
             });
         }
         // --- Fim da validação em tempo real ---
-
 
         resetForm.addEventListener("submit", async function(e) {
             e.preventDefault();
@@ -157,14 +203,9 @@ if (!$token) {
             // 1. Validação no lado do cliente (front-end) ANTES de enviar
             const isSenhaForte = validarSenha(novaSenhaInput, 'mensagem-nova_senha');
             const isSenhaConfirmada = validarConfirmaSenha('nova_senha', 'confirma_senha');
-            
-            // Esconde mensagens de erro globais antigas
-            messageDiv.classList.add("hidden"); 
-            messageDiv.className = "alert hidden";
 
             if (!isSenhaForte || !isSenhaConfirmada) {
-                messageDiv.className = "alert alert-warning"; // Use a classe de alerta global
-                messageDiv.textContent = "Por favor, corrija os erros no formulário.";
+                showToast("Por favor, corrija os erros no formulário.", 'warning');
                 return; // Impede o envio do formulário
             }
 
@@ -183,27 +224,24 @@ if (!$token) {
 
                 const result = await response.json();
 
-                if (response.ok && result.success) {
-                    messageDiv.className = "alert alert-success";
-                    messageDiv.textContent = result.message + " Redirecionando para o login em 3 segundos...";
-                    resetForm.classList.add('hidden'); // Oculta o formulário após o sucesso
-                    
-                    setTimeout(() => {
-                        window.location.href = 'autenticacao.php?tab=login';
-                    }, 3000);
-                } else {
-                    // Se o servidor retornar um erro, exibe a mensagem recebida.
-                    messageDiv.className = "alert alert-danger";
-                    messageDiv.textContent = result.message || "Ocorreu um erro desconhecido.";
+               if (response.ok && result.success) {
+    showToast(result.message, 'success');
+    resetForm.classList.add('hidden');
+    
+    // Redireciona para login com animação - CORRIGIDO
+    setTimeout(() => {
+        window.location.href = 'autenticacao.php?tab=login&animation=success&message=Senha+alterada+com+sucesso!';
+    }, 1);
+} else {
+                    showToast(result.message || "Ocorreu um erro desconhecido.", 'danger');
                 }
 
             } catch (error) {
                 console.error("Erro na requisição AJAX:", error);
-                messageDiv.className = "alert alert-danger";
-                messageDiv.textContent = "Houve um problema de rede. Por favor, tente novamente.";
+                showToast("Houve um problema de rede. Por favor, tente novamente.", 'danger');
             } finally {
-                // Só reativa o botão se a operação falhou.
-                if (!messageDiv.classList.contains("alert-success")) {
+                // Só reativa o botão se a operação falhou
+                if (!resetForm.classList.contains("hidden")) {
                     submitBtn.disabled = false;
                     spinner.classList.add("hidden");
                     buttonText.textContent = 'Trocar Senha';

@@ -361,6 +361,52 @@ case 'cadastro_ong':
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4">
 
+
+<!-- ANIMAÇÃO DE REDIRECIONAMENTO - VERSÃO MELHORADA -->
+<?php 
+$showAnimation = isset($_GET['animation']) && $_GET['animation'] === 'success';
+$animationMessage = $_GET['message'] ?? 'Redirecionando...';
+?>
+
+<?php if ($showAnimation): ?>
+<div id="redirect-animation" class="fixed inset-0 bg-white z-50 flex items-center justify-center">
+    <div class="text-center">
+        <lottie-player 
+            src="animações/pet-run.json" 
+            background="transparent" 
+            speed="1" 
+            style="width: 500px; height: 500px;" 
+            autoplay
+            loop>
+        </lottie-player>
+        <p class="text-[#628e6d] text-xl font-bold" style="margin-top: -4rem;"><?php echo htmlspecialchars($animationMessage); ?></p>
+        <div class="w-24 h-1 bg-[#666662] mx-auto mt-2 rounded-full opacity-50"></div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(() => {
+            const animationElement = document.getElementById('redirect-animation');
+            if (animationElement) {
+                animationElement.style.opacity = '0';
+                animationElement.style.transition = 'opacity 0.5s ease';
+                setTimeout(() => {
+                    animationElement.style.display = 'none';
+                    
+                    // Remove os parâmetros da URL sem recarregar
+                    if (window.history.replaceState) {
+                        const url = new URL(window.location);
+                        url.searchParams.delete('animation');
+                        url.searchParams.delete('message');
+                        window.history.replaceState({}, '', url);
+                    }
+                }, 300);
+            }
+        }, 2300);
+    });
+</script>
+<?php endif; ?>
+
 <!-- Modal de Recuperação de Senha -->
     <div id="recovery-modal" class="fixed inset-0 z-50 bg-black bg-opacity-50 hidden items-center justify-center p-4" style="z-index: 1000;">
         <div class="bg-white shadow-2xl p-6 w-full max-w-md mx-auto" style="margin-top: 10%; border-radius: 16px">

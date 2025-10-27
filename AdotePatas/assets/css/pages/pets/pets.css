@@ -12,7 +12,8 @@ body {
 
 /* Título principal da seção */
 .titulo-adocao {
-    font-weight: 700;
+    font-family: "Poppins", sans-serif;
+    font-weight: bold;
     color: var(--cor-cinza-texto);
     text-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     text-align: center;
