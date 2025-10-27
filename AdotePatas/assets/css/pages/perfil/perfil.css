@@ -53,9 +53,6 @@ body {
         .pet-card-body .pet-name {
             flex-grow: 1; /* O nome ocupa o espaço */
         }
-        .pet-card-body .pet-like {
-            display: none; /* Esconde o coração de "like" */
-        }
 
 .pet-card {
   background-color: var(--cor-branca, #ffffff);
@@ -321,6 +318,27 @@ body {
 #btnEditar:hover {
   background-color: #8a0000; /* Um tom um pouco mais escuro que --cor-vermelho */
   border-color: #8a0000;
+}
+
+a.pet-card-link-img,
+a.pet-card-link-nome {
+    text-decoration: none !important;
+    color: inherit !important;
+}
+a.pet-card-link-img { display: block; }
+
+/* Efeito de hover no card (para 'pets-curtidos') */
+.pet-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+/* Estilo do coração de favorito */
+.pet-like { cursor: pointer; transition: all 0.2s ease; }
+.pet-like.favorited {
+    color: var(--cor-vermelho, #d9006c);
+    transform: scale(1.1);
 }
 
 

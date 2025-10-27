@@ -26,6 +26,7 @@ $cor = '';
 $status_vacinacao = '';
 $status_castracao = '';
 $comportamento = '';
+$caracteristicas = [];
 
 // --- PROCESSAMENTO DO FORMULÁRIO (POST) ---
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -41,6 +42,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $status_vacinacao = trim($_POST['status_vacinacao'] ?? ''); //
     $status_castracao = trim($_POST['status_castracao'] ?? ''); //
     $comportamento = trim($_POST['comportamento'] ?? ''); //
+    $caracteristicas = $_POST['caracteristicas'] ?? [];
     
     // Coleta dados da sessão
     $id_usuario_logado = $_SESSION['user_id'];
@@ -75,6 +77,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (!empty($especie) && !in_array($especie, $especies_validas)) $erros[] = "Espécie inválida.";
     if (!empty($status_vacinacao) && !in_array($status_vacinacao, $status_validos)) $erros[] = "Status de vacinação inválido.";
     if (!empty($status_castracao) && !in_array($status_castracao, $status_validos)) $erros[] = "Status de castração inválido.";
+
+    if (count($caracteristicas) > 5) {
+        $erros[] = "Você só pode selecionar até 5 características.";
+    }
 
     // 3. Validação e Upload da Foto !ATENÇÂO! Desativado temporariamente
     //if (isset($_FILES['foto']) && $_FILES['foto']['error'] == UPLOAD_ERR_OK) {
@@ -135,9 +141,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $id_usuario_fk = $id_usuario_logado;
         }
 
+        $caracteristicas_json = json_encode($caracteristicas, JSON_UNESCAPED_UNICODE);
+
         try {
-            $sql = "INSERT INTO pet (nome, especie, sexo, idade, porte, raca, cor, status_vacinacao, status_castracao, comportamento, foto, id_usuario_fk, id_ong_fk, status_disponibilidade) 
-                    VALUES (:nome, :especie, :sexo, :idade, :porte, :raca, :cor, :status_vacinacao, :status_castracao, :comportamento, :foto, :id_usuario_fk, :id_ong_fk, 'disponivel')";
+            $sql = "INSERT INTO pet (nome, especie, sexo, idade, porte, raca, cor, status_vacinacao, status_castracao, comportamento, foto, id_usuario_fk, id_ong_fk, status_disponibilidade, caracteristicas) 
+                    VALUES (:nome, :especie, :sexo, :idade, :porte, :raca, :cor, :status_vacinacao, :status_castracao, :comportamento, :foto, :id_usuario_fk, :id_ong_fk, 'disponivel', :caracteristicas)";
 
             $stmt = $conn->prepare($sql);
             $stmt->execute([
@@ -153,7 +161,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 ':comportamento' => $comportamento,
                 ':foto' => $caminho_foto_db,
                 ':id_usuario_fk' => $id_usuario_fk,
-                ':id_ong_fk' => $id_ong_fk
+                ':id_ong_fk' => $id_ong_fk,
+                ':caracteristicas' => $caracteristicas_json
             ]);
 
             // --- INÍCIO DA LÓGICA PRG (Post-Redirect-Get) ---
@@ -183,7 +192,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="images/global/Logo-AdotePatas.png"/>
-    
+    <link rel="stylesheet" href="assets/css/pages/cadastro-pet/caracteristica.css">
     <link rel="stylesheet" href="assets/css/pages/autenticacao/autenticacao.css">
 
 
@@ -342,6 +351,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
         </div>
         -->
+        <div>
+                <button type="button" id="openModalBtn" class="input-style w-full">
+                    <span id="tagsPlaceholder">Selecionar Características...</span>
+                    <span class="tags-preview" id="tagsPreview">
+                        
+                    </span>
+                </button>
+                <!-- Este container vai guardar os inputs hidden criados pelo JS -->
+                <div id="hidden-tags-container"></div>
+            </div>
 
             <!-- Linha 6: Comportamento -->
             <div>
@@ -358,6 +377,67 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </form>
     </div>
 </div>
+
+
+<!-- HTML DO MODAL DE CARACTERÍSTICAS -->
+<div id="charModal" class="char-modal">
+    <div class="char-modal-content">
+        
+        <!-- Cabeçalho -->
+        <div class="char-modal-header">
+            <div>
+                <h2>Selecionar Características</h2>
+                <p>Escolha até 5 características para o seu pet.</p>
+            </div>
+            <button type="button" class="char-modal-close" id="closeModalBtn">&times;</button>
+        </div>
+
+        <!-- Corpo com as Tags -->
+        <div class="char-modal-body">
+            <!-- Temperamento -->
+            <h3>Temperamento</h3>
+            <div class="char-tags-container">
+                <span class="char-tag" data-color="laranja" data-value="Brincalhão"><i class="fas fa-lightbulb"></i> Brincalhão <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="verde" data-value="Calmo"><i class="fas fa-leaf"></i> Calmo <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="roxo" data-value="Curioso"><i class="fas fa-search"></i> Curioso <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="laranja" data-value="Tímido"><i class="fas fa-user-secret"></i> Tímido <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="verde" data-value="Protetor"><i class="fas fa-shield-alt"></i> Protetor <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="roxo" data-value="Sociável"><i class="fas fa-users"></i> Sociável <i class="fas fa-check"></i></span>
+            </div>
+
+            <!-- Nível de Energia -->
+            <h3>Nível de Energia</h3>
+            <div class="char-tags-container">
+                <span class="char-tag" data-color="laranja" data-value="Energético"><i class="fas fa-bolt"></i> Energético <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="roxo" data-value="Tranquilo"><i class="fas fa-moon"></i> Tranquilo <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="verde" data-value="Moderado"><i class="fas fa-balance-scale"></i> Moderado <i class="fas fa-check"></i></span>
+            </div>
+
+            <!-- Convivência -->
+            <h3>Convivência</h3>
+            <div class="char-tags-container">
+                <span class="char-tag" data-color="rosa" data-value="Bom com Crianças"><i class="fas fa-child"></i> Bom com Crianças <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="rosa" data-value="Bom com Gatos"><i class="fas fa-cat"></i> Bom com Gatos <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="rosa" data-value="Bom com Cães"><i class="fas fa-dog"></i> Bom com Cães <i class="fas fa-check"></i></span>
+            </div>
+
+            <!-- Outros -->
+            <h3>Outros</h3>
+            <div class="char-tags-container">
+                <span class="char-tag" data-color="laranja" data-value="Adestrado"><i class="fas fa-graduation-cap"></i> Adestrado <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="verde" data-value="Castrado"><i class="fas fa-cut"></i> Castrado <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="roxo" data-value="Peludo"><i class="fas fa-comment-dots"></i> Peludo <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="rosa" data-value="Alérgico"><i class="fas fa-allergies"></i> Alérgico <i class="fas fa-check"></i></span>
+            </div>
+        </div>
+
+        <!-- Rodapé -->
+        <div class="char-modal-footer">
+            <button type="button" class="btn btn-cancelar" id="cancelModalBtn">Cancelar</button>
+            <button type="button" class="btn btn-salvar" id="saveModalBtn">Salvar Seleção (0/5)</button>
+        </div>
+    </div>
+
 
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js"></script>
@@ -384,5 +464,148 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     });
 </script>
 
+
+
+<!--SCRIPT DO MODAL DE CARACTERÍSTICAS -->
+<script type="module">
+    
+    // Pega os elementos do DOM
+    const modal = document.getElementById('charModal');
+    const openBtn = document.getElementById('openModalBtn');
+    const closeBtn = document.getElementById('closeModalBtn');
+    const cancelBtn = document.getElementById('cancelModalBtn');
+    const saveBtn = document.getElementById('saveModalBtn');
+    const tags = document.querySelectorAll('.char-tag');
+    const hiddenTagsContainer = document.getElementById('hidden-tags-container');
+    const tagsPreview = document.getElementById('tagsPreview');
+    const tagsPlaceholder = document.getElementById('tagsPlaceholder'); // <-- NOVO
+    
+    const MAX_SELECTIONS = 5;
+    let selectedTags = []; // Armazena objetos {value, iconHTML}
+
+    // --- Funções do Modal ---
+    function openModal() {
+        if (modal) modal.style.display = 'flex';
+        // Sincroniza o modal com os dados já salvos no form
+        syncModalStateFromForm();
+    }
+
+    function closeModal() {
+        if (modal) modal.style.display = 'none';
+    }
+    
+    function updateSelectionCount() {
+        const count = selectedTags.length;
+        saveBtn.textContent = `Salvar Seleção (${count}/${MAX_SELECTIONS})`;
+        saveBtn.disabled = (count === 0);
+    }
+    
+    // --- Sincronização ---
+    function syncModalStateFromForm() {
+        selectedTags = [];
+        const hiddenInputs = hiddenTagsContainer.querySelectorAll('input[name="caracteristicas[]"]');
+        
+        // Recria o array selectedTags a partir dos inputs e das tags do modal
+        hiddenInputs.forEach(input => {
+            const value = input.value;
+            // Encontra a tag correspondente no modal
+            const matchingTag = document.querySelector(`.char-tag[data-value="${value}"]`);
+            if (matchingTag) {
+                // Pega o HTML do primeiro ícone (ex: <i class="fas fa-lightbulb"></i>)
+                const iconHTML = matchingTag.querySelector('i:first-child').outerHTML;
+                selectedTags.push({ value: value, iconHTML: iconHTML });
+            }
+        });
+        
+        // Atualiza a aparência das tags no modal
+        tags.forEach(tag => {
+            // Verifica se algum objeto em selectedTags tem o valor desta tag
+            if (selectedTags.some(t => t.value === tag.dataset.value)) {
+                tag.classList.add('active');
+            } else {
+                tag.classList.remove('active');
+            }
+        });
+        updateSelectionCount();
+    }
+
+    // --- Event Handlers ---
+
+    // Abrir Modal
+    if (openBtn) {
+        openBtn.addEventListener('click', openModal);
+    }
+
+    // Fechar Modal (Botão X e Cancelar)
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+    
+    // Clicar fora do modal (no backdrop)
+    if (modal) {
+        modal.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
+    }
+
+    // Clicar numa Tag 
+    tags.forEach(tag => {
+        tag.addEventListener('click', () => {
+            const value = tag.dataset.value;
+            // Pega o HTML do primeiro ícone
+            const iconHTML = tag.querySelector('i:first-child').outerHTML; 
+            const isActive = tag.classList.contains('active');
+
+            if (isActive) {
+                // Desselecionar
+                tag.classList.remove('active');
+                selectedTags = selectedTags.filter(t => t.value !== value); // Filtra pelo valor
+            } else {
+                // Selecionar (com limite)
+                if (selectedTags.length < MAX_SELECTIONS) {
+                    tag.classList.add('active');
+                    selectedTags.push({ value: value, iconHTML: iconHTML }); // Adiciona o objeto
+                } else {
+                    // Atingiu o limite!
+                    console.warn(`Limite de ${MAX_SELECTIONS} características atingido.`);
+                    // Ex: window.showToast('Limite de 5 características atingido.', 'warning');
+                }
+            }
+            updateSelectionCount();
+        });
+    });
+    
+    // Salvar Seleção
+    if (saveBtn) {
+        saveBtn.addEventListener('click', () => {
+            // 1. Limpa os inputs escondidos e o preview de ícones
+            hiddenTagsContainer.innerHTML = '';
+            tagsPreview.innerHTML = '';
+            
+            let hasSelection = selectedTags.length > 0;
+
+            selectedTags.forEach(tag => {
+                // 2a. Cria os novos inputs escondidos
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'caracteristicas[]'; // Envia como um array para o PHP
+                input.value = tag.value; // Salva apenas o valor
+                hiddenTagsContainer.appendChild(input);
+                
+                // 2b. Adiciona o ícone ao preview no botão
+                tagsPreview.innerHTML += tag.iconHTML;
+            });
+            
+            // 3. Mostra/Esconde o placeholder
+            if (tagsPlaceholder) {
+                tagsPlaceholder.style.display = hasSelection ? 'none' : 'block';
+            }
+            
+            // 4. Fecha o modal
+            closeModal();
+        });
+    }
+</script>
 </body>
 </html>

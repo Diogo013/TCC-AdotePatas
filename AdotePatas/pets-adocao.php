@@ -9,6 +9,47 @@ include_once 'conexao.php'; // 1. Inclui a conexão com o banco
  //   exit;
 //}
 
+$favoritos_usuario = [];
+$usuario_logado = false;
+
+if (isset($_SESSION['user_id'])) {
+    $usuario_logado = true;
+    try {
+        // Busca todos os IDs de pets que o usuário já favoritou
+        $sql_fav = "SELECT id_pet FROM favorito WHERE id_usuario = :id_usuario";
+        $stmt_fav = $conn->prepare($sql_fav);
+        $stmt_fav->execute([':id_usuario' => $_SESSION['user_id']]);
+        
+        // Converte o resultado em um array simples de IDs [1, 5, 12]
+        $favoritos_usuario = $stmt_fav->fetchAll(PDO::FETCH_COLUMN, 0);
+        $favoritos_usuario = array_map('intval', $favoritos_usuario); 
+        
+    } catch (PDOException $e) {
+        // Não para a página, apenas loga o erro
+        error_log("Erro ao buscar favoritos: " . $e->getMessage());
+    }
+}
+
+// 3. Lógica para buscar os pets no banco de dados
+$pets = [];
+$erro = '';
+try {
+    // Buscamos apenas pets que estão 'disponiveis'
+    $sql = "SELECT id_pet, nome, foto, sexo 
+            FROM pet 
+            WHERE status_disponibilidade = 'disponivel'";
+            // Você pode adicionar um 'ORDER BY data_cadastro DESC' aqui se quiser
+            
+    $stmt = $conn->prepare($sql);
+    $stmt->execute();
+    $pets = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+} catch (PDOException $e) {
+    $erro = "Erro ao buscar os pets. Tente novamente mais tarde.";
+    // Para debug: error_log("Erro em pets-adocao.php: " . $e->getMessage());
+}
+
+
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -19,7 +60,7 @@ include_once 'conexao.php'; // 1. Inclui a conexão com o banco
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
     integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
-    crossorigin="anonymous" referrerpolicy="no-referrer" />
+    crossorigin="anonymous" referrerpolicy="no-referrer"/>
     <link rel="stylesheet" href="assets/css/pages/pets/pets.css">
 </head>
 <body>
@@ -45,7 +86,7 @@ include_once 'conexao.php'; // 1. Inclui a conexão com o banco
                             <a class="nav-link" href="#">Contato</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">
+                            <a class="nav-link" href="<?php echo $usuario_logado ? 'perfil.php' : 'login'; ?>" title="<?php echo $usuario_logado ? 'Meu Perfil' : 'Entrar'; ?>">
                                 <i class="fa-regular fa-circle-user" style="font-size: 3rem;"></i>
                             </a>
                         </li>
@@ -74,21 +115,57 @@ include_once 'conexao.php'; // 1. Inclui a conexão com o banco
                             </div>
                     </div>
                 </section>
+                 <?php if (!empty($erro)): ?>
+                    <!-- Mostra erro se a busca no banco falhar -->
+                    <div class="alert alert-danger text-center">
+                        <?php echo htmlspecialchars($erro); ?>
+                    </div>
+
+                <?php elseif (empty($pets)): ?>
+                    <!-- Mensagem se não houver pets disponíveis -->
+                    <div class="alert alert-info text-center">
+                        <i class="fa-solid fa-paw fa-3x mb-3"></i>
+                        <h5 class="mb-1">Nenhum pet disponível para adoção no momento.</h5>
+                        <p>Volte em breve!</p>
+                    </div>
+
+                <?php else: ?>
 
                 <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4" id="petsGrid">
 
+                <?php foreach ($pets as $pet): ?>
+
+                    <?php
+                            // --- NOVO: Verifica se este pet está favoritado ---
+                            $is_favorito = in_array($pet['id_pet'], $favoritos_usuario);
+                        ?>
                     <div class="col">
+                        <a href="pet-detalhe.php?id=<?php echo $pet['id_pet']; ?>" class="pet-card-link">
                         <div class="pet-card">
                             <div class="pet-card-img">
                                 <img src="images/index/baunilha.webp" alt="Foto da gata Baunilha">
                             </div>
                             <div class="pet-card-body">
-                                <h2 class="pet-name">Baunilha</h2>
-                                <i class="fa-solid fa-venus pet-gender-female" aria-label="Fêmea" title="Fêmea"></i>
-                                <i class="fa-regular fa-heart pet-like" data-pet-id="baunilha" aria-label="Favoritar" role="button"></i>
+                                <h2 class="pet-name"><?php echo htmlspecialchars($pet['nome']); ?></h2>
+                                <?php if (!empty($pet['sexo'])): ?>
+                                            <?php if ($pet['sexo'] == 'femea'): ?>
+                                                <!-- [Cite: pets-adocao.php, line 93] -->
+                                                <i class="fa-solid fa-venus pet-gender-female" aria-label="Fêmea" title="Fêmea"></i>
+                                            <?php else: // 'macho' ?>
+                                                <!-- [Cite: pets-adocao.php, line 104] -->
+                                                <i class="fa-solid fa-mars pet-gender-male" aria-label="Macho" title="Macho"></i>
+                                            <?php endif; ?>
+                                        <?php endif; ?>
+                                    <i class="pet-like <?php echo $is_favorito ? 'fa-solid fa-heart favorited' : 'fa-regular fa-heart'; ?>" 
+                                       data-pet-id="<?php echo $pet['id_pet']; ?>" 
+                                       aria-label="Favoritar" 
+                                       role="button">
+                                    </i>
                             </div>
                         </div>
+                    </a>
                     </div>
+                    <?php endforeach; ?>
                     <div class="col">
                         <div class="pet-card">
                             <div class="pet-card-img">
@@ -272,6 +349,7 @@ include_once 'conexao.php'; // 1. Inclui a conexão com o banco
                             </div>
                         </div>
                     </div>
+                    
                     <div class="col pet-hidden d-none">
                         <div class="pet-card">
                             <div class="pet-card-img">
@@ -468,6 +546,7 @@ include_once 'conexao.php'; // 1. Inclui a conexão com o banco
                         </div>
                     </div>
                     </div>
+                    <?php endif; ?>
 
                 <div class="text-center mt-5">
                     <div class="spinner-border d-none mb-3" role="status" id="loadingSpinner">
@@ -483,8 +562,18 @@ include_once 'conexao.php'; // 1. Inclui a conexão com o banco
                 </div>
 
             </div>
+            
         </section>
     </main>
+
+    <!-- Toast de Notificação (para o JS de favoritos) -->
+    <div id="toast-notification" class="toast p-0" style="display: none; position: fixed; top: 20px; right: 20px; z-index: 9999;">
+        <div id="toast-icon" class="toast-icon"></div>
+        <div class="toast-content">
+            <p id="toast-message" class="toast-message">Pet favoritado.</p>
+        </div>
+        <div class="toast-progress-bar"></div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -542,6 +631,107 @@ include_once 'conexao.php'; // 1. Inclui a conexão com o banco
                 });
             }
         });
+    </script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const petsGrid = document.getElementById('petsGrid');
+        
+        // Função para mostrar o Toast (copiada do seu 'autenticacao.js')
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast-notification');
+            const toastIcon = document.getElementById('toast-icon');
+            const toastMessage = document.getElementById('toast-message');
+            
+            if (!toast || !toastIcon || !toastMessage) return;
+
+            toastMessage.textContent = message;
+            
+            // Remove classes antigas
+            toast.classList.remove('success', 'danger', 'warning');
+            toastIcon.className = 'toast-icon'; 
+
+            // Adiciona novas classes
+            toast.classList.add(type);
+            if (type === 'success') {
+                toastIcon.classList.add('fas', 'fa-check');
+            } else if (type === 'danger') {
+                toastIcon.classList.add('fas', 'fa-times');
+            } else if (type === 'warning') {
+                toastIcon.classList.add('fas', 'fa-exclamation-triangle');
+            }
+
+            toast.style.display = 'block';
+            
+            // Reinicia a animação da barra de progresso
+            const progressBar = toast.querySelector('.toast-progress-bar');
+            progressBar.style.animation = 'none';
+            void progressBar.offsetWidth; // Força o 'reflow'
+            progressBar.style.animation = 'progress 3s linear forwards';
+
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+
+        if (petsGrid) {
+            petsGrid.addEventListener('click', function(event) {
+                // Verifica se o clique foi no coração
+                const heartIcon = event.target.closest('.pet-like');
+                
+                if (heartIcon) {
+                    // Impede que o clique no coração ative o link do card
+                    event.preventDefault();
+                    event.stopPropagation();
+                    
+                    const petId = heartIcon.dataset.petId;
+                    toggleFavorite(petId, heartIcon);
+                }
+            });
+        }
+
+        async function toggleFavorite(petId, iconElement) {
+            try {
+                const response = await fetch('favoritar-pet.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ id_pet: petId })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    // Sucesso! Atualiza o ícone
+                    if (result.action === 'favorited') {
+                        iconElement.classList.remove('fa-regular');
+                        iconElement.classList.add('fa-solid', 'favorited');
+                        showToast(result.message, 'success');
+                    } else if (result.action === 'unfavorited') {
+                        iconElement.classList.remove('fa-solid', 'favorited');
+                        iconElement.classList.add('fa-regular');
+                        showToast(result.message, 'warning');
+                    }
+                } else {
+                    // Se o erro for 403 (Não logado), redireciona
+                    if (response.status === 403) {
+                        showToast(result.message, 'danger');
+                        setTimeout(() => {
+                            window.location.href = 'login'; // Redireciona para a página de login
+                        }, 1500);
+                    } else {
+                        // Outros erros
+                        showToast(result.message || 'Erro ao favoritar.', 'danger');
+                    }
+                }
+            } catch (error) {
+                console.error('Erro no fetch:', error);
+                showToast('Erro de conexão. Tente novamente.', 'danger');
+            }
+        }
+    });
     </script>
 </body>
 </html>

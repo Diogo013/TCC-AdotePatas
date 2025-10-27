@@ -70,7 +70,7 @@ $pets = [];
 $erro_pets = '';
 if ($pagina == 'meus-pets') {
     try {
-        $sql_pets = "SELECT id_pet, nome, foto, sexo, status_disponibilidade FROM pet WHERE ";
+        $sql_pets = "SELECT id_pet, nome, foto, sexo, status_disponibilidade, raca, idade FROM pet WHERE ";
         
         if ($user_tipo == 'adotante') {
             // [Cite: adote_patas.sql, Tabela pet, Coluna id_usuario_fk]
@@ -88,6 +88,29 @@ if ($pagina == 'meus-pets') {
     } catch (Exception $e) {
         $erro_pets = "Erro ao buscar seus pets: " . $e->getMessage();
         // Para debug: error_log("Erro ao buscar pets: " . $e->getMessage());
+    }
+}
+
+// 4. --- NOVA LÓGICA 'Pets Curtidos' ---
+$pets_curtidos = [];
+$erro_pets_curtidos = '';
+if ($pagina == 'pets-curtidos') {
+    try {
+        // SQL com JOIN para buscar os pets favoritados pelo usuário
+        $sql_curtidos = "SELECT p.id_pet, p.nome, p.foto, p.sexo
+                         FROM favorito AS f
+                         JOIN pet AS p ON f.id_pet = p.id_pet
+                         WHERE f.id_usuario = :id_usuario";
+                         // Opcional: AND p.status_disponibilidade = 'disponivel'
+                         
+        $stmt_curtidos = $conn->prepare($sql_curtidos);
+        $stmt_curtidos->bindParam(':id_usuario', $user_id, PDO::PARAM_INT);
+        $stmt_curtidos->execute();
+        $pets_curtidos = $stmt_curtidos->fetchAll(PDO::FETCH_ASSOC);
+
+    } catch (Exception $e) {
+        $erro_pets_curtidos = "Erro ao buscar seus pets curtidos: " . $e->getMessage();
+        error_log("Erro ao buscar pets curtidos: " . $e->getMessage());
     }
 }
 ?>
@@ -304,10 +327,66 @@ if ($pagina == 'meus-pets') {
                     // ==========================================================
                     case 'pets-curtidos':
                 ?>
-                        <main class="profile-card">
-                            <h1>Pets Curtidos</h1>
-                            <p>Aqui você verá a lista de todos os pets que você curtiu.</p>
-                            </main>
+                       <main class="profile-card pets-grid-container">
+                            <h1 class="mb-4">Pets Curtidos</h1>
+
+                            <?php if (!empty($erro_pets_curtidos)): ?>
+                                <div class="alert alert-danger"><?php echo htmlspecialchars($erro_pets_curtidos); ?></div>
+                            
+                            <?php elseif (empty($pets_curtidos)): ?>
+                                <div class="alert alert-info text-center">
+                                    <i class="fa-regular fa-heart fa-3x mb-3"></i>
+                                    <h5 class="mb-1">Você ainda não curtiu nenhum pet.</h5>
+                                    <p>Que tal encontrar seu novo amigo?</p>
+                                    <a href="pets-adocao.php" class="btn btn-primary mt-2">Ver pets para adoção</a>
+                                </div>
+                            
+                            <?php else: ?>
+                                <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4" id="petsGrid">
+                                
+                                    <?php foreach ($pets_curtidos as $pet): ?>
+                                    <div class="col">
+                                        <div class="pet-card">
+                                            <!-- Link na Imagem -->
+                                            <a href="pet-detalhe.php?id=<?php echo $pet['id_pet']; ?>" class="pet-card-link-img">
+                                                <div class="pet-card-img">
+                                                    <img src="<?php echo htmlspecialchars($pet['foto'] ?? 'images/global/placeholder-pet.png'); ?>" 
+                                                         alt="Foto de <?php echo htmlspecialchars($pet['nome']); ?>"
+                                                         onerror="this.src='images/perfil/teste.jpg';">
+                                                </div>
+                                            </a>
+                                            <!-- Corpo do Card -->
+                                            <div class="pet-card-body">
+                                                <h2 class="pet-name">
+                                                    <!-- Link no Nome -->
+                                                    <a href="pet-detalhe.php?id=<?php echo $pet['id_pet']; ?>" class="pet-card-link-nome">
+                                                        <?php echo htmlspecialchars($pet['nome']); ?>
+                                                    </a>
+                                                </h2>
+                                                
+                                                <!-- Gênero -->
+                                                <?php if (!empty($pet['sexo'])): ?>
+                                                    <?php if ($pet['sexo'] == 'femea'): ?>
+                                                        <i class="fa-solid fa-venus pet-gender-female" title="Fêmea"></i>
+                                                    <?php else: ?>
+                                                        <i class="fa-solid fa-mars pet-gender-male" title="Macho"></i>
+                                                    <?php endif; ?>
+                                                <?php endif; ?>
+                                                
+                                                <!-- Coração (Sempre favoritado) -->
+                                                <i class="pet-like fa-solid fa-heart favorited" 
+                                                   data-pet-id="<?php echo $pet['id_pet']; ?>" 
+                                                   aria-label="Desfavoritar" 
+                                                   role="button">
+                                                </i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <?php endforeach; ?>
+
+                                </div>
+                            <?php endif; ?>
+                        </main>
                 <?php
                     break; // Fim do 'case pets-curtidos'
                 
@@ -431,6 +510,98 @@ if ($pagina == 'meus-pets') {
             
             <?php endif; ?>
         });
+    </script>
+
+     <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const petsGrid = document.getElementById('petsGrid');
+        
+        // Função Toast (precisa ser acessível por este script também)
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast-notification');
+            const toastIcon = document.getElementById('toast-icon');
+            const toastMessage = document.getElementById('toast-message');
+            if (!toast || !toastIcon || !toastMessage) return;
+            toastMessage.textContent = message;
+            toast.classList.remove('success', 'danger', 'warning');
+            toastIcon.className = 'toast-icon';
+            toast.classList.add(type);
+            if (type === 'success') toastIcon.classList.add('fas', 'fa-check');
+            else if (type === 'danger') toastIcon.classList.add('fas', 'fa-times');
+            else if (type === 'warning') toastIcon.classList.add('fas', 'fa-exclamation-triangle');
+            toast.style.display = 'block';
+            const progressBar = toast.querySelector('.toast-progress-bar');
+            progressBar.style.animation = 'none';
+            void progressBar.offsetWidth;
+            progressBar.style.animation = 'progress 3s linear forwards';
+            setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        }
+
+        if (petsGrid) {
+            petsGrid.addEventListener('click', function(event) {
+                const heartIcon = event.target.closest('.pet-like');
+                if (heartIcon) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const petId = heartIcon.dataset.petId;
+                    toggleFavorite(petId, heartIcon);
+                }
+            });
+        }
+
+        async function toggleFavorite(petId, iconElement) {
+            try {
+                const response = await fetch('favoritar-pet.php', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+                    body: JSON.stringify({ id_pet: petId })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    if (result.action === 'favorited') {
+                        iconElement.classList.remove('fa-regular');
+                        iconElement.classList.add('fa-solid', 'favorited');
+                        showToast(result.message, 'success');
+                    } else if (result.action === 'unfavorited') {
+                        iconElement.classList.remove('fa-solid', 'favorited');
+                        iconElement.classList.add('fa-regular');
+                        showToast(result.message, 'warning');
+                        
+                        // NOVO: Remove o card da tela após descurtir
+                        // (Apenas se estivermos na página 'pets-curtidos')
+                        <?php if ($pagina == 'pets-curtidos'): ?>
+                        setTimeout(() => {
+                            iconElement.closest('.col').remove();
+                            // Verifica se a grid ficou vazia
+                            if (petsGrid.querySelectorAll('.col').length === 0) {
+                                document.querySelector('.pets-grid-container').innerHTML = `
+                                    <h1 class="mb-4">Pets Curtidos</h1>
+                                    <div class="alert alert-info text-center">
+                                        <i class="fa-regular fa-heart fa-3x mb-3"></i>
+                                        <h5 class="mb-1">Você não tem mais pets curtidos.</h5>
+                                        <a href="pets-adocao.php" class="btn btn-primary mt-2">Ver pets para adoção</a>
+                                    </div>
+                                `;
+                            }
+                        }, 1000); // Espera 1s antes de remover
+                        <?php endif; ?>
+                    }
+                } else {
+                    if (response.status === 403) {
+                        showToast(result.message, 'danger');
+                        setTimeout(() => { window.location.href = 'login'; }, 1500);
+                    } else {
+                        showToast(result.message || 'Erro ao favoritar.', 'danger');
+                    }
+                }
+            } catch (error) {
+                console.error('Erro no fetch:', error);
+                showToast('Erro de conexão. Tente novamente.', 'danger');
+            }
+        }
+    });
     </script>
 
 </body>

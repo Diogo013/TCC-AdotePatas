@@ -33,6 +33,7 @@ $status_vacinacao = trim($_POST['status_vacinacao'] ?? '');
 $status_castracao = trim($_POST['status_castracao'] ?? '');
 $status_disponibilidade = trim($_POST['status_disponibilidade'] ?? 'disponivel');
 $comportamento = trim($_POST['comportamento'] ?? '');
+$caracteristicas = $_POST['caracteristicas'] ?? [];
 
 $erros = [];
 
@@ -41,6 +42,9 @@ if (empty($id_pet)) $erros[] = "ID do pet perdido.";
 if (empty($nome)) $erros[] = "O campo 'Nome' é obrigatório.";
 if (empty($especie)) $erros[] = "O campo 'Espécie' é obrigatório.";
 if (empty($sexo)) $erros[] = "O campo 'Gênero' é obrigatório.";
+if (count($caracteristicas) > 5) {
+        $erros[] = "Você só pode selecionar até 5 características.";
+}
 // ... (Adicione todas as outras validações de ENUM, etc., do cadastrar-pet.php) ...
 
 // Se houver erros de validação, redireciona de volta para a edição
@@ -100,6 +104,7 @@ try {
             throw new Exception("Formato de imagem inválido ou foto muito grande.");
         }
     }
+    $caracteristicas_json = json_encode($caracteristicas, JSON_UNESCAPED_UNICODE);
 
     // 8. ATUALIZAR O BANCO DE DADOS
     $sql_update = "UPDATE pet SET 
@@ -114,7 +119,8 @@ try {
                         status_castracao = :status_castracao, 
                         status_disponibilidade = :status_disponibilidade, 
                         comportamento = :comportamento, 
-                        foto = :foto 
+                        foto = :foto,
+                        caracteristicas = :caracteristicas
                     WHERE id_pet = :id_pet";
     
     $stmt_update = $conn->prepare($sql_update);
@@ -131,6 +137,7 @@ try {
         ':status_disponibilidade' => $status_disponibilidade,
         ':comportamento' => $comportamento,
         ':foto' => $caminho_foto_db,
+        ':caracteristicas' => $caracteristicas_json,
         ':id_pet' => $id_pet
     ]);
 

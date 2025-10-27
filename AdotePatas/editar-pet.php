@@ -46,6 +46,8 @@ try {
         throw new Exception("Você não tem permissão para editar este pet.");
     }
 
+    $pet_caracteristicas = json_decode($pet['caracteristicas'] ?? '[]', true);
+
 } catch (Exception $e) {
     $_SESSION['mensagem_status'] = $e->getMessage();
     $_SESSION['tipo_mensagem'] = 'danger';
@@ -71,6 +73,7 @@ unset($_SESSION['tipo_mensagem']);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="images/global/Logo-AdotePatas.png"/>
     <link rel="stylesheet" href="assets/css/pages/autenticacao/autenticacao.css">
+    <link rel="stylesheet" href="assets/css/pages/cadastro-pet/caracteristica.css">
     <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 
     <!-- Estilo customizado para o input[file] -->
@@ -239,6 +242,17 @@ unset($_SESSION['tipo_mensagem']);
                 </div>
             </div>
             -->
+            <div>
+                <button type="button" id="openModalBtn" class="input-style w-full">
+                    <span id="tagsPlaceholder">Selecionar Características...</span>
+                    <span class="tags-preview" id="tagsPreview">
+                        <!-- JS vai preencher isso no load -->
+                    </span>
+                </button>
+                <div id="hidden-tags-container">
+                    <!-- JS vai preencher isso no load -->
+                </div>
+            </div>
 
             <!-- Linha 7: Comportamento -->
             <div>
@@ -253,6 +267,62 @@ unset($_SESSION['tipo_mensagem']);
                 </button>
             </div>
         </form>
+    </div>
+</div>
+
+<div id="charModal" class="char-modal">
+    <div class="char-modal-content">
+        
+        <!-- Cabeçalho -->
+        <div class="char-modal-header">
+            <div>
+                <h2>Selecionar Características</h2>
+                <p>Escolha até 5 características para o seu pet.</p>
+            </div>
+            <button type="button" class="char-modal-close" id="closeModalBtn">&times;</button>
+        </div>
+
+        <!-- Corpo com as Tags -->
+        <div class="char-modal-body">
+            <!-- Temperamento -->
+            <h3>Temperamento</h3>
+            <div class="char-tags-container">
+                <span class="char-tag" data-color="laranja" data-value="Brincalhão"><i class="fas fa-lightbulb"></i> Brincalhão <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="verde" data-value="Calmo"><i class="fas fa-leaf"></i> Calmo <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="roxo" data-value="Curioso"><i class="fas fa-search"></i> Curioso <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="laranja" data-value="Tímido"><i class="fas fa-user-secret"></i> Tímido <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="verde" data-value="Protetor"><i class="fas fa-shield-alt"></i> Protetor <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="roxo" data-value="Sociável"><i class="fas fa-users"></i> Sociável <i class="fas fa-check"></i></span>
+            </div>
+            <!-- Nível de Energia -->
+            <h3>Nível de Energia</h3>
+            <div class="char-tags-container">
+                <span class="char-tag" data-color="laranja" data-value="Energético"><i class="fas fa-bolt"></i> Energético <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="roxo" data-value="Tranquilo"><i class="fas fa-moon"></i> Tranquilo <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="verde" data-value="Moderado"><i class="fas fa-balance-scale"></i> Moderado <i class="fas fa-check"></i></span>
+            </div>
+            <!-- Convivência -->
+            <h3>Convivência</h3>
+            <div class="char-tags-container">
+                <span class="char-tag" data-color="rosa" data-value="Bom com Crianças"><i class="fas fa-child"></i> Bom com Crianças <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="rosa" data-value="Bom com Gatos"><i class="fas fa-cat"></i> Bom com Gatos <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="rosa" data-value="Bom com Cães"><i class="fas fa-dog"></i> Bom com Cães <i class="fas fa-check"></i></span>
+            </div>
+            <!-- Outros -->
+            <h3>Outros</h3>
+            <div class="char-tags-container">
+                <span class="char-tag" data-color="laranja" data-value="Adestrado"><i class="fas fa-graduation-cap"></i> Adestrado <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="verde" data-value="Castrado"><i class="fas fa-cut"></i> Castrado <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="roxo" data-value="Peludo"><i class="fas fa-comment-dots"></i> Peludo <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="rosa" data-value="Alérgico"><i class="fas fa-allergies"></i> Alérgico <i class="fas fa-check"></i></span>
+            </div>
+        </div>
+
+        <!-- Rodapé -->
+        <div class="char-modal-footer">
+            <button type="button" class="btn btn-cancelar" id="cancelModalBtn">Cancelar</button>
+            <button type="button" class="btn btn-salvar" id="saveModalBtn">Salvar Seleção (0/5)</button>
+        </div>
     </div>
 </div>
 
@@ -278,6 +348,151 @@ unset($_SESSION['tipo_mensagem']);
             });
         }
     });
+</script>
+
+<script type="module">
+    // Pega os elementos do DOM
+    const modal = document.getElementById('charModal');
+    const openBtn = document.getElementById('openModalBtn');
+    const closeBtn = document.getElementById('closeModalBtn');
+    const cancelBtn = document.getElementById('cancelModalBtn');
+    const saveBtn = document.getElementById('saveModalBtn');
+    const allTagsInModal = document.querySelectorAll('.char-tag');
+    const hiddenTagsContainer = document.getElementById('hidden-tags-container');
+    const tagsPreview = document.getElementById('tagsPreview');
+    const tagsPlaceholder = document.getElementById('tagsPlaceholder');
+    
+    // --- NOVO: Pega características existentes do PHP ---
+    const existingCharacteristics = <?php echo json_encode($pet_caracteristicas); ?>;
+    
+    const MAX_SELECTIONS = 5;
+    let selectedTags = []; // Armazena objetos {value, iconHTML}
+
+    // --- Funções do Modal ---
+    function openModal() {
+        if (modal) modal.style.display = 'flex';
+        syncModalStateFromForm();
+    }
+
+    function closeModal() {
+        if (modal) modal.style.display = 'none';
+    }
+    
+    function updateSelectionCount() {
+        const count = selectedTags.length;
+        saveBtn.textContent = `Salvar Seleção (${count}/${MAX_SELECTIONS})`;
+        saveBtn.disabled = (count === 0);
+    }
+    
+    // --- Sincronização ---
+    // (Lê os inputs hidden e atualiza o array 'selectedTags')
+    function syncModalStateFromForm() {
+        selectedTags = [];
+        const hiddenInputs = hiddenTagsContainer.querySelectorAll('input[name="caracteristicas[]"]');
+        
+        hiddenInputs.forEach(input => {
+            const value = input.value;
+            const matchingTag = document.querySelector(`.char-tag[data-value="${value}"]`);
+            if (matchingTag) {
+                const iconHTML = matchingTag.querySelector('i:first-child').outerHTML;
+                selectedTags.push({ value: value, iconHTML: iconHTML });
+            }
+        });
+        
+        // Atualiza a aparência das tags no modal
+        allTagsInModal.forEach(tag => {
+            if (selectedTags.some(t => t.value === tag.dataset.value)) {
+                tag.classList.add('active');
+            } else {
+                tag.classList.remove('active');
+            }
+        });
+        updateSelectionCount();
+    }
+    
+    // --- NOVO: Função para salvar e atualizar a UI ---
+    // (Separada para ser chamada no 'save' e no 'load')
+    function saveAndApplyTags() {
+        // 1. Limpa os inputs escondidos e o preview de ícones
+        hiddenTagsContainer.innerHTML = '';
+        tagsPreview.innerHTML = '';
+        
+        let hasSelection = selectedTags.length > 0;
+
+        selectedTags.forEach(tag => {
+            // 2a. Cria os novos inputs escondidos
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'caracteristicas[]';
+            input.value = tag.value;
+            hiddenTagsContainer.appendChild(input);
+            
+            // 2b. Adiciona o ícone ao preview no botão
+            tagsPreview.innerHTML += tag.iconHTML;
+        });
+        
+        // 3. Mostra/Esconde o placeholder
+        if (tagsPlaceholder) {
+            tagsPlaceholder.style.display = hasSelection ? 'none' : 'block';
+        }
+    }
+    
+    // --- NOVO: Função para pré-popular no load da página ---
+    function prefillCharacteristics() {
+        existingCharacteristics.forEach(value => {
+            const matchingTag = document.querySelector(`.char-tag[data-value="${value}"]`);
+            if (matchingTag) {
+                const iconHTML = matchingTag.querySelector('i:first-child').outerHTML;
+                if (selectedTags.length < MAX_SELECTIONS) {
+                    selectedTags.push({ value: value, iconHTML: iconHTML });
+                }
+            }
+        });
+        // Aplica as tags carregadas
+        saveAndApplyTags();
+    }
+
+    // --- Event Handlers ---
+    if (openBtn) openBtn.addEventListener('click', openModal);
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+    if (modal) {
+        modal.addEventListener('click', (event) => (event.target === modal) && closeModal());
+    }
+
+    // Clicar numa Tag
+    allTagsInModal.forEach(tag => {
+        tag.addEventListener('click', () => {
+            const value = tag.dataset.value;
+            const iconHTML = tag.querySelector('i:first-child').outerHTML; 
+            const isActive = tag.classList.contains('active');
+
+            if (isActive) {
+                tag.classList.remove('active');
+                selectedTags = selectedTags.filter(t => t.value !== value);
+            } else {
+                if (selectedTags.length < MAX_SELECTIONS) {
+                    tag.classList.add('active');
+                    selectedTags.push({ value: value, iconHTML: iconHTML });
+                } else {
+                    console.warn(`Limite de ${MAX_SELECTIONS} características atingido.`);
+                }
+            }
+            updateSelectionCount();
+        });
+    });
+    
+    // Salvar Seleção
+    if (saveBtn) {
+        saveBtn.addEventListener('click', () => {
+            saveAndApplyTags();
+            closeModal();
+        });
+    }
+    
+    // --- NOVO: Executa o pré-preenchimento ---
+    prefillCharacteristics();
+    
 </script>
 
 </body>

@@ -1,0 +1,207 @@
+/*
+ * Estilização para o modal de seleção de características
+ * Baseado na imagem filtros.jpg
+ */
+
+/* O Fundo Escuro do Modal (Backdrop) */
+.char-modal {
+  display: none; /* Escondido por padrão */
+  position: fixed;
+  z-index: 1050;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  align-items: center;
+  justify-content: center;
+}
+
+/* O Card do Modal */
+.char-modal-content {
+  background-color: #fff;
+  border-radius: 20px;
+  padding: 24px 30px;
+  width: 90%;
+  max-width: 600px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  position: relative;
+  animation: modal-fade-in 0.3s ease-out;
+}
+
+@keyframes modal-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Cabeçalho do Modal */
+.char-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.char-modal-header h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+}
+
+.char-modal-header p {
+  font-size: 0.95rem;
+  color: #666;
+  margin: 0;
+}
+
+.char-modal-close {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #aaa;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  line-height: 1;
+}
+.char-modal-close:hover {
+  color: #333;
+}
+
+/* Corpo do Modal */
+.char-modal-body h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #555;
+  margin-top: 15px;
+  margin-bottom: 12px;
+}
+
+.char-tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* As "Tags" de característica */
+.char-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+  user-select: none;
+}
+
+.char-tag i {
+  font-size: 0.8rem;
+}
+
+/* Cores das Tags (baseado em filtros.jpg) */
+.char-tag[data-color="laranja"] {
+  background-color: #fff0e6;
+  color: #ff6b00;
+}
+.char-tag[data-color="verde"] {
+  background-color: #e6f8f0;
+  color: #00a968;
+}
+.char-tag[data-color="roxo"] {
+  background-color: #f0e6f8;
+  color: #7b2cbf;
+}
+.char-tag[data-color="rosa"] {
+  background-color: #fce6f0;
+  color: #d9006c;
+}
+
+/* Estilo da Tag Ativa */
+.char-tag.active {
+  border-color: currentColor; /* Usa a cor do texto (laranja, verde, etc.) */
+  background-color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.char-tag.active i.fa-check {
+  display: inline-block; /* Mostra o ícone de check */
+}
+.char-tag i.fa-check {
+  display: none; /* Esconde o check por padrão */
+}
+
+/* Rodapé do Modal */
+.char-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.char-modal-footer .btn {
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 1rem;
+  border: none;
+}
+
+.char-modal-footer .btn-cancelar {
+  background-color: #f1f1f1;
+  color: #555;
+}
+.char-modal-footer .btn-cancelar:hover {
+  background-color: #e5e5e5;
+}
+
+.char-modal-footer .btn-salvar {
+  background-color: var(--cor-vermelho, #d9006c);
+  color: #fff;
+}
+.char-modal-footer .btn-salvar:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+
+ .file-input-label {
+            cursor: pointer; display: flex; align-items: center; gap: 10px;
+            border: 2px dashed var(--cor-vermelho-claro); background-color: #fff8f8;
+            transition: all 0.3s ease;
+        }
+        .file-input-label:hover { background-color: #fff0f0; border-color: var(--cor-vermelho); }
+        .file-input-label i { color: var(--cor-vermelho); }
+        .file-input-label span { color: #555; font-size: 0.95rem; }
+
+        /* === INÍCIO CSS ADICIONADO === */
+        #openModalBtn {
+            /* Garante que ícones e placeholder fiquem alinhados */
+            justify-content: space-between;
+            display: flex;
+            align-items: center;
+        }
+        #tagsPreview {
+            display: flex;
+            gap: 8px; /* Espaçamento entre os ícones */
+            font-size: 1.1rem; /* Tamanho dos ícones */
+            color: var(--cor-vermelho, #d9006c); /* Cor dos ícones */
+        }
+        #tagsPlaceholder {
+            color: #6b7280; /* Cor do placeholder */
+        }
