@@ -51,9 +51,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $now = date("Y-m-d H:i:s");
         $sql = "SELECT email FROM recuperar_senha_tolken WHERE token = :token AND expires_at > :now LIMIT 1";
         $stmt = $conn->prepare($sql);
-        $stmt->execute([':token' => $token]);
+        // CORREÇÃO AQUI:
+        $stmt->execute([':token' => $token, ':now' => $now]);
         $reset_request = $stmt->fetch();
-
         if (!$reset_request) {
             $response['message'] = 'Token inválido ou expirado. Por favor, solicite um novo link.';
             echo json_encode($response);
@@ -100,7 +100,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $conn->rollBack();
         }
         error_log("Erro ao processar troca de senha: " . $e->getMessage());
-        $response['message'] = 'Erro no banco de dados. Tente novamente.';
+        $response['message'] = 'Erro no banco de dados. Tente novamente.' . $e->getMessage();
     }
 } else {
     $response['message'] = 'Método de requisição inválido.';
