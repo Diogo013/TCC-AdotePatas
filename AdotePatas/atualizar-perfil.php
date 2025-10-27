@@ -83,7 +83,6 @@ if (empty($documento)) {
 
 // Se não há erros de campos obrigatórios, valida o formato
 if (empty($erros)) {
-    // ✅ CORREÇÃO: Valida nome APENAS para adotantes
     if ($user_tipo == 'adotante') {
         if (strpos($nome, ' ') === false) {
             $erros[] = "Por favor, digite seu nome completo.";

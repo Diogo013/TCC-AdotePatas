@@ -117,7 +117,7 @@ body.offcanvas-open {
 .profile-nav .nav-link {
   color: var(--cor-cinza-texto);
   font-weight: 500;
-  font-size: 0.5rem;
+  font-size: 1rem;
   display: flex;
   align-items: center;
   transition: all 0.2s ease;
@@ -241,7 +241,7 @@ body.offcanvas-open {
     color: #e87a7a;
 }
 .offcanvas-body .nav-link {
-    font-size: 1rem;
+    font-size: 0.5rem;
     padding: 10px 15px;
     color: #333;
     border-radius: 8px;
@@ -262,11 +262,6 @@ body.offcanvas-open {
   text-align: center;
   color: #555;
 }
-
-.profile-info-link:hover .profile-name {
-  text-decoration: underline; /* Efeito hover sutil */
-}
-
 
 .loginlink {
   color: var(--cor-vermelho) !important;

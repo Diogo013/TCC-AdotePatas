@@ -95,21 +95,21 @@ $pagina = "";
 
         <?php if ($logado): ?>
           <!-- Navbar para usuário LOGADO -->
-          <div class="profile-container">
+          <div class="profile-container d-flex justify-content-center align-items-center" >
             
         <ul class="navbar-nav d-flex">
           <li class="nav-item">
-            <a class="nav-link navlink" href="#">Sobre Nós</a>
+            <a class="nav-link navlink" href="sobre-nos.php">Sobre Nós</a>
           </li>
           <li class="nav-item">
             <a class="nav-link navlink" href="#">Ajuda</a>
           </li>
         </ul>
 
-            <a href="perfil?page=perfil" class="profile-info-link" title="Ver meu perfil">
-              <div class="profile-info">
+         <a href="perfil?page=perfil" class="profile-info-link" style="text-decoration: none;" title="Ver meu perfil">
+              <div class="profile-info d-flex flex-row-reverse gap-2 ms-4">
                 <i class="fa-regular fa-circle-user profile-icon"></i>
-                <!--<span class="profile-name"><?php //echo htmlspecialchars($primeiro_nome); ?></span>!-->
+                <span class="profile-name fs-5 mb-1" style="color: var(--cor-vermelho);"><?php echo htmlspecialchars($primeiro_nome); ?></span>
               </div>
             </a>
 
@@ -122,7 +122,7 @@ $pagina = "";
         <?php else: ?>
         <ul class="navbar-nav d-flex">
           <li class="nav-item">
-            <a class="nav-link navlink" href="#">Sobre Nós</a>
+            <a class="nav-link navlink" href="sobre-nos.php">Sobre Nós</a>
           </li>
           <li class="nav-item">
             <a class="nav-link navlink" href="#">Ajuda</a>

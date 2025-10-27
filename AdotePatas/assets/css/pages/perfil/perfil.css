@@ -403,7 +403,6 @@ body {
 /* -------------------------------------------------------------------------- */
 .no-pets-section {
     border-radius: 12px; /* Bordas mais arredondadas */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); /* Sombra mais sutil */
     padding: 40px 30px; /* Aumenta o padding */
     margin-top: 30px; /* Adiciona um espaço da parte superior */
     animation: fadeIn 0.8s ease-out; /* Adiciona uma animação de fade-in */

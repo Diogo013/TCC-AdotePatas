@@ -1,141 +1,370 @@
 /* ==========================================================================
    IMPORTS
    ========================================================================== */
-@import "../index/partials/hamburger-menu.css"; 
+@import "../index/partials/hamburger-menu.css";
 @import "../../global/global.css";
 
 /* ==========================================================================
    ESTILOS GLOBAIS DA PÁGINA
    ========================================================================== */
 body {
-    background-color: var(--cor-laranja-claro) !important;
-    overflow-x: hidden;
-    padding: 0;
+  background-color: var(--cor-laranja-claro) !important;
+  overflow-x: hidden;
+  padding: 0;
 }
 
 /* Cor de seleção de texto personalizada */
 ::selection {
-    background-color: var(--cor-rosa-escuro);
-    color: var(--cor-branca);
+  background-color: var(--cor-rosa-escuro);
+  color: var(--cor-branca);
+}
+
+.btn-voltar {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 100;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  color: var(--cor-vermelho);
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
 }
 
 /* ==========================================================================
    NAVBAR - (Estilos copiados do index.css para consistência)
    ========================================================================== */
 .navbar {
-    padding: 0.5rem 1rem;
-    transition: all 0.3s ease;
-    font-size: 2em;
-    font-weight: bold;
-    z-index: 10;
+  padding: 0.5rem 1rem;
+  transition: all 0.3s ease;
+  font-size: 2em;
+  font-weight: bold;
+  z-index: 10;
 }
 
 .navbar-logo {
-    width: clamp(60px, 10vw, 80px);
-    height: clamp(60px, 10vw, 80px);
-    object-fit: contain;
+  width: clamp(60px, 10vw, 80px);
+  height: clamp(60px, 10vw, 80px);
+  object-fit: contain;
 }
 
 .navbar-scrolled {
-    background-color: var(--cor-branca);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    padding: 0.2rem 0;
+  background-color: var(--cor-branca);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 0.2rem 0;
 }
 
 .navbar-scrolled .navbar-logo {
-    width: clamp(55px, 10vw, 70px);
+  width: clamp(55px, 10vw, 70px);
 }
 
 .navbar-nav {
-    gap: 1.5rem;
-    align-items: center;
+  gap: 1.5rem;
+  align-items: center;
 }
 
 .nav-link {
-    font-weight: 800;
-    cursor: pointer;
-    position: relative;
-    padding: 10px 15px;
-    transition: color 0.3s ease;
-    display: flex;
-    align-items: center;
-    font-size: 5rem;
-    white-space: nowrap;
-    border-radius: 4px;
+  font-weight: 800;
+  cursor: pointer;
+  position: relative;
+  padding: 10px 15px;
+  transition: color 0.3s ease;
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+  white-space: nowrap;
+  border-radius: 4px;
 }
 
 .navlink {
-    color: var(--cor-cinza-texto);
+  color: var(--cor-cinza-texto);
 }
 
 .navlink::after {
-    content: '';
-    position: absolute;
-    bottom: 5px;
-    left: 15px;
-    width: calc(100% - 30px);
-    height: 2px;
-    background: var(--cor-rosa-escuro);
-    transform: scaleX(0);
-    transform-origin: center;
-    transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+  content: '';
+  position: absolute;
+  bottom: 5px;
+  left: 15px;
+  width: calc(100% - 30px);
+  height: 2px;
+  background: var(--cor-rosa-escuro);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
 .navlink:hover,
 .navlink:focus {
-    color: var(--cor-rosa-escuro) !important;
+  color: var(--cor-rosa-escuro) !important;
 }
 
 .navlink:hover::after,
 .navlink:focus::after,
-.navlink.active::after { /* Estilo para o link ativo */
-    transform: scaleX(1);
-}
-.navlink.active {
-    color: var(--cor-rosa-escuro) !important;
+.navlink.active::after {
+  transform: scaleX(1);
 }
 
+.navlink.active {
+  color: var(--cor-rosa-escuro) !important;
+}
 
 .loginlink {
-    color: var(--cor-vermelho) !important;
-    position: relative;
-    margin-left: 1.5rem;
+  color: var(--cor-vermelho) !important;
+  position: relative;
+  margin-left: 1.5rem;
 }
 
 .loginlink::after {
-    content: '';
-    position: absolute;
-    bottom: 5px;
-    left: 15px;
-    width: calc(100% - 30px);
-    height: 2px;
-    background: var(--cor-vermelho);
-    transform: scaleX(0);
-    transform-origin: center;
-    transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+  content: '';
+  position: absolute;
+  bottom: 5px;
+  left: 15px;
+  width: calc(100% - 30px);
+  height: 2px;
+  background: var(--cor-vermelho);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
 .loginlink:hover,
 .loginlink:focus {
-    color: var(--cor-vermelho);
+  color: var(--cor-vermelho);
 }
 
 .loginlink:hover::after,
 .loginlink:focus::after {
-    transform: scaleX(1);
+  transform: scaleX(1);
 }
 
 .loginlink::before {
-    content: '|';
-    position: absolute;
-    left: -25px;
-    top: 45%;
-    transform: translateY(-50%);
-    color: var(--cor-cinza);
-    font-weight: 300;
-    font-size: 2.5rem;
+  content: '|';
+  position: absolute;
+  left: -25px;
+  top: 45%;
+  transform: translateY(-50%);
+  color: var(--cor-cinza);
+  font-weight: 300;
+  font-size: 2.5rem;
 }
 
+/* === [INÍCIO] CÓDIGO IMPLEMENTADO - OVERRIDES NAVBAR === */
+.navbar .nav-link,
+.navbar .navlink,
+.navbar .loginlink {
+  font-size: 1.5rem !important;
+  padding: 8px 10px;
+}
+
+.navbar .navbar-links,
+.navbar .navbar-nav {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.offcanvas-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  margin-left: 0.25rem;
+  background: transparent;
+  border: none;
+}
+
+@media (max-width: 991.98px) {
+  .profile-info,
+  .profile-name {
+    display: none !important;
+  }
+  .profile-container,
+  .navbar-links {
+    justify-content: flex-end;
+  }
+  .loginlink::before {
+    display: none;
+  }
+}
+
+.navbar-toggler {
+  display: none !important;
+}
+
+.collapse.navbar-collapse {
+  display: flex !important;
+}
+/* === [FIM] CÓDIGO IMPLEMENTADO === */
+
+/* ==========================================================================
+   ESTILOS NAVBAR LOGADO (OFFCANVAS)
+   ========================================================================== */
+.profile-container {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  position: relative;
+  z-index: 1031;
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  color: #555;
+}
+
+.profile-icon {
+  font-size: 3rem;
+  color: var(--cor-vermelho);
+}
+
+.profile-name {
+  font-size: 14px;
+  font-weight: bold;
+  margin-top: 4px;
+  text-decoration: none;
+}
+
+.nav-icon {
+  font-size: 24px;
+  color: #555;
+}
+
+.profile-info-link {
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  color: #555;
+}
+
+/* --- Correções e Estilos Base do Offcanvas --- */
+.offcanvas {
+  position: fixed;
+  z-index: 1045;
+  transition: transform 0.3s ease-in-out;
+  visibility: visible !important;
+}
+
+.offcanvas-end {
+  transform: translateX(100%);
+}
+
+.offcanvas.show {
+  transform: translateX(0);
+}
+
+.offcanvas-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1040;
+  width: 100vw;
+  height: 100vh;
+  background-color: #000;
+}
+
+.offcanvas-backdrop.show {
+  opacity: 0.5;
+}
+
+html.offcanvas-open,
+body.offcanvas-open {
+  overflow: hidden !important;
+  position: fixed;
+  width: 100%;
+}
+
+body.offcanvas-open {
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .offcanvas {
+    width: 400px !important;
+  }
+  body:not(.offcanvas-open) {
+    padding-right: 0 !important;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .offcanvas {
+    width: 85% !important;
+  }
+}
+
+.offcanvas-header {
+  border-bottom: 1px solid #eee;
+}
+
+.offcanvas-title {
+  font-weight: bold;
+  color: #e87a7a;
+}
+
+.profile-sidebar {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-profile-icon {
+  font-size: 4rem;
+  color: var(--cor-vermelho);
+}
+
+.profile-nav .nav-link {
+  color: var(--cor-cinza-texto);
+  font-weight: 500;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s ease;
+  margin-bottom: 0.25rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+}
+
+.profile-nav .nav-link:hover {
+  background-color: var(--cor-laranja-claro);
+  color: var(--cor-rosa-escuro);
+}
+
+.profile-nav .nav-link.active {
+  background-color: var(--cor-vermelho);
+  color: var(--cor-branca);
+}
+
+.logout-link-sidebar {
+  color: var(--cor-vermelho) !important;
+}
+
+.logout-link-sidebar:hover {
+  background-color: #fcebeb !important;
+}
+
+.offcanvas-body .nav-link {
+  font-size: 1rem;
+  padding: 10px 15px;
+  color: #333;
+  border-radius: 8px;
+}
+
+.offcanvas-body .nav-link:hover {
+  background-color: #f5f5f5;
+}
+
+.offcanvas-body .logout-link {
+  color: #e87a7a;
+  font-weight: bold;
+}
 
 /* ==========================================================================
    HERO SECTION - PÁGINA "SOBRE NÓS" (Atualizado)
@@ -154,8 +383,328 @@ body {
 
 
 /* ==========================================================================
+   CARROSSEL DE CARDS COM CSS E JS PUROS
+   ========================================================================== */
+
+.card-carousel-container {
+  position: relative;
+  aspect-ratio: 441 / 527;
+  width: 70%;
+  max-width: 600px; /* Largura máxima do card ativo */
+  margin: 10px; /* O Bootstrap já cuida do alinhamento da coluna */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.card-deck {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* Estilo base para todos os cards no baralho */
+.card-item-deck {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  cursor: pointer;
+  /* A transição é a chave para a animação suave */
+  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.6s ease;
+  /* Usamos variáveis para controlar a posição e rotação via JS */
+  transform: translateX(var(--x-offset, 0px)) translateY(var(--y-offset, 0px))
+    scale(var(--scale, 1)) rotate(var(--rotation, 0deg));
+
+  opacity: var(--opacity, 1);
+  z-index: var(--z-index, 1);
+}
+
+/* O conteúdo visual do card (a imagem, borda, etc.) */
+.card-item-deck .card-content {
+  width: 90%;
+  height: 90%;
+  border-radius: 12px;
+  background-size: cover;
+  background-position: center;
+  border: solid 10px var(--cor-rosa-claro);
+  box-shadow: rgba(0, 0, 0, 0.15) 0px 8px 20px -3px;
+
+  /* Rotação única e "permanente" de cada card */
+  transform: rotate(var(--random-rotation, 0deg));
+}
+/* ==========================================================================
+   Texto de como nós surgimos
+   ========================================================================== */
+
+.titulo-about{
+    font-size: 4rem;
+    margin-bottom: -0.6rem;
+    color: var(--cor-rosa);
+    font-weight: bold;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+;}
+
+.about-text {
+  font-size: 2rem;
+  line-height: 1.2;
+  font-family: "Poppins", sans-serif;
+  color: var(--cor-cinza-texto);
+  margin-right: 1rem;
+}
+.conclusao-about {
+  font-size: 2rem;
+  line-height: 1.4;
+  font-family: "Poppins", sans-serif;
+  color: var(--cor-cinza-texto);
+  font-weight: bold;
+}
+.destaque-amor,
+.destaque-confianca,
+.destaque-recomeco {
+  display: inline;
+}
+.conclusao-about .destaque-amor,
+.conclusao-about .destaque-confianca,
+.conclusao-about .destaque-recomeco {
+  font-weight: normal;
+}
+span.destaque-amor {
+  font-family: "Kawaii RT";
+  color: var(--cor-vermelho); /* Tom vibrante de vermelho */
+}
+span.destaque-confianca {
+  font-family: "Kawaii RT";
+  color: var(--cor-rosa-escuro); /* Tom vibrante de rosa escuro */
+}
+span.destaque-recomeco {
+  font-family: "Kawaii RT";
+  color: var(--cor-verde-pastel); /* Tom vibrante de rosa pastel */
+}
+
+
+/* ==========================================================================
+   SEÇÃO DE VALORES (CARDS)
+   ========================================================================== */
+.valores-section {
+  padding-top: 2rem;
+  padding-bottom: 4rem;
+}
+
+/* Estilo base copiado de .card-item (index.css), 
+  mas com as modificações solicitadas.
+*/
+.valor-card-item {
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  max-width: 220px; 
+  margin: 0 auto;
+  cursor: default; /* Alterado: Removido o 'cursor: pointer' */
+  background-color: var(--cor-rosa);
+  color: var(--cor-branca);
+  border-radius: 20px;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px -1px,
+    rgba(0, 0, 0, 0.06) 0px 2px 4px -1px;
+  position: relative;
+  overflow: hidden;
+  /* Removida a opacidade para um visual sólido */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem; 
+  /* Alterado: Removida a transição de 'transform' */
+  transition: box-shadow 0.5s ease;
+}
+
+/* Animação de brilho ao passar o mouse (Mantida) */
+.valor-card-item::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 70%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.25),
+    transparent
+  );
+  transform: skewX(-30deg);
+  transition: left 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.valor-card-item:hover::before {
+  left: 150%;
+}
+
+.valor-card-item .card-icon {
+  margin-bottom: 1.8rem; 
+  /* Mantive uma transição sutil no ícone para feedback */
+  transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.valor-card-item:hover .card-icon {
+  transform: scale(1.1); /* Feedback sutil no ícone */
+}
+
+.valor-card-item .card-icon i {
+  /* Ajustado o clamp para ícones consistentes */
+  font-size: clamp(60px, 12vw, 70px); 
+  color: var(--cor-branca);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+}
+
+.valor-card-item .card-icon img {
+  width: 90px; 
+  height: 90px; 
+  object-fit: contain;
+  user-select: none;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+}
+
+.valor-card-item h3 {
+  font-family: "Poppins", sans-serif;
+  font-size: 1.5rem; 
+  font-weight: 700;
+  margin: 0;
+  color: var(--cor-branca);
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  text-align: center; /* Garantir centralização em nomes maiores */
+}
+
+/* ...existing code... */
+
+/* ======= CARROSSEL EQUIPE ======= */
+.equipe-section { padding-bottom: 3.5rem; }
+
+.team-carousel-wrapper { padding: 1.5rem 3%; }
+.team-carousel { overflow: hidden; width: 100%; }
+.team-track {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  padding: 1rem 2%;
+  scroll-behavior: smooth;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none; /* firefox */
+}
+.team-track::-webkit-scrollbar { display: none; }
+
+.team-item {
+  flex: 0 0 calc((100% - 3rem) / 3); /* mostra 3 por vez (ajusta com gap) */
+  max-width: calc((100% - 3rem) / 3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  scroll-snap-align: center;
+  user-select: none;
+  cursor: grab;
+}
+.team-item:active { cursor: grabbing; }
+
+.team-avatar {
+  width: clamp(150px, 22vw, 240px);
+  height: clamp(150px, 22vw, 240px);
+  object-fit: cover;
+  border-radius: 50%;
+  border: 5px solid var(--cor-rosa);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+  background-color: var(--cor-branca);
+  display: block;
+}
+
+.team-name {
+  margin-top: 0.8rem;
+  text-align: center;
+  font-weight: 700;
+  color: var(--cor-cinza-texto);
+  font-size: clamp(2rem, 2vw, 1.6rem);
+}
+
+.team-carousel { position: relative; }
+.team-prev,
+.team-next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.92);
+  color: var(--cor-rosa);
+  font-size: 2rem;
+  font-weight: bold;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+  cursor: pointer;
+  z-index: 30;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.team-prev { left: 8px; }
+.team-next { right: 8px; }
+
+.team-prev:hover,
+.team-next:hover { transform: translateY(-50%) scale(1.05); box-shadow: 0 10px 24px rgba(0,0,0,0.14); }
+
+.team-prev:active,
+.team-next:active { transform: translateY(-50%) scale(.98); }
+
+/* Aumenta target em telas pequenas */
+@media (max-width: 700px) {
+  .team-prev, .team-next { width: 44px; height: 44px; font-size: 1rem; }
+}
+
+
+/* Responsivo: em telas pequenas mostra 1-2 por vez */
+@media (max-width: 900px) {
+  .team-item {
+    flex: 0 0 calc((100% - 2rem) / 2);
+    max-width: calc((100% - 2rem) / 2);
+  }
+}
+@media (max-width: 480px) {
+  .team-item {
+    flex: 0 0 85%;
+    max-width: 85%;
+  }
+  .navbar .navlink {
+    font-size: 1rem !important;
+  }
+}
+
+/* ==========================================================================
    MEDIA QUERIES - Estilos Responsivos
    ========================================================================== */
+
+@media (max-width: 1500px){
+    .about-text{
+        font-size: 1.5rem;
+    }
+    .card-carousel-container{
+        width: 75%;
+    }
+}
+@media (max-width: 1300px){
+    .about-text{
+        font-size: 1.2rem;
+    }
+    .card-carousel-container{
+        width: 80%;
+    }
+}
+@media (max-width: 1060px){
+    .card-carousel-container{
+        width: 85%;
+    }
+}
 
 /* --- MOBILE E TABLET (Telas < 992px) --- */
 @media (max-width: 991.98px) {
@@ -175,30 +724,33 @@ body {
     .navbar-nav {
         gap: 0.5rem;
     }
-    .nav-link {
-        justify-content: center;
-    }
     .loginlink {
         margin-left: 0;
     }
     .loginlink::before {
         display: none;
     }
-
-    /* Ajustes no Hero "Sobre" para mobile */
-    .hero-sobre {
-        /* Em mobile, a proporção 1920x900 ficaria alta demais.
-           Por isso, desligamos o aspect-ratio e voltamos 
-           a usar uma altura de viewport (vh) e 'cover'. */
-        aspect-ratio: auto; 
-        min-height: 50vh;
-        background-size: cover;
-        
-        /* Como a navbar mobile não é mais transparente e empurra
-           o conteúdo, não precisamos de padding-top. */
-
-        /* Ajusta a posição da imagem para focar melhor no conteúdo */
-        background-position: center 30%; 
+    .titulo-about{
+        font-size: 3rem;
+    }
+        .about-text{
+        max-width: 800px;
+    }
+    .card-carousel-container{
+        width: 50%;
+    }
+    .conclusao-about{
+        max-width: 800px;
+    }
+}
+@media (max-width: 700px){
+    .card-carousel-container{
+        width: 70%;
+    }
+}
+@media (max-width: 500px){
+    .card-carousel-container{
+        width: 80%;
     }
 }
 

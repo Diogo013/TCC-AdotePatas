@@ -35,80 +35,94 @@ if (!$token) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trocar Senha - Adote Patas</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        body { background-color: #f8f9fa; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .reset-card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.08); max-width: 420px; width: 95%; }
-        /* Adicionamos a classe .hidden para controlar a visibilidade de elementos com JavaScript */
-        .hidden { display: none; }
-    </style>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="images/global/Logo-AdotePatas.png"/>
+    
+    <link rel="stylesheet" href="assets/css/pages/autenticacao/autenticacao.css">
 </head>
-<body>
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
 
-<div class="reset-card">
-    <h3 class="text-center mb-4" style="color: #bf6964;">Redefinir Senha</h3>
-    
-    <?php if ($error_message): ?>
-        <!-- Se o token for inválido, exibe a mensagem de erro e um link para voltar. -->
-        <div class="alert alert-danger text-center" role="alert">
-            <?php echo htmlspecialchars($error_message); ?>
+<a href="autenticacao.php?tab=login" class="btn-voltar" title="Voltar para o Login">
+    <i class="fa-solid fa-arrow-left"></i>
+    <span>Voltar</span>
+</a>
+
+<img src="images/cadastro-login/pata.png" alt="Desenho de Pata" class="pata-fundo">
+
+<div class="w-full max-w-lg mx-auto">
+    <div class="w-full flex items-center justify-between mb-6 relative">
+        <div>
+            <a href="./" title="Voltar para a página inicial">
+                <img src="images/global/Logo-AdotePatas.png" alt="Logo Adote Patas" width="70" height="70">
+            </a>
         </div>
-        <div class="text-center mt-4">
-            <a href="autenticacao.php?active_tab=recuperar" class="btn btn-secondary">Solicitar Novo Link</a>
+        <div class="absolute inset-x-0 text-center">
+            <h1 id="page-title" class="text-xl md:text-4xl font-bold text-[#666662]">Redefinir Senha</h1>
+            <div class="w-24 h-1 bg-[#666662] mx-auto mt-1 rounded-full"></div>
         </div>
-    
-    <?php else: ?>
-        <!-- Se o token for válido, exibe o formulário de troca de senha. -->
+        <div class="h-16 w-16 invisible"></div>
+    </div>
+
+    <div class="container-card w-full p-6 sm:p-10 rounded-3xl shadow-xl">
+
         <div id="reset-message" class="alert hidden" role="alert"></div>
 
-        <form id="reset-password-form">
-            <!-- O token é enviado de forma oculta para ser processado pelo backend. -->
-            <input type="hidden" name="token" value="<?php echo htmlspecialchars($token); ?>">
+        <?php if ($error_message): ?>
+            <div class="alert alert-danger text-center" role="alert">
+                <?php echo htmlspecialchars($error_message); ?>
+            </div>
+            <div class="text-center mt-4">
+                <a href="autenticacao.php?tab=login" id="open-recovery-modal" class="link-style">Solicitar Novo Link</a>
+            </div>
+        
+        <?php else: ?>
+            <form id="reset-password-form" class="space-y-6">
+                <input type="hidden" name="token" value="<?php echo htmlspecialchars($token); ?>">
 
-            <div class="mb-3">
-                <label for="nova_senha" class="form-label fw-bold">Nova Senha</label>
-                <div class="input-group">
-                    <input type="password" id="nova_senha" name="nova_senha" placeholder="Mínimo 8 caracteres" required class="form-control">
-                    <span class="input-group-text toggle-senha" style="cursor: pointer;" data-target="nova_senha"><i class="fas fa-eye"></i></span>
+                <div>
+                    <div class="relative">
+                        <label for="nova_senha" class="sr-only">Nova Senha</label>
+                        <input type="password" id="nova_senha" name="nova_senha" placeholder="Nova Senha" required class="input-style w-full pr-12 senha-input">
+                        <i class="fas fa-eye toggle-senha" data-target="nova_senha"></i>
+                    </div>
+                    <div id="mensagem-nova_senha" class="mensagem-validacao"></div>
                 </div>
-            </div>
 
-            <div class="mb-4">
-                <label for="confirma_senha" class="form-label fw-bold">Confirmar Nova Senha</label>
-                <div class="input-group">
-                    <input type="password" id="confirma_senha" name="confirma_senha" placeholder="Repita a nova senha" required class="form-control">
-                    <span class="input-group-text toggle-senha" style="cursor: pointer;" data-target="confirma_senha"><i class="fas fa-eye"></i></span>
+                <div>
+                    <div class="relative">
+                        <label for="confirma_senha" class="sr-only">Confirmar Nova Senha</label>
+                        <input type="password" id="confirma_senha" name="confirma_senha" placeholder="Repita a nova senha" required class="input-style w-full pr-12 senha-input">
+                        <i class="fas fa-eye toggle-senha" data-target="confirma_senha"></i>
+                    </div>
+                    <div id="mensagem-confirma_senha" class="mensagem-validacao"></div>
                 </div>
-            </div>
 
-            <div class="d-grid">
-                <button type="submit" id="reset-submit-btn" class="btn btn-lg text-white" style="background-color: #bf6964;">
-                    <span class="spinner-border spinner-border-sm hidden me-2" role="status" aria-hidden="true"></span>
-                    <span class="button-text">Trocar Senha</span>
-                </button>
-            </div>
-        </form>
-    <?php endif; ?>
+                <div class="flex justify-center w-55 mx-auto pt-4">
+                    <button type="submit" id="reset-submit-btn" class="adopt-btn">
+                        <div class="heart-background">❤</div>
+                        <span>
+                            <span class="spinner-border spinner-border-sm hidden me-2" role="status" aria-hidden="true"></span>
+                            <span class="button-text">Trocar Senha</span>
+                        </span>
+                    </button>
+                </div>
+            </form>
+        <?php endif; ?>
+    </div>
 </div>
 
-<script>
-    // Lógica para alternar a visibilidade da senha
-    document.querySelectorAll(".toggle-senha").forEach((icon) => {
-        icon.addEventListener("click", function () {
-            const targetId = this.dataset.target;
-            const targetInput = document.getElementById(targetId);
-            const iconElement = this.querySelector('i');
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js"></script>
 
-            if (targetInput.type === "password") {
-                targetInput.type = "text";
-                iconElement.classList.replace("fa-eye", "fa-eye-slash");
-            } else {
-                targetInput.type = "password";
-                iconElement.classList.replace("fa-eye-slash", "fa-eye");
-            }
-        });
-    });
+<script type="module">
+    // Importa as funções de validação do seu arquivo JS
+    import { validarSenha, validarConfirmaSenha, initPasswordToggle } from './assets/js/pages/autenticacao/modules/forms/validation.js';
+
+    // Inicializa os ícones de "mostrar/ocultar" senha
+    initPasswordToggle();
 
     const resetForm = document.getElementById("reset-password-form");
     if (resetForm) {
@@ -117,29 +131,49 @@ if (!$token) {
         const spinner = submitBtn.querySelector('.spinner-border');
         const buttonText = submitBtn.querySelector('.button-text');
 
+        // Campos de senha
+        const novaSenhaInput = document.getElementById('nova_senha');
+        const confirmaSenhaInput = document.getElementById('confirma_senha');
+
+        // --- Adiciona validação em tempo real ---
+        if (novaSenhaInput) {
+            novaSenhaInput.addEventListener('input', () => {
+                // Valida a força da senha e mostra na div "mensagem-nova_senha"
+                validarSenha(novaSenhaInput, 'mensagem-nova_senha');
+            });
+        }
+        if (confirmaSenhaInput) {
+            confirmaSenhaInput.addEventListener('input', () => {
+                // Valida a confirmação e mostra na div "mensagem-confirma_senha"
+                validarConfirmaSenha('nova_senha', 'confirma_senha');
+            });
+        }
+        // --- Fim da validação em tempo real ---
+
+
         resetForm.addEventListener("submit", async function(e) {
             e.preventDefault();
 
-            const novaSenha = document.getElementById('nova_senha').value;
-            const confirmaSenha = document.getElementById('confirma_senha').value;
+            // 1. Validação no lado do cliente (front-end) ANTES de enviar
+            const isSenhaForte = validarSenha(novaSenhaInput, 'mensagem-nova_senha');
+            const isSenhaConfirmada = validarConfirmaSenha('nova_senha', 'confirma_senha');
+            
+            // Esconde mensagens de erro globais antigas
+            messageDiv.classList.add("hidden"); 
+            messageDiv.className = "alert hidden";
 
-            // 1. Validação no lado do cliente (front-end)
-            messageDiv.classList.add("hidden"); // Esconde mensagens antigas
-            if (novaSenha !== confirmaSenha) {
-                messageDiv.className = "alert alert-warning";
-                messageDiv.textContent = "As senhas não coincidem. Por favor, verifique.";
-                return;
+            if (!isSenhaForte || !isSenhaConfirmada) {
+                messageDiv.className = "alert alert-warning"; // Use a classe de alerta global
+                messageDiv.textContent = "Por favor, corrija os erros no formulário.";
+                return; // Impede o envio do formulário
             }
-
-            // Sugestão: Adicionar validação de força da senha aqui também.
-            // Ex: if (novaSenha.length < 8) { ... }
 
             // 2. Feedback visual de carregamento
             submitBtn.disabled = true;
             spinner.classList.remove("hidden");
             buttonText.textContent = 'Aguarde...';
 
-            // 3. Submissão via AJAX para 'processa_troca_senha.php'
+            // 3. Submissão via AJAX para 'processa-troca-senha.php'
             try {
                 const formData = new FormData(resetForm);
                 const response = await fetch("processa-troca-senha.php", {
@@ -155,7 +189,7 @@ if (!$token) {
                     resetForm.classList.add('hidden'); // Oculta o formulário após o sucesso
                     
                     setTimeout(() => {
-                        window.location.href = 'autenticacao.php?active_tab=login';
+                        window.location.href = 'autenticacao.php?tab=login';
                     }, 3000);
                 } else {
                     // Se o servidor retornar um erro, exibe a mensagem recebida.

@@ -64,7 +64,6 @@ document.addEventListener("DOMContentLoaded", () => {
         card.style.setProperty("--y-offset", "-20px")
       }
     });
-        console.log(cards);
 
   }
 
