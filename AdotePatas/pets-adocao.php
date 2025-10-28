@@ -107,7 +107,7 @@ try {
   </nav>
 </header>
 
-    <main class="my-5">
+    <main>
         <section class="pets-section">
             <div class="container">
                 <div class="row mb-4">
@@ -116,7 +116,7 @@ try {
                     </div>
                 </div>
 
-                
+                <?php if (!empty($pets)): ?>
                 <section class="search-filter-section mb-4">
                     <form class="search-filter-container" role="search">
                         <div class="search-bar-wrapper">
@@ -137,6 +137,9 @@ try {
                         </button>
                     </form>
                 </section>
+
+            <?php endif; ?>
+
 
                 <div class="collapse mb-4" id="filterOptionsCollapse">
                     <div class="filter-options-container card card-body">
@@ -229,7 +232,7 @@ try {
                     </div>
                 <?php elseif (empty($pets)): ?>
 
-                    <section class="no-pet-section salert flex-column d-flex justify-content align-items-center text-center" style="margin-top: -3rem;">
+                    <section class="no-pet-section alert flex-column d-flex justify-content align-items-center text-center" style="margin-top: -5rem;">
 
                      <lottie-player src="animações/gato-deitado.json" background="transparent" speed="1" style="width: 400px; height: 400px;"
                             loop autoplay>

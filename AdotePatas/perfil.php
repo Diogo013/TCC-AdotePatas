@@ -257,7 +257,7 @@ if ($pagina == 'pets-curtidos') {
         </div>
 
     <?php elseif (empty($pets)): ?>
-        <div class="no-pets-section d-flex flex-column align-items-center justify-content-center text-center p-4 p-md-5" style="margin-top: -30px;">
+        <div class="no-pets-section d-flex flex-column align-items-center justify-content-center text-center p-4 p-md-5" style="margin-top: -50px;">
             <div class="no-pets-illustration mb-4">
                  <lottie-player src="animações/pets.json" background="transparent" speed="1" style="width: 250px; height: 250px;"
     loop autoplay>
@@ -334,11 +334,15 @@ if ($pagina == 'pets-curtidos') {
                                 <div class="alert alert-danger"><?php echo htmlspecialchars($erro_pets_curtidos); ?></div>
                             
                             <?php elseif (empty($pets_curtidos)): ?>
-                                <div class="alert alert-info text-center">
-                                    <i class="fa-regular fa-heart fa-3x mb-3"></i>
-                                    <h5 class="mb-1">Você ainda não curtiu nenhum pet.</h5>
-                                    <p>Que tal encontrar seu novo amigo?</p>
-                                    <a href="pets-adocao.php" class="btn btn-primary mt-2">Ver pets para adoção</a>
+
+                                <div class="alert text-center flex-column d-flex justify-content align-items-center text-center" style="margin-top: -1.5rem; animation: fadeIn 0.8s ease-out;">
+                                                         
+                                <lottie-player src="animações/dog-beijos.json" background="transparent" speed="1" style="width: 200px; height: 200px;"
+                            loop autoplay>
+                        </lottie-player>
+                                    <h5 class="mb-1">Você ainda não curtiu nenhum amiguinho.</h5>
+                                    <p>Que tal curtir seu novo amigo?</p>
+                                    <a href="pets" class="btn btn-danger btn-add-pet-header" style="box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;">Ver pets para adoção</a>
                                 </div>
                             
                             <?php else: ?>

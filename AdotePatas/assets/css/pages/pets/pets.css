@@ -7,7 +7,7 @@
 body {
     font-family: "Poppins", sans-serif;
     line-height: 1.5;
-    background-color: var(--cor-laranja-claro, #f7f4f2);
+    background-color: var(--cor-rosa-pastel);
 }
 
 /* Título principal da seção */
@@ -17,6 +17,7 @@ body {
     color: var(--cor-cinza-texto);
     text-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     text-align: center;
+    margin-top: 3rem;
 }
 
 
@@ -30,7 +31,26 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
+main {
+  /* Primeiro, a camada do degradê */
+  background-image: linear-gradient(
+                      to bottom, 
+                      rgba(255, 255, 255, 0) 0%, /* Totalmente transparente no topo */
+                      rgba(255, 255, 255, 0) 70%, /* Permanece transparente por 70% da altura */
+                      rgba(255, 255, 255, 0.8) 90%, /* Começa a ficar branco e opaco */
+                      rgba(255, 255, 255, 1) 100% /* Totalmente branco e opaco na base */
+                    ),
+                    /* Depois, a imagem de fundo */
+                    url("../../../../images/cadastro-login/background.png"); 
+  background-size: cover;
+  background-position: center bottom; /* Ajustado para focar na parte inferior se a imagem for grande */
+  background-repeat: no-repeat;
+  /* z-index: 0; */ /* O z-index geralmente não é necessário aqui, a menos que haja outros elementos */
 
+  /* Para garantir que a main ocupe toda a altura necessária para o degradê ser visível */
+  min-height: calc(100vh - 100px); /* Ajuste 100px para a altura do seu header/footer */
+  padding-bottom: 50px; /* Um padding para o conteúdo não colar na base */
+}
 /* =====================
     CARD DE PET
    ===================== */

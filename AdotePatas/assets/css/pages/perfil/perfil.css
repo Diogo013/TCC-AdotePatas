@@ -422,7 +422,6 @@ a.pet-card-link-img { display: block; }
 .no-pets-section {
     border-radius: 12px; /* Bordas mais arredondadas */
     padding: 40px 30px; /* Aumenta o padding */
-    margin-top: 30px; /* Adiciona um espaço da parte superior */
     animation: fadeIn 0.8s ease-out; /* Adiciona uma animação de fade-in */
 }
 
