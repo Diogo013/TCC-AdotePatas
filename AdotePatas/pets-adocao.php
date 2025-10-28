@@ -30,6 +30,12 @@ if (isset($_SESSION['user_id'])) {
     }
 }
 
+$primeiro_nome = '';
+if ($usuario_logado && isset($_SESSION['nome'])) {
+    $partes_nome = explode(' ', $_SESSION['nome']);
+    $primeiro_nome = $partes_nome[0];
+}
+
 // 3. Lógica para buscar os pets no banco de dados
 $pets = [];
 $erro = '';
@@ -55,45 +61,51 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Adote Patas - Animais para Adoção</title>
+    <title>Adote Patas - Pets para Adoção</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
     integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
     crossorigin="anonymous" referrerpolicy="no-referrer"/>
+      <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
     <link rel="stylesheet" href="assets/css/pages/pets/pets.css">
 </head>
 <body>
 
-    <header class="main-header">
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <div class="container">
-                <a class="navbar-brand" href="#">
-                    <img src="images/global/Logo-Nome.png" alt="Logo Adote Pet" class="logo-img">
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse d-flex justify-content-end align-items-end" id="navbarNav">
-                    <ul class="navbar-nav d-flex align-items-center">
-                        <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="#">Animais para Adoção</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Como Adotar</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Contato</a>
-                        </li>
-                        <li class="nav-item">
-                             <a class="nav-link" href="<?php echo $usuario_logado ? 'perfil.php' : 'login'; ?>" title="<?php echo $usuario_logado ? 'Meu Perfil' : 'Entrar'; ?>">
-                                <i class="fa-regular fa-circle-user" style="font-size: 3rem;"></i>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </header>
+<header>
+  <nav class="navbar navbar-expand-lg">
+    <div class="container">
+      <a class="navbar-brand" href="index.php">
+        <img src="./images/global/logo-AdotePatas.png" alt="Logo Adote Patas" class="navbar-logo">
+      </a>
+
+      <div class="profile-container d-flex justify-content-center align-items-center ms-auto" >
+
+        <ul class="navbar-nav d-flex">
+          <li class="nav-item">
+            <a class="nav-link navlink" href="sobre-nos.php">Sobre Nós</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link navlink" href="#">Ajuda</a>
+          </li>
+        </ul>
+
+        <a href="perfil?page=perfil" class="profile-info-link ms-lg-4" style="text-decoration: none;" title="Ver meu perfil">
+          <div class="profile-info d-flex flex-row-reverse align-items-center gap-lg-2">
+            <i class="fa-regular fa-circle-user profile-icon"></i>
+            <span class="profile-name fs-5 mb-1 d-none d-lg-inline" style="color: var(--cor-vermelho);">
+              <?php echo htmlspecialchars($primeiro_nome); ?>
+            </span>
+          </div>
+        </a>
+
+        <button class="border-0 bg-transparent ms-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Abrir menu do perfil">
+          <span class="fas fa-bars nav-icon" style="font-size: 2rem;"></span>
+        </button>
+
+      </div>
+    </div>
+  </nav>
+</header>
 
     <main class="my-5">
         <section class="pets-section">
@@ -104,6 +116,7 @@ try {
                     </div>
                 </div>
 
+                
                 <section class="search-filter-section mb-4">
                     <form class="search-filter-container" role="search">
                         <div class="search-bar-wrapper">
@@ -129,7 +142,7 @@ try {
                     <div class="filter-options-container card card-body">
                         <div class="row">
                             <div class="col-md-6 col-lg-3 filter-category mb-3">
-                                <h5>1. Temperamento</h5>
+                                <h5>Temperamento</h5>
                                 <p class="filter-category-description">O comportamento principal do pet</p>
                                 <div class="filter-category-options">
                                     <div class="form-check"><input class="form-check-input" type="checkbox" value="docil" id="temp_docil"><label class="form-check-label" for="temp_docil">Dócil</label></div>
@@ -150,7 +163,7 @@ try {
 
                             <div class="col-md-6 col-lg-3 mb-3">
                                 <div class="filter-category mb-3">
-                                    <h5>2. Nível de Energia</h5>
+                                    <h5>Nível de Energia</h5>
                                     <p class="filter-category-description">Necessidade de atividade física</p>
                                     <div class="filter-category-options">
                                         <div class="form-check"><input class="form-check-input" type="checkbox" value="baixa_energia" id="energia_baixa"><label class="form-check-label" for="energia_baixa">Baixa Energia</label></div>
@@ -160,7 +173,7 @@ try {
                                     </div>
                                 </div>
                                 <div class="filter-category">
-                                    <h5>3. Sociabilidade</h5>
+                                    <h5>Sociabilidade</h5>
                                     <p class="filter-category-description">Interação com outros</p>
                                     <div class="filter-category-options">
                                         <div class="form-check"><input class="form-check-input" type="checkbox" value="com_criancas" id="soc_criancas"><label class="form-check-label" for="soc_criancas">Com Crianças</label></div>
@@ -175,7 +188,7 @@ try {
 
                             <div class="col-md-6 col-lg-3 mb-3">
                                 <div class="filter-category mb-3">
-                                    <h5>5. Cuidados Especiais</h5>
+                                    <h5>Cuidados Especiais</h5>
                                     <p class="filter-category-description">Necessidades que exigem atenção extra</p>
                                     <div class="filter-category-options">
                                         <div class="form-check"><input class="form-check-input" type="checkbox" value="medicacao" id="cuidado_medicacao"><label class="form-check-label" for="cuidado_medicacao">Medicação</label></div>
@@ -189,7 +202,7 @@ try {
                                     </div>
                                 </div>
                                 <div class="filter-category">
-                                    <h5>6. Treinamento e Hábitos</h5>
+                                    <h5>Treinamento e Hábitos</h5>
                                     <p class="filter-category-description">Nível de educação e costumes</p>
                                     <div class="filter-category-options">
                                         <div class="form-check"><input class="form-check-input" type="checkbox" value="adestrado" id="habito_adestrado"><label class="form-check-label" for="habito_adestrado">Adestrado</label></div>
@@ -201,7 +214,7 @@ try {
                             </div>
 
                             <div class="col-md-6 col-lg-3 filter-category mb-3">
-                                <h5>7. Ambiente Ideal</h5>
+                                <h5>Ambiente Ideal</h5>
                                 <p class="filter-category-description">Tipo de lar recomendado</p>
                                 <div class="filter-category-options">
                                     <div class="form-check"><input class="form-check-input" type="checkbox" value="apartamento" id="ambiente_apto"><label class="form-check-label" for="ambiente_apto">Para Apartamento</label></div>
@@ -215,11 +228,19 @@ try {
                         <?php echo htmlspecialchars($erro); ?>
                     </div>
                 <?php elseif (empty($pets)): ?>
-                    <div class="alert alert-info text-center">
-                        <i class="fa-solid fa-paw fa-3x mb-3"></i>
-                        <h5 class="mb-1">Nenhum pet disponível para adoção no momento.</h5>
-                        <p>Volte em breve!</p>
-                    </div>
+
+                    <section class="no-pet-section salert flex-column d-flex justify-content align-items-center text-center" style="margin-top: -3rem;">
+
+                     <lottie-player src="animações/gato-deitado.json" background="transparent" speed="1" style="width: 400px; height: 400px;"
+                            loop autoplay>
+                        </lottie-player>
+
+                        <h4 style="margin-top: -3rem; font-weight: 700;">Nenhum Amiguinho Encontrado</h4>
+                        <p style=" color: var(--cor-cinza-texto);">Parece que todos os nossos peludinhos já encontraram um lar incrível!<br>
+                Mas não desanime, novas patinhas chegam em breve...</p>
+                    </section>
+
+
                 <?php else: ?>
                     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4" id="petsGrid">
                         <?php foreach ($pets as $pet): ?>
@@ -402,5 +423,49 @@ try {
             }
         });
     </script>
+
+<script src="assets/js/pages/index/offcanvas-fix.js"></script>
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+    <div class="offcanvas-header border-bottom">
+      <h5 class="offcanvas-title" id="offcanvasNavbarLabel">Menu do Perfil</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+
+    <div class="offcanvas-body p-0">
+      <aside class="profile-sidebar p-3">
+        <div class="sidebar-header text-center mb-4">
+          <i class="fa-regular fa-circle-user sidebar-profile-icon"></i>
+          <h5 class="mt-2 mb-0">
+            <?php echo htmlspecialchars($_SESSION['nome'] ?? 'Usuário'); ?>
+          </h5>
+          <small class="text-muted fs-6">
+            <?php echo htmlspecialchars(ucfirst($_SESSION['user_tipo'])); ?>
+          </small>
+        </div>
+
+        <nav class="nav nav-pills flex-column profile-nav">
+          <a class="nav-link" href="perfil.php?page=perfil">
+            <i class="fa-regular fa-circle-user fa-fw me-2"></i> Meu Perfil
+          </a>
+
+          <a class="nav-link" href="perfil.php?page=meus-pets">
+            <i class="fa-solid fa-paw fa-fw me-2"></i> Meus Pets
+          </a>
+
+          <a class="nav-link" href="perfil.php?page=pets-curtidos">
+            <i class="fa-regular fa-heart fa-fw me-2"></i> Pets Curtidos
+          </a>
+
+          <hr class="my-2">
+
+          <a class="nav-link logout-link-sidebar" href="sair.php">
+            <i class="fa-solid fa-right-from-bracket fa-fw me-2"></i> Sair
+          </a>
+        </nav>
+      </aside>
+    </div>
+  </div>
+
 </body>
 </html>

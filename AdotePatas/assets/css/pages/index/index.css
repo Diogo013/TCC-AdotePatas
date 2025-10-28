@@ -789,7 +789,7 @@ span.destaque-recomeco {
 
 @media (max-width: 991.98px) {
     .navbar{
-    margin-bottom: -195px !important;
+    margin-bottom: -200px !important;
   }
   .footer-column {
     min-height: auto;
@@ -830,12 +830,23 @@ span.destaque-recomeco {
     align-items: center; /* Centraliza as colunas empilhadas */
     gap: 2.5rem; /* Aumenta o espaçamento vertical entre as seções */
   }
-
+    .navbar{
+    margin-bottom: -26  0px !important;
+  }
+  .profile-name{
+    display: none;
+  }
   .footer-column {
     width: 100%;
     /* Remove as bordas e paddings laterais no mobile */
     border: none !important;
     padding: 0 !important;
+  }
+}
+
+@media (max-width: 467px){
+  .profile-icon{
+    display: none !important;
   }
 }
 /* ==========================================================================
