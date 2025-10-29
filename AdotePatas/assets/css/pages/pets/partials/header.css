@@ -16,8 +16,14 @@
 header{
     background-color: var(--cor-branca);
     box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
-    position: sticky;
+    /* Não fixar na tela: usar absolute para sobrepor o conteúdo principal (.main)
+       - position:absolute fará com que o header não permaneça preso à janela ao rolar
+       - mantém width:100% e z-index para garantir sobreposição
+       Se quiser que o conteúdo comece após o header (sem sobreposição), adicione
+       padding-top no seletor .main equivalente à altura do header. */
+    position: absolute;
     top: 0;
+    left: 0;
     width: 100%;
     z-index: 1030;
 }

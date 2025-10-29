@@ -76,4 +76,4 @@ try {
     $response['message'] = 'Erro no banco de dados: ' . $e->getMessage();
     echo json_encode($response, JSON_UNESCAPED_UNICODE);
 }
-?>
+

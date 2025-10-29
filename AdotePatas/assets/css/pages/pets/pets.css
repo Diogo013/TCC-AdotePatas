@@ -7,7 +7,7 @@
 body {
     font-family: "Poppins", sans-serif;
     line-height: 1.5;
-    background-color: var(--cor-rosa-pastel);
+    background-color: var(--cor-laranja-claro-pastel);
 }
 
 /* Título principal da seção */
@@ -50,6 +50,7 @@ main {
   /* Para garantir que a main ocupe toda a altura necessária para o degradê ser visível */
   min-height: calc(100vh - 100px); /* Ajuste 100px para a altura do seu header/footer */
   padding-bottom: 50px; /* Um padding para o conteúdo não colar na base */
+  margin-top: 108px;
 }
 /* =====================
     CARD DE PET
@@ -329,4 +330,123 @@ main {
         padding: 0.75rem 1rem 1rem;
         gap: 0.4rem;
     }
+}
+
+/* ==========================================================================
+   ADP-TOAST (NOTIFICAÇÃO) - Estilos e Animações (renomeado para evitar conflito com Bootstrap)
+   ========================================================================== */
+.adp-toast {
+  position: fixed;
+  top: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  margin-top: 1.5rem;
+  min-width: 350px;
+  max-width: 90%;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  font-family: "Poppins", sans-serif;
+}
+
+.adp-toast.show {
+  opacity: 1;
+  pointer-events: auto;
+  animation: slideIn 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.adp-toast.hide {
+  animation: slideOut 0.5s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards;
+}
+
+.adp-toast-icon {
+  flex-shrink: 0;
+  width: 110px;
+  height: 70px;
+  /* Centraliza totalmente o ícone dentro da caixa */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1; /* evita deslocamentos verticais do ícone */
+  font-size: 2.8rem; /* controla o tamanho do ícone dentro da caixa */
+}
+
+.adp-toast-content {
+  flex-grow: 1;
+}
+
+.adp-toast-message {
+  margin: 0;
+  font-weight: 500;
+  font-size: 1rem;
+  line-height: 1.4;
+  padding: 0.5rem;
+}
+
+/* --- Cores por tipo --- */
+.adp-toast--success {
+  background-color: #d1fae5; /* Verde claro */
+  color: #065f46; /* Verde escuro */
+}
+.adp-toast--warning,
+.adp-toast--danger {
+  background-color: #fee2e2; /* Vermelho claro */
+  color: #991b1b; /* Vermelho escuro */
+}
+
+/* --- Barra de Progresso --- */
+.adp-toast-progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 5px;
+}
+.adp-toast--success .adp-toast-progress-bar {
+  background-color: #34d399;
+}
+.adp-toast--warning .adp-toast-progress-bar,
+.adp-toast--danger .adp-toast-progress-bar {
+  background-color: #f87171;
+}
+
+.adp-toast.show .adp-toast-progress-bar {
+  animation: shrink 5s linear forwards;
+}
+
+/* --- Animações --- */
+@keyframes slideIn {
+  from {
+    top: -100px;
+    opacity: 0;
+  }
+  to {
+    top: 2rem;
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    top: 2rem;
+    opacity: 1;
+  }
+  to {
+    top: -100px;
+    opacity: 0;
+  }
+}
+
+@keyframes shrink {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
 }

@@ -420,19 +420,19 @@ $pagina = "";
         
         <nav class="nav nav-pills flex-column profile-nav">
           <a class="nav-link <?php echo ($pagina == 'perfil') ? 'active' : ''; ?>" 
-             href="perfil.php?page=perfil" 
+             href="perfil?page=perfil" 
              <?php echo ($pagina == 'perfil') ? 'aria-current="page"' : ''; ?>>
             <i class="fa-regular fa-circle-user fa-fw me-2"></i> Meu Perfil
           </a>
           
           <a class="nav-link <?php echo ($pagina == 'meus-pets') ? 'active' : ''; ?>" 
-             href="perfil.php?page=meus-pets"
+             href="perfil?page=meus-pets"
              <?php echo ($pagina == 'meus-pets') ? 'aria-current="page"' : ''; ?>>
             <i class="fa-solid fa-paw fa-fw me-2"></i> Meus Pets
           </a>
           
           <a class="nav-link <?php echo ($pagina == 'pets-curtidos') ? 'active' : ''; ?>" 
-             href="perfil.php?page=pets-curtidos"
+             href="perfil?page=pets-curtidos"
              <?php echo ($pagina == 'pets-curtidos') ? 'aria-current="page"' : ''; ?>>
             <i class="fa-regular fa-heart fa-fw me-2"></i> Pets Curtidos
           </a>

@@ -305,13 +305,13 @@ try {
 
             </div> </section> </main>
 
-    <div id="toast-notification" class="toast p-0" style="display: none; position: fixed; top: 20px; right: 20px; z-index: 9999;">
-        <div id="toast-icon" class="toast-icon"></div>
-        <div class="toast-content">
-            <p id="toast-message" class="toast-message">Pet favoritado.</p>
-        </div>
-        <div class="toast-progress-bar"></div>
+<div id="toast-notification" class="adp-toast p-0" style="display: none;">
+    <div id="toast-icon" class="adp-toast-icon" style="font-size: 1.6rem"></div>
+    <div class="adp-toast-content">
+        <p id="toast-message" class="adp-toast-message text-center">Pet Favoritado</p>
     </div>
+    <div class="adp-toast-progress-bar"></div>
+</div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -362,19 +362,49 @@ try {
                 const toastIcon = document.getElementById('toast-icon');
                 const toastMessage = document.getElementById('toast-message');
                 if (!toast || !toastIcon || !toastMessage) return;
+
+                // Texto
                 toastMessage.textContent = message;
-                toast.classList.remove('success', 'danger', 'warning');
-                toastIcon.className = 'toast-icon';
-                toast.classList.add(type);
+
+                // Limpa modificadores anteriores e classes de estado
+                toast.classList.remove('adp-toast--success', 'adp-toast--danger', 'adp-toast--warning', 'show', 'hide');
+                toastIcon.className = 'adp-toast-icon';
+
+                // Aplica modificador correto usado pelo CSS (ex.: adp-toast--success)
+                toast.classList.add('adp-toast--' + type);
+
+                // Ícone conforme tipo
                 if (type === 'success') toastIcon.classList.add('fas', 'fa-check');
                 else if (type === 'danger') toastIcon.classList.add('fas', 'fa-times');
                 else if (type === 'warning') toastIcon.classList.add('fas', 'fa-exclamation-triangle');
-                toast.style.display = 'block';
-                const progressBar = toast.querySelector('.toast-progress-bar');
-                progressBar.style.animation = 'none';
-                void progressBar.offsetWidth;
-                progressBar.style.animation = 'progress 3s linear forwards';
-                setTimeout(() => { toast.style.display = 'none'; }, 3000);
+
+                // Torna visível e ativa a animação definida em CSS
+                toast.style.display = 'flex';
+                // Força reflow antes de iniciar animações na barra de progresso
+                const progressBar = toast.querySelector('.adp-toast-progress-bar');
+                if (progressBar) {
+                    progressBar.style.animation = 'none';
+                    void progressBar.offsetWidth;
+                    // Usa a keyframe 'shrink' definida no CSS, por 3s
+                    progressBar.style.animation = 'shrink 3s linear forwards';
+                }
+
+                // Adiciona classe 'show' para acionar slideIn e visibilidade via CSS
+                toast.classList.add('show');
+
+                // Esconde após 3s (ouça a animação se quiser alterar)
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    toast.classList.add('hide');
+                    // pequena espera para a animação de saída, então remove display
+                    setTimeout(() => {
+                        toast.style.display = 'none';
+                        // limpa classes para próximo uso
+                        toast.classList.remove('hide', 'adp-toast--' + type);
+                        toastIcon.className = 'adp-toast-icon';
+                        if (progressBar) progressBar.style.animation = 'none';
+                    }, 500);
+                }, 3000);
             }
 
             if (petsGrid) {
