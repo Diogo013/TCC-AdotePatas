@@ -287,34 +287,65 @@ unset($_SESSION['tipo_mensagem']);
             <!-- Temperamento -->
             <h3>Temperamento</h3>
             <div class="char-tags-container">
-                <span class="char-tag" data-color="laranja" data-value="Brincalhão"><i class="fas fa-lightbulb"></i> Brincalhão <i class="fas fa-check"></i></span>
-                <span class="char-tag" data-color="verde" data-value="Calmo"><i class="fas fa-leaf"></i> Calmo <i class="fas fa-check"></i></span>
-                <span class="char-tag" data-color="roxo" data-value="Curioso"><i class="fas fa-search"></i> Curioso <i class="fas fa-check"></i></span>
-                <span class="char-tag" data-color="laranja" data-value="Tímido"><i class="fas fa-user-secret"></i> Tímido <i class="fas fa-check"></i></span>
-                <span class="char-tag" data-color="verde" data-value="Protetor"><i class="fas fa-shield-alt"></i> Protetor <i class="fas fa-check"></i></span>
-                <span class="char-tag" data-color="roxo" data-value="Sociável"><i class="fas fa-users"></i> Sociável <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="laranja" data-value="Dócil"><i class="fa-solid fa-face-smile"></i> Dócil <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="verde" data-value="Brincalhão"><i class="fa-solid fa-puzzle-piece"></i> Brincalhão <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="roxo" data-value="Calmo"><i class="fa-solid fa-leaf"></i> Calmo <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="rosa" data-value="Carinhoso"><i class="fa-solid fa-heart"></i> Carinhoso <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="laranja" data-value="Tímido"><i class="fa-solid fa-user-secret"></i> Tímido <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="verde" data-value="Sociável"><i class="fa-solid fa-users"></i> Sociável <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="roxo" data-value="Protetor"><i class="fa-solid fa-shield-halved"></i> Protetor <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="rosa" data-value="Curioso"><i class="fa-solid fa-magnifying-glass"></i> Curioso <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="laranja" data-value="Medroso"><i class="fa-solid fa-ghost"></i> Medroso <i class="fas fa-check"></i></span>
             </div>
-            <!-- Nível de Energia -->
+            
+            <!-- 2. Nível de Energia -->
             <h3>Nível de Energia</h3>
             <div class="char-tags-container">
-                <span class="char-tag" data-color="laranja" data-value="Energético"><i class="fas fa-bolt"></i> Energético <i class="fas fa-check"></i></span>
-                <span class="char-tag" data-color="roxo" data-value="Tranquilo"><i class="fas fa-moon"></i> Tranquilo <i class="fas fa-check"></i></span>
-                <span class="char-tag" data-color="verde" data-value="Moderado"><i class="fas fa-balance-scale"></i> Moderado <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="verde" data-value="Baixa Energia"><i class="fa-solid fa-battery-quarter"></i> Baixa Energia <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="laranja" data-value="Média Energia"><i class="fa-solid fa-battery-half"></i> Média Energia <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="rosa" data-value="Alta Energia"><i class="fa-solid fa-battery-full"></i> Alta Energia <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="roxo" data-value="Hiperativo"><i class="fa-solid fa-bolt"></i> Hiperativo <i class="fas fa-check"></i></span>
             </div>
-            <!-- Convivência -->
-            <h3>Convivência</h3>
+            
+            <!-- 3. Sociabilidade -->
+            <h3>Sociabilidade</h3>
             <div class="char-tags-container">
-                <span class="char-tag" data-color="rosa" data-value="Bom com Crianças"><i class="fas fa-child"></i> Bom com Crianças <i class="fas fa-check"></i></span>
-                <span class="char-tag" data-color="rosa" data-value="Bom com Gatos"><i class="fas fa-cat"></i> Bom com Gatos <i class="fas fa-check"></i></span>
-                <span class="char-tag" data-color="rosa" data-value="Bom com Cães"><i class="fas fa-dog"></i> Bom com Cães <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="rosa" data-value="Com Crianças"><i class="fa-solid fa-child"></i> Com Crianças <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="verde" data-value="Com Cães"><i class="fa-solid fa-dog"></i> Com Cães <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="roxo" data-value="Com Gatos"><i class="fa-solid fa-cat"></i> Com Gatos <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="laranja" data-value="Com Estranhos"><i class="fa-solid fa-user-group"></i> Com Estranhos <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="rosa" data-value="Pet Único"><i class="fa-solid fa-user"></i> Pet Único <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="verde" data-value="Com Idosos"><i class="fa-solid fa-person-cane"></i> Com Idosos <i class="fas fa-check"></i></span>
             </div>
-            <!-- Outros -->
-            <h3>Outros</h3>
+            
+            <!-- 5. Cuidados Especiais -->
+            <h3>Cuidados Especiais</h3>
             <div class="char-tags-container">
-                <span class="char-tag" data-color="laranja" data-value="Adestrado"><i class="fas fa-graduation-cap"></i> Adestrado <i class="fas fa-check"></i></span>
-                <span class="char-tag" data-color="verde" data-value="Castrado"><i class="fas fa-cut"></i> Castrado <i class="fas fa-check"></i></span>
-                <span class="char-tag" data-color="roxo" data-value="Peludo"><i class="fas fa-comment-dots"></i> Peludo <i class="fas fa-check"></i></span>
-                <span class="char-tag" data-color="rosa" data-value="Alérgico"><i class="fas fa-allergies"></i> Alérgico <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="roxo" data-value="Medicação"><i class="fa-solid fa-pills"></i> Medicação <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="laranja" data-value="Dieta Especial"><i class="fa-solid fa-bowl-food"></i> Dieta Especial <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="rosa" data-value="Alergia"><i class="fa-solid fa-allergies"></i> Alergia <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="verde" data-value="Deficiência Física"><i class="fa-solid fa-wheelchair"></i> Def. Física <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="roxo" data-value="Deficiência Visual"><i class="fa-solid fa-eye-slash"></i> Def. Visual <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="laranja" data-value="Deficiência Auditiva"><i class="fa-solid fa-ear-listen-slash"></i> Def. Auditiva <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="rosa" data-value="Pós-operatório"><i class="fa-solid fa-kit-medical"></i> Pós-operatório <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="verde" data-value="Traumático"><i class="fa-solid fa-heart-crack"></i> Traumático <i class="fas fa-check"></i></span>
+            </div>
+
+            <!-- 6. Treinamento e Hábitos -->
+            <h3>Treinamento e Hábitos</h3>
+            <div class="char-tags-container">
+                <span class="char-tag" data-color="verde" data-value="Adestrado"><i class="fa-solid fa-graduation-cap"></i> Adestrado <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="laranja" data-value="Em Treinamento"><i class="fa-solid fa-person-chalkboard"></i> Em Treinamento <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="roxo" data-value="Não Adestrado"><i class="fa-solid fa-xmark"></i> Não Adestrado <i class="fas fa-check"></i></span>
+            </div>
+
+            <!-- 7. Ambiente Ideal -->
+            <h3>Ambiente Ideal</h3>
+            <div class="char-tags-container">
+                <span class="char-tag" data-color="roxo" data-value="Apartamento"><i class="fa-solid fa-building"></i> Apartamento <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="verde" data-value="Precisa de Quintal"><i class="fa-solid fa-tree"></i> Precisa de Quintal <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="laranja" data-value="Casa"><i class="fa-solid fa-house"></i> Casa <i class="fas fa-check"></i></span>
+                <span class="char-tag" data-color="rosa" data-value="1ª Adoção"><i class="fa-solid fa-star"></i> 1ª Adoção <i class="fas fa-check"></i></span>
             </div>
         </div>
 

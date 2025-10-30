@@ -2,6 +2,9 @@
 session_start();
 include_once 'conexao.php'; // 1. Inclui a conexão com o banco
 
+$base_path = '/TCC-AdotePatas/AdotePatas/';
+
+
 // 2. Segurança: Verifica se o usuário está logado
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_tipo'])) {
     // Se não estiver logado, redireciona para a página de login
@@ -255,7 +258,7 @@ try {
                                 $alt_text = "Foto de " . htmlspecialchars($pet['nome']);
                             ?>
                             <div class="col">
-                                <a href="pet-detalhe.php?id=<?php echo $pet['id_pet']; ?>" class="pet-card-link">
+                                <a href="<?php echo $base_path; ?>pet-detalhe/<?php echo $pet['id_pet']; ?>" class="pet-card-link">
                                     <div class="pet-card">
                                         <div class="pet-card-img">
                                             <img src="<?php echo htmlspecialchars($foto_path); ?>" alt="<?php echo $alt_text; ?>">

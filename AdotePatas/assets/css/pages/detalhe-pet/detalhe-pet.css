@@ -1,0 +1,250 @@
+/* :root (Pode ser do seu CSS global, mas para garantir) */
+:root {
+    --cor-vermelho: #d9006c;
+    --cor-vermelho-claro: #fdeee4;
+    --cor-texto: #555;
+    --cor-verde: #00a884;
+}
+
+body.pet-detalhe-body {
+    background-color: #f8f9fa;
+    color: var(--cor-texto);
+}
+
+.main-header {
+    border-bottom: 1px solid #e0e0e0;
+}
+.logo-img {
+    max-height: 40px;
+}
+
+/* Breadcrumb */
+.detalhe-breadcrumb {
+    font-size: 0.9rem;
+}
+.detalhe-breadcrumb a {
+    text-decoration: none;
+    color: var(--cor-vermelho);
+}
+
+/* Layout Principal */
+.detalhe-main-content {
+    display: grid;
+    grid-template-columns: 1fr; /* Stacked por padrão */
+    gap: 2rem;
+}
+
+/* Coluna da Esquerda (Fotos) */
+.detalhe-fotos {
+    width: 100%;
+}
+.detalhe-foto-principal img {
+    width: 100%;
+    height: 450px;
+    object-fit: cover;
+    border-radius: 20px;
+    border: 1px solid #ddd;
+}
+.detalhe-thumbnails {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-top: 1rem;
+}
+.detalhe-thumbnails img {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 12px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+.detalhe-thumbnails img:hover {
+    border-color: var(--cor-vermelho-claro);
+}
+.detalhe-thumbnails img.active {
+    border-color: var(--cor-vermelho);
+}
+
+/* Coluna da Direita (Info Card) */
+.detalhe-info-card {
+    background-color: var(--cor-vermelho-claro);
+    padding: 2rem;
+    border-radius: 20px;
+    height: fit-content; /* Para o card não esticar */
+    position: sticky;
+    top: 20px; /* Faz o card "flutuar" ao rolar */
+}
+
+.detalhe-info-card h1 {
+    font-weight: 700;
+    color: #333;
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+.detalhe-info-card h1 i {
+    font-size: 1.8rem;
+    margin-left: 5px;
+}
+.pet-gender-female { color: #e91e63; }
+.pet-gender-male { color: #2196f3; }
+
+/* Coração de Favorito */
+.pet-like {
+    font-size: 2.2rem;
+    color: #ccc;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.pet-like.favorited {
+    color: var(--cor-vermelho);
+    transform: scale(1.1);
+}
+
+/* Tags de Info (Idade, Porte, etc) */
+.info-tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 1.5rem 0;
+}
+.info-tags-container span {
+    background-color: #ffffff;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--cor-texto);
+    border: 1px solid #eee;
+}
+.info-tags-container span.tag-vacinado,
+.info-tags-container span.tag-castrado {
+    background-color: var(--cor-verde);
+    color: #fff;
+    border-color: var(--cor-verde);
+}
+
+/* Botão Adotar */
+.btn-adotar {
+    display: block;
+    width: 100%;
+    padding: 1rem;
+    border: none;
+    border-radius: 15px;
+    background-color: var(--cor-vermelho);
+    color: #ffffff;
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+.btn-adotar:hover {
+    background-color: #b30058;
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(217, 0, 108, 0.3);
+}
+
+.location {
+    margin-top: 1.5rem;
+    text-align: center;
+    font-size: 1rem;
+    color: var(--cor-texto);
+}
+.location i {
+    margin-right: 0.5rem;
+}
+
+/* Seções de Conteúdo (Sobre, Características) */
+.detalhe-secao {
+    background-color: #ffffff;
+    padding: 2rem;
+    border-radius: 20px;
+    margin-top: 2rem;
+}
+.detalhe-secao h2 {
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 3px solid var(--cor-vermelho-claro);
+    display: inline-block;
+}
+
+/* Tags de Características */
+.caracteristicas-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+.char-tag-display {
+    background-color: #f4f4f4;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--cor-texto);
+    border: 1px solid #eee;
+}
+
+/* Grid "Outros Pets" */
+.outros-pets-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+}
+.outro-pet-card {
+    background-color: #ffffff;
+    border-radius: 15px;
+    overflow: hidden;
+    text-decoration: none;
+    color: #333;
+    transition: all 0.3s ease;
+}
+.outro-pet-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+.outro-pet-card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+}
+.outro-pet-card h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    padding: 1rem;
+    text-align: center;
+}
+
+/* Responsividade */
+@media (min-width: 992px) {
+    .detalhe-main-content {
+        /* Duas colunas em desktop */
+        grid-template-columns: 1.2fr 1fr; /* Coluna da foto um pouco maior */
+    }
+}
+
+@media (max-width: 991px) {
+    .detalhe-info-card {
+        position: static; /* Remove o 'sticky' em telas menores */
+    }
+}
+
+@media (max-width: 768px) {
+    .detalhe-thumbnails {
+        grid-template-columns: repeat(4, 1fr); /* 4 colunas mesmo */
+        gap: 0.5rem;
+    }
+    .detalhe-thumbnails img {
+        height: 70px;
+    }
+    .detalhe-foto-principal img {
+        height: 350px;
+    }
+    .outros-pets-grid {
+        grid-template-columns: repeat(2, 1fr); /* 2 colunas em mobile */
+    }
+}

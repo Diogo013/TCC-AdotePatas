@@ -34,6 +34,7 @@ RewriteRule ^cadastrar-pet/?$ cadastrar-pet.php [NC,L]
 # /pets -> pets-adocao.php
 # Esta regra também vai funcionar para /pets?alguma=coisa
 RewriteRule ^pets/?$ pets-adocao.php [NC,L]
+RewriteRule ^pet-detalhe/([0-9]+)/?$ pet-detalhe.php?id=$1   [NC,L]
 
 # [REGRA AJUSTADA]
 # /perfil -> perfil.php
