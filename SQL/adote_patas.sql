@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 30/09/2025 às 17:30
+-- Tempo de geração: 30/10/2025 às 17:57
 -- Versão do servidor: 10.4.32-MariaDB
 -- Versão do PHP: 8.2.12
 
@@ -76,6 +76,13 @@ CREATE TABLE `favorito` (
   `data` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Despejando dados para a tabela `favorito`
+--
+
+INSERT INTO `favorito` (`id_favorito`, `id_usuario`, `id_pet`, `data`) VALUES
+(11, 18, 11, '2025-10-29 23:20:00');
+
 -- --------------------------------------------------------
 
 --
@@ -106,15 +113,18 @@ CREATE TABLE `ong` (
   `telefone` varchar(20) DEFAULT NULL,
   `endereco` text DEFAULT NULL,
   `data_cadastro` timestamp NOT NULL DEFAULT current_timestamp(),
-  `senha` varchar(255) DEFAULT NULL
+  `senha` varchar(255) DEFAULT NULL,
+  `foto_perfil` varchar(255) DEFAULT NULL,
+  `banner` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Despejando dados para a tabela `ong`
 --
 
-INSERT INTO `ong` (`id_ong`, `nome`, `cnpj`, `email`, `telefone`, `endereco`, `data_cadastro`, `senha`) VALUES
-(1, 'RobertoCarlos cachorros', '22093212000101', 'Robertos@gmail.com', NULL, NULL, '2025-09-30 05:13:34', '$2y$10$FwlhINPn9SmNpHq6P1Bz5uJMnOsS3X0me1lzMGZRCLV6fCDa23oQW');
+INSERT INTO `ong` (`id_ong`, `nome`, `cnpj`, `email`, `telefone`, `endereco`, `data_cadastro`, `senha`, `foto_perfil`, `banner`) VALUES
+(1, 'RobertoCarlos cachorros', '22093212000101', 'Robertos@gmail.com', NULL, NULL, '2025-09-30 05:13:34', '$2y$10$FwlhINPn9SmNpHq6P1Bz5uJMnOsS3X0me1lzMGZRCLV6fCDa23oQW', NULL, NULL),
+(2, 'PatasAmigas', '01193725000106', 'patasamigas@gmail.com', NULL, NULL, '2025-10-23 01:47:11', '$2y$10$OC9TnR0QKrr66iDQhsuFuOSNXiDipykyrw/ZYzYcMOQ0CXdZ2wNVy', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -131,13 +141,37 @@ CREATE TABLE `pet` (
   `porte` enum('pequeno','medio','grande') DEFAULT NULL,
   `comportamento` text DEFAULT NULL,
   `status_vacinacao` enum('sim','nao') DEFAULT NULL,
-  `especie` enum('cachorro','gato','outro') DEFAULT NULL,
+  `especie` enum('cachorro','gato') DEFAULT NULL,
   `status_castracao` enum('sim','nao') DEFAULT NULL,
   `foto` varchar(255) DEFAULT NULL,
   `status_disponibilidade` enum('disponivel','adotado','indisponivel') DEFAULT 'disponivel',
   `id_usuario_fk` int(11) DEFAULT NULL COMMENT 'Chave estrangeira para o Usuário (Doador PF)',
-  `id_ong_fk` int(11) DEFAULT NULL COMMENT 'Chave estrangeira para a ONG Doadora'
+  `id_ong_fk` int(11) DEFAULT NULL COMMENT 'Chave estrangeira para a ONG Doadora',
+  `sexo` enum('macho','femea') DEFAULT NULL,
+  `caracteristicas` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`caracteristicas`))
 ) ;
+
+--
+-- Despejando dados para a tabela `pet`
+--
+
+INSERT INTO `pet` (`id_pet`, `nome`, `idade`, `cor`, `raca`, `porte`, `comportamento`, `status_vacinacao`, `especie`, `status_castracao`, `foto`, `status_disponibilidade`, `id_usuario_fk`, `id_ong_fk`, `sexo`, `caracteristicas`) VALUES
+(10, 'Ana banana', 10, 'preto', 'SRD', 'medio', 'Docil', 'sim', 'gato', 'sim', '', 'disponivel', 18, NULL, 'femea', '[\"Em Treinamento\",\"Com Cães\",\"Medroso\",\"Sociável\",\"Hiperativo\"]'),
+(11, 'Fernando', 11, 'preto', 'SRD', 'medio', 'Dócil', 'sim', 'cachorro', 'sim', NULL, 'disponivel', 18, NULL, 'macho', '[\"Dócil\",\"Tímido\",\"Curioso\",\"Média Energia\",\"Em Treinamento\"]');
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `recuperar_senha_tolken`
+--
+
+CREATE TABLE `recuperar_senha_tolken` (
+  `id` int(11) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `token` varchar(64) NOT NULL,
+  `expires_at` datetime NOT NULL,
+  `created_at` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -181,15 +215,21 @@ CREATE TABLE `usuario` (
   `estado` varchar(50) DEFAULT NULL,
   `cidade` varchar(50) DEFAULT NULL,
   `tipo` enum('adotante','doador') NOT NULL,
-  `cpf` int(100) DEFAULT NULL
+  `cpf` varchar(11) DEFAULT NULL,
+  `foto_perfil` varchar(255) DEFAULT NULL,
+  `banner` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Despejando dados para a tabela `usuario`
 --
 
-INSERT INTO `usuario` (`id_usuario`, `email`, `senha`, `nome`, `estado`, `cidade`, `tipo`, `cpf`) VALUES
-(1, 'fer@gmail.com', '$2y$10$2htIzwn56l8KTiqOYMrwpOgtk0uCTXlowgULtfxKGBvEoTDoYpr1m', 'Diogo Rodrigues', NULL, NULL, 'adotante', 336511);
+INSERT INTO `usuario` (`id_usuario`, `email`, `senha`, `nome`, `estado`, `cidade`, `tipo`, `cpf`, `foto_perfil`, `banner`) VALUES
+(1, 'fer@gmail.com', '$2y$10$2htIzwn56l8KTiqOYMrwpOgtk0uCTXlowgULtfxKGBvEoTDoYpr1m', 'Diogo Rodrigues', NULL, NULL, 'adotante', '336511', NULL, NULL),
+(2, 'moisesfdelima760@gmail.com', '$2y$10$hIVaSp6memMzTHDNEaiu4.g57W9OEBuOSXcJtKOzVp2MbP1EQzxRC', 'Diogo Rodrigues', NULL, NULL, 'adotante', '2147483647', NULL, NULL),
+(16, 'dioguin@gmail.com', '$2y$10$ahmnI/uEyjsrZBxfTRGhgepxuKHeRKPDAOE1PwAOk3a/W2ji1cJCu', 'diogo rogerio', NULL, NULL, 'adotante', '2147483647', NULL, NULL),
+(17, 'teste@gmail.com', '$2y$10$U8oLA3M2YiK3Ymexlo3/HOh/WzKO/uQYUXebJGMlT2NBP424L1Fpq', 'diogo rogerio', NULL, NULL, 'adotante', '2147483647', NULL, NULL),
+(18, 'teste2@gmail.com', '$2y$10$oFFqGB2XPYH2JfPMtVf4MeSNyzP5/9uvEFj8Au2yyIhjcqUInlFdq', 'diogo rogerio', NULL, NULL, 'adotante', '79539418054', NULL, NULL);
 
 --
 -- Índices para tabelas despejadas
@@ -252,6 +292,15 @@ ALTER TABLE `pet`
   ADD KEY `id_ong_fk` (`id_ong_fk`);
 
 --
+-- Índices de tabela `recuperar_senha_tolken`
+--
+ALTER TABLE `recuperar_senha_tolken`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `token` (`token`),
+  ADD KEY `email` (`email`),
+  ADD KEY `token_2` (`token`);
+
+--
 -- Índices de tabela `relatorio`
 --
 ALTER TABLE `relatorio`
@@ -299,7 +348,7 @@ ALTER TABLE `conversa`
 -- AUTO_INCREMENT de tabela `favorito`
 --
 ALTER TABLE `favorito`
-  MODIFY `id_favorito` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_favorito` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT de tabela `mensagem`
@@ -311,13 +360,19 @@ ALTER TABLE `mensagem`
 -- AUTO_INCREMENT de tabela `ong`
 --
 ALTER TABLE `ong`
-  MODIFY `id_ong` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id_ong` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de tabela `pet`
 --
 ALTER TABLE `pet`
   MODIFY `id_pet` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de tabela `recuperar_senha_tolken`
+--
+ALTER TABLE `recuperar_senha_tolken`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- AUTO_INCREMENT de tabela `relatorio`
@@ -335,7 +390,7 @@ ALTER TABLE `solicitacao`
 -- AUTO_INCREMENT de tabela `usuario`
 --
 ALTER TABLE `usuario`
-  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- Restrições para tabelas despejadas
@@ -391,58 +446,6 @@ ALTER TABLE `solicitacao`
   ADD CONSTRAINT `solicitacao_ibfk_2` FOREIGN KEY (`id_pet`) REFERENCES `pet` (`id_pet`) ON DELETE CASCADE;
 COMMIT;
 
-
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
-
-
---
--- Estrutura para tabela `recuperar_senha_tolken`
---
-
-CREATE TABLE `recuperar_senha_tolken` (
-  `id` int(11) NOT NULL,
-  `email` varchar(255) NOT NULL,
-  `token` varchar(64) NOT NULL,
-  `expires_at` datetime NOT NULL,
-  `created_at` datetime DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Despejando dados para a tabela `recuperar_senha_tolken`
---
-
-INSERT INTO `recuperar_senha_tolken` (`id`, `email`, `token`, `expires_at`, `created_at`) VALUES
-(16, 'moisesfdelima760@gmail.com', 'b84ce3911c669dcbb5fbfab168ea1c30193567f7f36d437a9607a6a6dcb20a92', '2025-10-16 00:57:36', '2025-10-15 18:57:36');
-
---
--- Índices para tabelas despejadas
---
-
---
--- Índices de tabela `recuperar_senha_tolken`
---
-ALTER TABLE `recuperar_senha_tolken`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `token` (`token`),
-  ADD KEY `email` (`email`),
-  ADD KEY `token_2` (`token`);
-
---
--- AUTO_INCREMENT para tabelas despejadas
---
-
---
--- AUTO_INCREMENT de tabela `recuperar_senha_tolken`
---
-ALTER TABLE `recuperar_senha_tolken`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
-COMMIT;
-
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-
