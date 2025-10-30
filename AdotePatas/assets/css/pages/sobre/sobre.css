@@ -18,62 +18,49 @@ body {
   color: var(--cor-branca);
 }
 
-.btn-voltar {
-  position: absolute;
-  top: 1rem;
-  left: 1rem;
-  z-index: 100;
-  display: inline-flex;
+/* ==========================================================================
+   HEADER RESPONSIVO (IMPLEMENTAÇÃO COMPLETA DO INDEX.PHP)
+   ========================================================================== */
+
+/* Container principal alinhado */
+.navbar > .container {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-between;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.25rem;
-  color: var(--cor-vermelho);
-  font-weight: 500;
-  cursor: pointer;
-  text-decoration: none;
 }
 
-/* ==========================================================================
-   NAVBAR - (Estilos copiados do index.css para consistência)
-   ========================================================================== */
 .navbar {
+  background: transparent;
   padding: 0.5rem 1rem;
-  transition: all 0.3s ease;
-  font-size: 2em;
-  font-weight: bold;
-  z-index: 10;
+  margin-bottom: 0 !important;
+  position: relative;
+  z-index: 1030;
 }
 
 .navbar-logo {
   width: clamp(60px, 10vw, 80px);
   height: clamp(60px, 10vw, 80px);
   object-fit: contain;
-}
-
-.navbar-scrolled {
-  background-color: var(--cor-branca);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  padding: 0.2rem 0;
-}
-
-.navbar-scrolled .navbar-logo {
-  width: clamp(55px, 10vw, 70px);
+  user-select: none;
 }
 
 .navbar-nav {
   gap: 1.5rem;
   align-items: center;
+  flex-direction: row !important;
+  margin: 0 !important;
 }
 
 .nav-link {
-  font-weight: 800;
+  font-weight: bold !important;
   cursor: pointer;
   position: relative;
   padding: 10px 15px;
   transition: color 0.3s ease;
   display: flex;
   align-items: center;
-  font-size: 1rem;
+  font-size: 1.5rem !important;
   white-space: nowrap;
   border-radius: 4px;
 }
@@ -83,7 +70,7 @@ body {
 }
 
 .navlink::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 5px;
   left: 15px;
@@ -113,11 +100,11 @@ body {
 .loginlink {
   color: var(--cor-vermelho) !important;
   position: relative;
-  margin-left: 1.5rem;
+  margin-left: 0 !important;
 }
 
 .loginlink::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 5px;
   left: 15px;
@@ -139,111 +126,94 @@ body {
   transform: scaleX(1);
 }
 
+/* Remove a barra vertical antiga do loginlink */
 .loginlink::before {
-  content: '|';
+  display: none;
+}
+
+/* Para usuário NÃO LOGADO - Barra entre Ajuda e Entrar */
+.navbar-nav .nav-item:has(.loginlink) {
+  position: relative;
+}
+
+.navbar-nav .nav-item:has(.loginlink)::before {
+  content: "|";
   position: absolute;
-  left: -25px;
+  left: -12px;
   top: 45%;
   transform: translateY(-50%);
   color: var(--cor-cinza);
   font-weight: 300;
-  font-size: 2.5rem;
+  font-size: 1.8rem;
 }
 
-/* === [INÍCIO] CÓDIGO IMPLEMENTADO - OVERRIDES NAVBAR === */
-.navbar .nav-link,
-.navbar .navlink,
-.navbar .loginlink {
-  font-size: 1.5rem !important;
-  padding: 8px 10px;
-}
-
-.navbar .navbar-links,
-.navbar .navbar-nav {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-}
-
-.offcanvas-toggle-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.25rem;
-  margin-left: 0.25rem;
-  background: transparent;
-  border: none;
-}
-
-@media (max-width: 991.98px) {
-  .profile-info,
-  .profile-name {
-    display: none !important;
-  }
-  .profile-container,
-  .navbar-links {
-    justify-content: flex-end;
-  }
-  .loginlink::before {
-    display: none;
-  }
-}
-
-.navbar-toggler {
-  display: none !important;
-}
-
-.collapse.navbar-collapse {
-  display: flex !important;
-}
-/* === [FIM] CÓDIGO IMPLEMENTADO === */
-
-/* ==========================================================================
-   ESTILOS NAVBAR LOGADO (OFFCANVAS)
-   ========================================================================== */
-.profile-container {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  position: relative;
-  z-index: 1031;
-}
-
-.profile-info {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  color: #555;
-}
-
-.profile-icon {
-  font-size: 3rem;
+/* Alternativa mais compatível se o :has() não funcionar */
+.navbar-nav .nav-item + .nav-item:has(.loginlink)::before {
+  content: "|";
+  position: absolute;
+  left: -12px;
+  top: 45%;
+  transform: translateY(-50%);
   color: var(--cor-vermelho);
+  font-weight: 500;
+  font-size: 1.8rem;
+}
+
+/* Fallback para navegadores que não suportam :has() */
+.navbar-nav .nav-item:nth-child(2) + .nav-item::before {
+  content: "|";
+  position: absolute;
+  left: -12px;
+  top: 45%;
+  transform: translateY(-50%);
+  color: var(--cor-vermelho);
+  font-weight: 500;
+  font-size: 1.8rem;
+}
+
+.navbar-nav .nav-item.position-relative {
+  padding-left: 8px;
+}
+
+/* Ícone de perfil quando LOGADO */
+.profile-icon.logged-in,
+.sidebar-profile-icon.logged-in {
+  color: var(--cor-vermelho) !important;
+  font-size: 3rem;
+}
+
+/* Ícone de perfil quando NÃO LOGADO (Visitante) */
+.sidebar-profile-icon.logged-out {
+  color: var(--cor-cinza) !important;
+  opacity: 0.7;
+  font-size: 4rem;
+}
+
+/* Container do perfil logado */
+.profile-info-link .d-flex {
+  flex-direction: row-reverse;
 }
 
 .profile-name {
-  font-size: 14px;
+  font-size: 1.1rem;
   font-weight: bold;
-  margin-top: 4px;
-  text-decoration: none;
-}
-
-.nav-icon {
-  font-size: 24px;
-  color: #555;
 }
 
 .profile-info-link {
   text-decoration: none;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  text-align: center;
+  gap: 0.5rem;
+}
+
+.nav-icon {
+  font-size: 2rem;
   color: #555;
 }
 
-/* --- Correções e Estilos Base do Offcanvas --- */
+/* ==========================================================================
+   OFFCANVAS - ESTILOS COMPLETOS
+   ========================================================================== */
 .offcanvas {
   position: fixed;
   z-index: 1045;
@@ -273,32 +243,6 @@ body {
   opacity: 0.5;
 }
 
-html.offcanvas-open,
-body.offcanvas-open {
-  overflow: hidden !important;
-  position: fixed;
-  width: 100%;
-}
-
-body.offcanvas-open {
-  overflow: hidden;
-}
-
-@media (min-width: 768px) {
-  .offcanvas {
-    width: 400px !important;
-  }
-  body:not(.offcanvas-open) {
-    padding-right: 0 !important;
-  }
-}
-
-@media (max-width: 767.98px) {
-  .offcanvas {
-    width: 85% !important;
-  }
-}
-
 .offcanvas-header {
   border-bottom: 1px solid #eee;
 }
@@ -312,11 +256,6 @@ body.offcanvas-open {
   height: 100%;
   display: flex;
   flex-direction: column;
-}
-
-.sidebar-profile-icon {
-  font-size: 4rem;
-  color: var(--cor-vermelho);
 }
 
 .profile-nav .nav-link {
@@ -349,48 +288,40 @@ body.offcanvas-open {
   background-color: #fcebeb !important;
 }
 
-.offcanvas-body .nav-link {
-  font-size: 1rem;
-  padding: 10px 15px;
-  color: #333;
-  border-radius: 8px;
+.loginlink-sidebar {
+  color: var(--cor-vermelho) !important;
+  font-weight: 600;
 }
 
-.offcanvas-body .nav-link:hover {
-  background-color: #f5f5f5;
-}
-
-.offcanvas-body .logout-link {
-  color: #e87a7a;
-  font-weight: bold;
+.loginlink-sidebar:hover {
+  background-color: #fcebeb !important;
+  color: var(--cor-vermelho) !important;
 }
 
 /* ==========================================================================
-   HERO SECTION - PÁGINA "SOBRE NÓS" (Atualizado)
+   HERO SECTION - PÁGINA "SOBRE NÓS"
    ========================================================================== */
 .hero-sobre {
-    position: relative;
-    z-index: 1; 
-    width: 100%;
-    aspect-ratio: 1920 / 900;
-    max-height: 900px;
-    background-size: 100% 100%;
-    background-image: url("../../../../images/sobre/fundo-sobre.jpg");
-    background-position: center;
-    background-repeat: no-repeat;
+  position: relative;
+  z-index: 1; 
+  width: 100%;
+  aspect-ratio: 1920 / 900;
+  max-height: 900px;
+  background-size: 100% 100%;
+  background-image: url("../../../../images/sobre/fundo-sobre.jpg");
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
-
 /* ==========================================================================
-   CARROSSEL DE CARDS COM CSS E JS PUROS
+   CARROSSEL DE CARDS
    ========================================================================== */
-
 .card-carousel-container {
   position: relative;
   aspect-ratio: 441 / 527;
   width: 70%;
-  max-width: 600px; /* Largura máxima do card ativo */
-  margin: 10px; /* O Bootstrap já cuida do alinhamento da coluna */
+  max-width: 600px;
+  margin: 10px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -402,7 +333,6 @@ body.offcanvas-open {
   height: 100%;
 }
 
-/* Estilo base para todos os cards no baralho */
 .card-item-deck {
   position: absolute;
   top: 0;
@@ -411,17 +341,13 @@ body.offcanvas-open {
   height: 100%;
   background: transparent;
   cursor: pointer;
-  /* A transição é a chave para a animação suave */
   transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.6s ease;
-  /* Usamos variáveis para controlar a posição e rotação via JS */
   transform: translateX(var(--x-offset, 0px)) translateY(var(--y-offset, 0px))
     scale(var(--scale, 1)) rotate(var(--rotation, 0deg));
-
   opacity: var(--opacity, 1);
   z-index: var(--z-index, 1);
 }
 
-/* O conteúdo visual do card (a imagem, borda, etc.) */
 .card-item-deck .card-content {
   width: 90%;
   height: 90%;
@@ -430,21 +356,19 @@ body.offcanvas-open {
   background-position: center;
   border: solid 10px var(--cor-rosa-claro);
   box-shadow: rgba(0, 0, 0, 0.15) 0px 8px 20px -3px;
-
-  /* Rotação única e "permanente" de cada card */
   transform: rotate(var(--random-rotation, 0deg));
 }
-/* ==========================================================================
-   Texto de como nós surgimos
-   ========================================================================== */
 
-.titulo-about{
-    font-size: 4rem;
-    margin-bottom: -0.6rem;
-    color: var(--cor-rosa);
-    font-weight: bold;
-    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-;}
+/* ==========================================================================
+   SEÇÃO SOBRE NÓS
+   ========================================================================== */
+.titulo-about {
+  font-size: 4rem;
+  margin-bottom: -0.6rem;
+  color: var(--cor-rosa);
+  font-weight: bold;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
 
 .about-text {
   font-size: 2rem;
@@ -453,6 +377,7 @@ body.offcanvas-open {
   color: var(--cor-cinza-texto);
   margin-right: 1rem;
 }
+
 .conclusao-about {
   font-size: 2rem;
   line-height: 1.4;
@@ -460,29 +385,33 @@ body.offcanvas-open {
   color: var(--cor-cinza-texto);
   font-weight: bold;
 }
+
 .destaque-amor,
 .destaque-confianca,
 .destaque-recomeco {
   display: inline;
 }
+
 .conclusao-about .destaque-amor,
 .conclusao-about .destaque-confianca,
 .conclusao-about .destaque-recomeco {
   font-weight: normal;
 }
+
 span.destaque-amor {
   font-family: "Kawaii RT";
-  color: var(--cor-vermelho); /* Tom vibrante de vermelho */
-}
-span.destaque-confianca {
-  font-family: "Kawaii RT";
-  color: var(--cor-rosa-escuro); /* Tom vibrante de rosa escuro */
-}
-span.destaque-recomeco {
-  font-family: "Kawaii RT";
-  color: var(--cor-verde-pastel); /* Tom vibrante de rosa pastel */
+  color: var(--cor-vermelho);
 }
 
+span.destaque-confianca {
+  font-family: "Kawaii RT";
+  color: var(--cor-rosa-escuro);
+}
+
+span.destaque-recomeco {
+  font-family: "Kawaii RT";
+  color: var(--cor-verde-pastel);
+}
 
 /* ==========================================================================
    SEÇÃO DE VALORES (CARDS)
@@ -492,15 +421,12 @@ span.destaque-recomeco {
   padding-bottom: 4rem;
 }
 
-/* Estilo base copiado de .card-item (index.css), 
-  mas com as modificações solicitadas.
-*/
 .valor-card-item {
   aspect-ratio: 1 / 1;
   width: 100%;
   max-width: 220px; 
   margin: 0 auto;
-  cursor: default; /* Alterado: Removido o 'cursor: pointer' */
+  cursor: default;
   background-color: var(--cor-rosa);
   color: var(--cor-branca);
   border-radius: 20px;
@@ -508,17 +434,14 @@ span.destaque-recomeco {
     rgba(0, 0, 0, 0.06) 0px 2px 4px -1px;
   position: relative;
   overflow: hidden;
-  /* Removida a opacidade para um visual sólido */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 1rem; 
-  /* Alterado: Removida a transição de 'transform' */
   transition: box-shadow 0.5s ease;
 }
 
-/* Animação de brilho ao passar o mouse (Mantida) */
 .valor-card-item::before {
   content: "";
   position: absolute;
@@ -542,26 +465,16 @@ span.destaque-recomeco {
 
 .valor-card-item .card-icon {
   margin-bottom: 1.8rem; 
-  /* Mantive uma transição sutil no ícone para feedback */
   transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .valor-card-item:hover .card-icon {
-  transform: scale(1.1); /* Feedback sutil no ícone */
+  transform: scale(1.1);
 }
 
 .valor-card-item .card-icon i {
-  /* Ajustado o clamp para ícones consistentes */
   font-size: clamp(60px, 12vw, 70px); 
   color: var(--cor-branca);
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
-}
-
-.valor-card-item .card-icon img {
-  width: 90px; 
-  height: 90px; 
-  object-fit: contain;
-  user-select: none;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
 }
 
@@ -572,16 +485,22 @@ span.destaque-recomeco {
   margin: 0;
   color: var(--cor-branca);
   text-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-  text-align: center; /* Garantir centralização em nomes maiores */
+  text-align: center;
 }
 
-/* ...existing code... */
+/* ==========================================================================
+   CARROSSEL EQUIPE
+   ========================================================================== */
+.team-carousel-wrapper { 
+  padding: 1.5rem 3%; 
+}
 
-/* ======= CARROSSEL EQUIPE ======= */
-.equipe-section { padding-bottom: 3.5rem; }
+.team-carousel { 
+  overflow: hidden; 
+  width: 100%; 
+  position: relative;
+}
 
-.team-carousel-wrapper { padding: 1.5rem 3%; }
-.team-carousel { overflow: hidden; width: 100%; }
 .team-track {
   display: flex;
   gap: 1.5rem;
@@ -591,12 +510,15 @@ span.destaque-recomeco {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scroll-snap-type: x mandatory;
-  scrollbar-width: none; /* firefox */
+  scrollbar-width: none;
 }
-.team-track::-webkit-scrollbar { display: none; }
+
+.team-track::-webkit-scrollbar { 
+  display: none; 
+}
 
 .team-item {
-  flex: 0 0 calc((100% - 3rem) / 3); /* mostra 3 por vez (ajusta com gap) */
+  flex: 0 0 calc((100% - 3rem) / 3);
   max-width: calc((100% - 3rem) / 3);
   display: flex;
   flex-direction: column;
@@ -605,7 +527,10 @@ span.destaque-recomeco {
   user-select: none;
   cursor: grab;
 }
-.team-item:active { cursor: grabbing; }
+
+.team-item:active { 
+  cursor: grabbing; 
+}
 
 .team-avatar {
   width: clamp(150px, 22vw, 240px);
@@ -623,10 +548,9 @@ span.destaque-recomeco {
   text-align: center;
   font-weight: 700;
   color: var(--cor-cinza-texto);
-  font-size: clamp(2rem, 2vw, 1.6rem);
+  font-size: clamp(1.2rem, 2vw, 1.6rem);
 }
 
-.team-carousel { position: relative; }
 .team-prev,
 .team-next {
   position: absolute;
@@ -647,120 +571,180 @@ span.destaque-recomeco {
   z-index: 30;
   transition: transform .15s ease, box-shadow .15s ease;
 }
-.team-prev { left: 8px; }
-.team-next { right: 8px; }
 
-.team-prev:hover,
-.team-next:hover { transform: translateY(-50%) scale(1.05); box-shadow: 0 10px 24px rgba(0,0,0,0.14); }
-
-.team-prev:active,
-.team-next:active { transform: translateY(-50%) scale(.98); }
-
-/* Aumenta target em telas pequenas */
-@media (max-width: 700px) {
-  .team-prev, .team-next { width: 44px; height: 44px; font-size: 1rem; }
+.team-prev { 
+  left: 8px; 
 }
 
+.team-next { 
+  right: 8px; 
+}
 
-/* Responsivo: em telas pequenas mostra 1-2 por vez */
-@media (max-width: 900px) {
+.team-prev:hover,
+.team-next:hover { 
+  transform: translateY(-50%) scale(1.05); 
+  box-shadow: 0 10px 24px rgba(0,0,0,0.14); 
+}
+
+.team-prev:active,
+.team-next:active { 
+  transform: translateY(-50%) scale(.98); 
+}
+
+/* ==========================================================================
+   RESPONSIVIDADE COMPLETA
+   ========================================================================== */
+
+/* Para usuário NÃO LOGADO - em telas menores que 1000px, esconde os links da navbar */
+@media (max-width: 1199.98px) {
+  .d-none.d-xl-block .navbar-nav {
+    display: none !important;
+  }
+  
+  .navbar button[data-bs-toggle="offcanvas"] {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* Ajustes para telas muito pequenas */
+@media (max-width: 575.98px) {
+  .profile-name {
+    display: none !important;
+  }
+  
+  .profile-icon.logged-in {
+    font-size: 2.2rem;
+  }
+}
+
+/* Ajustes para tablets */
+@media (max-width: 991.98px) {
+  .navbar {
+    background-color: var(--cor-branca);
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+  }
+  
+  .navbar-nav {
+    gap: 0.5rem;
+  }
+  
+  .titulo-about {
+    font-size: 3rem;
+  }
+  
+  .about-text {
+    max-width: 800px;
+  }
+  
+  .card-carousel-container {
+    width: 50%;
+  }
+  
+  .conclusao-about {
+    max-width: 800px;
+  }
+}
+
+/* Ajustes para mobile */
+@media (max-width: 767.98px) {
+  .offcanvas {
+    width: 85% !important;
+  }
+  
+  .team-prev, 
+  .team-next { 
+    width: 44px; 
+    height: 44px; 
+    font-size: 1rem; 
+  }
+}
+
+@media (max-width: 700px) {
+  .card-carousel-container {
+    width: 70%;
+  }
+  
   .team-item {
     flex: 0 0 calc((100% - 2rem) / 2);
     max-width: calc((100% - 2rem) / 2);
   }
 }
-@media (max-width: 480px) {
+
+@media (max-width: 500px) {
+  .card-carousel-container {
+    width: 80%;
+  }
+  
   .team-item {
     flex: 0 0 85%;
     max-width: 85%;
   }
+  
   .navbar .navlink {
     font-size: 1rem !important;
   }
 }
 
-/* ==========================================================================
-   MEDIA QUERIES - Estilos Responsivos
-   ========================================================================== */
-
-@media (max-width: 1500px){
-    .about-text{
-        font-size: 1.5rem;
-    }
-    .card-carousel-container{
-        width: 75%;
-    }
-}
-@media (max-width: 1300px){
-    .about-text{
-        font-size: 1.2rem;
-    }
-    .card-carousel-container{
-        width: 80%;
-    }
-}
-@media (max-width: 1060px){
-    .card-carousel-container{
-        width: 85%;
-    }
+@media (max-width: 1500px) {
+  .about-text {
+    font-size: 1.5rem;
+  }
+  
+  .card-carousel-container {
+    width: 75%;
+  }
 }
 
-/* --- MOBILE E TABLET (Telas < 992px) --- */
-@media (max-width: 991.98px) {
-    /* Estilos da Navbar para mobile (copiados do index.css) */
-    .navbar {
-        background-color: var(--cor-branca);
-        box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
-        margin: 0;
-    }
-    .navbar-collapse {
-        background: var(--cor-branca);
-        margin-top: 1rem;
-        border-radius: 8px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        padding: 1rem;
-    }
-    .navbar-nav {
-        gap: 0.5rem;
-    }
-    .loginlink {
-        margin-left: 0;
-    }
-    .loginlink::before {
-        display: none;
-    }
-    .titulo-about{
-        font-size: 3rem;
-    }
-        .about-text{
-        max-width: 800px;
-    }
-    .card-carousel-container{
-        width: 50%;
-    }
-    .conclusao-about{
-        max-width: 800px;
-    }
+@media (max-width: 1300px) {
+  .about-text {
+    font-size: 1.2rem;
+  }
+  
+  .card-carousel-container {
+    width: 80%;
+  }
 }
-@media (max-width: 700px){
-    .card-carousel-container{
-        width: 70%;
-    }
+
+@media (max-width: 1060px) {
+  .card-carousel-container {
+    width: 85%;
+  }
 }
-@media (max-width: 500px){
-    .card-carousel-container{
-        width: 80%;
-    }
+
+/* Corrige possíveis problemas de offcanvas */
+body.offcanvas-open {
+  overflow: hidden;
+}
+
+html.offcanvas-open,
+body.offcanvas-open {
+  overflow: hidden !important;
+  position: fixed;
+  width: 100%;
+}
+
+/* Garante que o conteúdo principal não seja afetado pelo offcanvas */
+main, section, footer {
+  position: relative;
+  z-index: 1;
+}
+
+@media (min-width: 768px) {
+  .offcanvas {
+    width: 400px !important;
+  }
 }
 
 /* --- PREFERÊNCIA POR REDUÇÃO DE MOVIMENTO --- */
 @media (prefers-reduced-motion: reduce) {
-    html {
-        scroll-behavior: auto;
-    }
+  html {
+    scroll-behavior: auto;
+  }
 
-    .navbar,
-    .navlink::after {
-        transition: none;
-    }
+  .navbar,
+  .navlink::after {
+    transition: none;
+  }
 }

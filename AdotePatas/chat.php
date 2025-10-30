@@ -2,10 +2,10 @@
 session_start();
 
 // 1. Segurança: Verifica se o usuário está logado (como no seu perfil.php)
-// if (!isset($_SESSION['user_id'])) {
-//     header("Location: login");
-//     exit;
-// }
+ if (!isset($_SESSION['user_id'])) {
+     header("Location: login");
+     exit;
+}
 
 // 2. Lógica da Página (similar ao perfil.php)
 $conversa_id = $_GET['id'] ?? null; // Pega o ID da conversa ativa pela URL
@@ -15,7 +15,7 @@ $conversa_id = $_GET['id'] ?? null; // Pega o ID da conversa ativa pela URL
 $lista_conversas = [
     [
         "id" => 1,
-        "nome" => "Abrigo Cão Feliz",
+        "nome" => "Abrigo Cão",
         "preview" => "Olá! Vimos que você se interessou...",
         "data" => "02/04",
         "avatar" => "images/global/Logo-AdotePatas.png" // Usando o logo como exemplo
@@ -46,6 +46,17 @@ if ($conversa_id) {
         }
     }
 }
+
+// Define o fuso horário padrão para Brasília
+date_default_timezone_set('America/Sao_Paulo');
+
+// Pega a hora, minuto e segundo atuais
+$hora_atual = date('H'); // Formato 24h (ex: 14)
+$minuto_atual = date('i'); // Minutos com zero à esquerda (ex: 05)
+
+// Para pegar tudo de uma vez formatado (ex: 14:05:09)
+$horario_completo = date('H:i');
+
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -150,15 +161,68 @@ if ($conversa_id) {
           </div>
 
           <div class="chat-messages">
+
               <div class="message received">
                   <p>Olá! Vimos que você se interessou pelo Caramelo</p>
+                  <div class="date message-timestamp">
+                    <?php echo date('d/m/Y' . "   " . $horario_completo); ?>
+
+                  </div>
               </div>
               <div class="message sent">
                   <p>Sim! Gostaria de saber mais sobre ele.</p>
+                  <div class="date message-timestamp">
+                    <?php echo date('d/m/Y' . "   " . $horario_completo); ?>
+
+                  </div>
               </div>
               <div class="message received">
                   <p>Claro! Qual sua Dúvida?</p>
+                  <div class="date message-timestamp">
+                    <?php echo date('d/m/Y' . "   " . $horario_completo); ?>
+                  </div>
               </div>
+              <div class="message received">
+                  <p>Olá! Vimos que você se interessou pelo Caramelo</p>
+                  <div class="date message-timestamp">
+                    <?php echo date('d/m/Y' . "   " . $horario_completo); ?>
+
+                  </div>
+              </div>
+              <div class="message sent">
+                  <p>Sim! Gostaria de saber mais sobre ele.</p>
+                  <div class="date message-timestamp">
+                    <?php echo date('d/m/Y' . "   " . $horario_completo); ?>
+
+                  </div>
+              </div>
+              <div class="message received">
+                  <p>Claro! Qual sua Dúvida?</p>
+                  <div class="date message-timestamp">
+                    <?php echo date('d/m/Y' . "   " . $horario_completo); ?>
+                  </div>
+              </div>
+              <div class="message received">
+                  <p>Olá! Vimos que você se interessou pelo Caramelo</p>
+                  <div class="date message-timestamp">
+                    <?php echo date('d/m/Y' . "   " . $horario_completo); ?>
+
+                  </div>
+              </div>
+              <div class="message sent">
+                  <p>Sim! Gostaria de saber mais sobre ele.</p>
+                  <div class="date message-timestamp">
+                    <?php echo date('d/m/Y' . "   " . $horario_completo); ?>
+
+                  </div>
+              </div>
+              <div class="message received">
+                  <p>Claro! Qual sua Dúvida?</p>
+                  <div class="date message-timestamp">
+                    <?php echo date('d/m/Y' . "   " . $horario_completo); ?>
+                  </div>
+              </div>
+
               </div>
 
           <div class="chat-input-area">

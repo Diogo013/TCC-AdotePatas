@@ -349,6 +349,25 @@
     border: solid 1px var(--cor-vermelho);
     transform: scale(0.95);
 }
+.message-timestamp {
+    font-family: "Poppins", sans-serif;
+    font-size: 0.8rem; /* Tamanho menor para a data/hora */
+    color: var(--cor-cinza-texto);
+    opacity: 0.8; /* Mais sutil */
+    margin-top: 5px; /* Espaço entre a mensagem e o timestamp */
+    text-align: right; /* Alinha a data/hora à direita dentro do balão */
+    display: block; /* Garante que o span ocupe a linha toda */
+    white-space: nowrap; /* Evita quebra de linha indesejada */
+}
+
+/* Ajustes para o timestamp dentro de mensagens recebidas e enviadas */
+.message.received .message-timestamp {
+    text-align: right; /* Timestamp à esquerda em mensagens recebidas */
+}
+
+.message.sent .message-timestamp {
+    text-align: left; /* Timestamp à direita em mensagens enviadas */
+}
 
 
 /* 6. Responsividade */
