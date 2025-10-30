@@ -44,7 +44,7 @@ if ($logado) {
 
 // Define o link do botão principal com base no status de login
 if ($logado) {
-  $acesso = "pets-adocao.php";
+  $acesso = "pets";
 } else {
   $acesso = "login";// Se não estiver logado, o botão "Quero Adotar" leva para a tela de login
 }
@@ -87,7 +87,7 @@ $pagina = "";
 !-->
 
   <header>
-    <nav class="navbar navbar-expand-lg">
+    <nav class="navbar navbar-expand">
       <div class="container">
         <a class="navbar-brand" href="#">
           <img src="./images/global/logo-AdotePatas.png" alt="Logo Adote Patas" class="navbar-logo">
@@ -95,51 +95,63 @@ $pagina = "";
 
         <?php if ($logado): ?>
           <!-- Navbar para usuário LOGADO -->
-          <div class="profile-container d-flex justify-content-center align-items-center" >
-            
-        <ul class="navbar-nav d-flex">
-          <li class="nav-item">
-            <a class="nav-link navlink" href="sobre-nos.php">Sobre Nós</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link navlink" href="#">Ajuda</a>
-          </li>
-        </ul>
+          <div class="d-flex align-items-center gap-4">
+            <!-- Links "Sobre Nós" e "Ajuda" (visíveis em telas grandes) -->
+            <div class="d-none d-xl-block">
+              <ul class="navbar-nav d-flex flex-row gap-4 mb-0">
+                <li class="nav-item">
+                  <a class="nav-link navlink" href="sobre-nos.php">Sobre Nós</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link navlink" href="#">Ajuda</a>
+                </li>
+              </ul>
+            </div>
 
-         <a href="perfil?page=perfil" class="profile-info-link" style="text-decoration: none;" title="Ver meu perfil">
-              <div class="profile-info d-flex flex-row-reverse gap-2 ms-4">
-                <i class="fa-regular fa-circle-user profile-icon"></i>
-                <span class="profile-name fs-5 mb-1" style="color: var(--cor-vermelho);"><?php echo htmlspecialchars($primeiro_nome); ?></span>
+            <!-- Nome e ícone do usuário -->
+            <a href="perfil?page=perfil" class="profile-info-link d-flex align-items-center gap-3 text-decoration-none" title="Ver meu perfil">
+              <div class="d-flex align-items-center flex-row-reverse gap-2">
+                <i class="fa-regular fa-circle-user profile-icon logged-in"></i>
+                <span class="profile-name fs-5" style="color: var(--cor-vermelho);"><?php echo htmlspecialchars($primeiro_nome); ?></span>
               </div>
             </a>
 
-            <button class="border-0 bg-transparent" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
+            <!-- Botão do menu (SEMPRE VISÍVEL) -->
+            <button class="border-0 bg-transparent p-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
               <span class="fas fa-bars nav-icon" style="font-size: 2rem;"></span>
             </button>
-
           </div>
 
         <?php else: ?>
-        <ul class="navbar-nav d-flex">
-          <li class="nav-item">
-            <a class="nav-link navlink" href="sobre-nos.php">Sobre Nós</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link navlink" href="#">Ajuda</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link loginlink" href="login">Entrar</a>
-          </li>
-        </ul>
+          <!-- Navbar para usuário NÃO LOGADO -->
+          <div class="d-flex align-items-center gap-4">
+            <!-- Links visíveis apenas em telas grandes (>1000px) -->
+            <div class="d-none d-xl-block">
+              <ul class="navbar-nav d-flex flex-row align-items-center gap-4 mb-0">
+                <li class="nav-item">
+                  <a class="nav-link navlink" href="sobre-nos.php">Sobre Nós</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link navlink" href="#">Ajuda</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link loginlink" href="login">Entrar</a>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Botão do menu (sempre visível) -->
+            <button class="border-0 bg-transparent p-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
+              <span class="fas fa-bars nav-icon" style="font-size: 2rem;"></span>
+            </button>
+          </div>
         <?php endif; ?>
-
-
       </div>
     </nav>
   </header>
 
  <main class="hero">
-    <div class="container" style="margin-top: 5rem;">
+    <div class="container hero-conteudo">
       <div class="row align-items-center">
 
         <div class="col-lg-6 order-1"> <div class="hero-text-content">
@@ -151,11 +163,13 @@ $pagina = "";
             </p>
           </div>
 
-          <div class="btn-container">
+          <img src="images/index/cabeca-cachorro.png" class="img-fluid d-none" id="cachorro" alt="cachorro fofo deitado olhando para frente">
+
+          <div class="btn-container mb-5">
             <a href="<?php
                   echo  $acesso
                   ?>">
-              <button class="adopt-btn mt-4" id="adoptBtn">
+              <button class="adopt-btn" id="adoptBtn">
                 <div class="heart-background" style="user-select: none;">❤</div>
                 <span>Quero adotar</span>
               </button>
@@ -262,10 +276,14 @@ $pagina = "";
 
         <center>
           <div class="btn-container">
+           <a href="<?php
+                  echo  $acesso
+                  ?>">
             <button class="adopt-btn" id="adoptBtn">
               <div class="heart-background" style="user-select: none;">❤</div>
               <span>Ver mais patinhas</span>
             </button>
+          </a>
           </div>
         </center>
 
@@ -280,65 +298,69 @@ $pagina = "";
 
   </section>
 
-  <section class="about container mt-5 gap-3" style="margin-bottom: 3rem;">
-    <h1 class="titulo-about" style="margin-bottom: 1rem">Como nós surgimos?</h1>
+    <section class="image-background-2">
 
-    <div class="row align-items-center" style="margin-bottom: 10rem;">
-      <div class="col-lg-8 col-md-12 mb-2">
-        <div class="about-content">
-          <p class="about-text">
-            Nosso projeto surgiu do amor pelos animais e do desejo de ajudá-los de forma concreta. Ao percebermos a
-            quantidade de
-            cães e gatos abandonados e ignorados pela sociedade, sentimos a necessidade de agir. Muitos desses animais
-            não são
-            adotados por falta de informação ou visibilidade. Assim, criamos este espaço com o objetivo de promover a
-            adoção
-            responsável, conectando pessoas dispostas a amar com animais que só precisam de uma chance.
-          </p>
-
-          <h3 class="conclusao-about">
-            Aqui, cada adoção é celebrada como uma nova história de
-            <span class="destaque-amor">AMOR</span>,
-            <span class="destaque-confianca">CONFIANÇA</span>
-            e
-            <span class="destaque-recomeco">RECOMEÇO</span>
-          </h3>
-        </div>
-      </div>
-
-      <div class="col-lg-4 col-md-12">
-
-        <div class="card-carousel-container">
-          <div class="card-deck ms-5 mb-5">
-
-            <div class="card-item-deck">
-              <div class="card-content" style="background-image: url(./images/index/cacau.webp);"></div>
+      
+      <section class="about container mt-5 gap-3" style="margin-bottom: 3rem;">
+        <h1 class="titulo-about" style="margin-bottom: 1rem">Como nós surgimos?</h1>
+        
+        <div class="row align-items-center" style="margin-bottom: 10rem;">
+          <div class="col-lg-8 col-md-12 mb-2">
+            <div class="about-content">
+              <p class="about-text">
+                Nosso projeto surgiu do amor pelos animais e do desejo de ajudá-los de forma concreta. Ao percebermos a
+                quantidade de
+                cães e gatos abandonados e ignorados pela sociedade, sentimos a necessidade de agir. Muitos desses animais
+                não são
+                adotados por falta de informação ou visibilidade. Assim, criamos este espaço com o objetivo de promover a
+                adoção
+                responsável, conectando pessoas dispostas a amar com animais que só precisam de uma chance.
+              </p>
+              
+              <h3 class="conclusao-about">
+                Aqui, cada adoção é celebrada como uma nova história de
+                <span class="destaque-amor">AMOR</span>,
+                <span class="destaque-confianca">CONFIANÇA</span>
+                e
+                <span class="destaque-recomeco">RECOMEÇO</span>
+              </h3>
             </div>
-
-            <div class="card-item-deck">
-              <div class="card-content" style="background-image: url(./images/index/zeus.webp);"></div>
-            </div>
-
-            <div class="card-item-deck">
-              <div class="card-content" style="background-image: url(./images/index/kitty.jpg);"></div>
-            </div>
-
           </div>
-
+          
+          <div class="col-lg-4 col-md-12">
+            
+            <div class="card-carousel-container">
+              <div class="card-deck ms-5 mb-5">
+                
+                <div class="card-item-deck">
+                  <div class="card-content" style="background-image: url(./images/index/cacau.webp);"></div>
+                </div>
+                
+                <div class="card-item-deck">
+                  <div class="card-content" style="background-image: url(./images/index/zeus.webp);"></div>
+                </div>
+                
+                <div class="card-item-deck">
+                  <div class="card-content" style="background-image: url(./images/index/kitty.jpg);"></div>
+                </div>
+                
+              </div>
+              
+            </div>
+            
+            
+            
+            
+          </div>
         </div>
-
-
-
-
-      </div>
-    </div>
-  </section>
-
-
-  <svg width="0" height="0" style="position: absolute;">
-    <defs>
-      <clipPath id="footerConcavity" clipPathUnits="objectBoundingBox">
-        <path d="M0,0 Q 0.5,0.35 1,0 L1,1 L0,1 Z" />
+      </section>
+    </section>
+      
+      
+      <svg width="0" height="0" style="position: absolute;">
+        <defs>
+          <clipPath id="footerConcavity" clipPathUnits="objectBoundingBox">
+            <path d="M0,0 Q 0.5,0.35 1,0 L1,1 L0,1 Z" />
       </clipPath>
       <clipPath id="footerConcavityShallow" clipPathUnits="objectBoundingBox">
         <path d="M0,0 Q 0.5,0.15 1,0 L1,1 L0,1 Z" />
@@ -384,8 +406,16 @@ $pagina = "";
         </div>
 
       </div>
-    </div>
+    </div>  
   </footer>
+  
+  <section id="direitos" class="direitos container p-3 d-flex align-items-center">
+    <img src="images/index/logo-nome.svg" alt="logo da marca adote patas" class="img-fluid" width="150">
+      <div class="text-center ms-3">
+        <h1 class="titulo-direitos" style="color: var(--cor-vermelho-claro); font-weight: bold;">Conectando pets a lares cheios de amor.</h1>
+        <p style="color: var(--cor-cinza-texto);">© <?php echo date("Y") ?> Todos os direitos reservados </p>
+      </div>
+  </section>
 
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
     integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
@@ -398,55 +428,116 @@ $pagina = "";
   <script src="assets/js/pages/index/card-deck.js"></script>
   <script src="assets/js/pages/index/loading.js"></script>
   <script src="assets/js/pages/index/offcanvas-fix.js"></script>
+  <script>
+    // Seleciona o elemento que você quer modificar
+const elemento = document.querySelector('#cachorro'); // troque pelo seletor desejado
+const direitos = document.querySelector('#direitos');
 
-  <!-- Offcanvas Menu (só aparece quando logado) -->
-  <?php if ($logado): ?>
-  <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+// Função que verifica a largura da tela
+function verificarLarguraTela() {
+  if (window.innerWidth < 992) {
+    elemento.classList.remove('d-none'); // remove o d-none em telas menores que 992px
+  } else {
+    elemento.classList.add('d-none'); // adiciona novamente quando for maior (opcional)
+  }
+
+    if (window.innerWidth < 500) {
+    direitos.classList.add('d-none'); // adiciona o d-none em telas menores que 500px
+  }
+}
+
+// Executa ao carregar a página
+verificarLarguraTela();
+
+// Executa toda vez que a janela for redimensionada
+window.addEventListener('resize', verificarLarguraTela);
+  </script>
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
     <div class="offcanvas-header border-bottom">
       <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
     
     <div class="offcanvas-body p-0">
-      <aside class="profile-sidebar p-3">
-        <div class="sidebar-header text-center mb-4">
-          <i class="fa-regular fa-circle-user sidebar-profile-icon"></i>
-          <h5 class="mt-2 mb-0">
-            <?php echo htmlspecialchars($usuario['nome'] ?? 'Usuário'); ?>
-          </h5>
-          <small class="text-muted fs-6">
-            <?php echo htmlspecialchars(ucfirst($user_tipo)); ?>
-          </small>
-        </div>
-        
-        <nav class="nav nav-pills flex-column profile-nav">
-          <a class="nav-link <?php echo ($pagina == 'perfil') ? 'active' : ''; ?>" 
-             href="perfil?page=perfil" 
-             <?php echo ($pagina == 'perfil') ? 'aria-current="page"' : ''; ?>>
-            <i class="fa-regular fa-circle-user fa-fw me-2"></i> Meu Perfil
-          </a>
+      <?php if ($logado): ?>
+        <!-- Conteúdo para usuário LOGADO -->
+        <aside class="profile-sidebar p-3">
+          <div class="sidebar-header text-center mb-4">
+            <i class="fa-regular fa-circle-user sidebar-profile-icon logged-in"></i>
+            <h5 class="mt-2 mb-0">
+              <?php echo htmlspecialchars($usuario['nome'] ?? 'Usuário'); ?>
+            </h5>
+            <small class="text-muted fs-6">
+              <?php echo htmlspecialchars(ucfirst($user_tipo)); ?>
+            </small>
+          </div>
           
-          <a class="nav-link <?php echo ($pagina == 'meus-pets') ? 'active' : ''; ?>" 
-             href="perfil?page=meus-pets"
-             <?php echo ($pagina == 'meus-pets') ? 'aria-current="page"' : ''; ?>>
-            <i class="fa-solid fa-paw fa-fw me-2"></i> Meus Pets
-          </a>
+          <nav class="nav nav-pills flex-column profile-nav">
+            <!-- Links que aparecem apenas no offcanvas em telas pequenas -->
+            <div class="d-xl-none">
+              <a class="nav-link" href="sobre-nos.php">
+                <i class="fa-solid fa-info-circle fa-fw me-2"></i> Sobre Nós
+              </a>
+              <a class="nav-link" href="#">
+                <i class="fa-solid fa-question-circle fa-fw me-2"></i> Ajuda
+              </a>
+              <hr class="my-2">
+            </div>
+            
+            <a class="nav-link <?php echo ($pagina == 'perfil') ? 'active' : ''; ?>" 
+               href="perfil?page=perfil" 
+               <?php echo ($pagina == 'perfil') ? 'aria-current="page"' : ''; ?>>
+              <i class="fa-regular fa-circle-user fa-fw me-2"></i> Meu Perfil
+            </a>
+            
+            <a class="nav-link <?php echo ($pagina == 'meus-pets') ? 'active' : ''; ?>" 
+               href="perfil?page=meus-pets"
+               <?php echo ($pagina == 'meus-pets') ? 'aria-current="page"' : ''; ?>>
+              <i class="fa-solid fa-paw fa-fw me-2"></i> Meus Pets
+            </a>
+            
+            <a class="nav-link <?php echo ($pagina == 'pets-curtidos') ? 'active' : ''; ?>" 
+               href="perfil?page=pets-curtidos"
+               <?php echo ($pagina == 'pets-curtidos') ? 'aria-current="page"' : ''; ?>>
+              <i class="fa-regular fa-heart fa-fw me-2"></i> Pets Curtidos
+            </a>
+            
+            <hr class="my-2">
+            
+            <a class="nav-link logout-link-sidebar" href="sair.php">
+              <i class="fa-solid fa-right-from-bracket fa-fw me-2"></i> Sair
+            </a>
+          </nav>
+        </aside>
+      <?php else: ?>
+        <!-- Conteúdo para usuário NÃO LOGADO -->
+        <aside class="profile-sidebar p-3">
+          <div class="sidebar-header text-center mb-4">
+            <i class="fa-regular fa-circle-user sidebar-profile-icon logged-out"></i>
+            <h5 class="mt-2 mb-0">Visitante</h5>
+            <small class="text-muted fs-6">Faça login para acessar mais recursos</small>
+          </div>
           
-          <a class="nav-link <?php echo ($pagina == 'pets-curtidos') ? 'active' : ''; ?>" 
-             href="perfil?page=pets-curtidos"
-             <?php echo ($pagina == 'pets-curtidos') ? 'aria-current="page"' : ''; ?>>
-            <i class="fa-regular fa-heart fa-fw me-2"></i> Pets Curtidos
-          </a>
-          
-          <hr class="my-2">
-          
-          <a class="nav-link logout-link-sidebar" href="sair.php">
-            <i class="fa-solid fa-right-from-bracket fa-fw me-2"></i> Sair
-          </a>
-        </nav>
-      </aside>
+          <nav class="nav nav-pills flex-column profile-nav">
+            <a class="nav-link" href="sobre-nos.php">
+              <i class="fa-solid fa-info-circle fa-fw me-2"></i> Sobre Nós
+            </a>
+            
+            <a class="nav-link" href="#">
+              <i class="fa-solid fa-question-circle fa-fw me-2"></i> Ajuda
+            </a>
+            
+            <hr class="my-2">
+            
+            <a class="nav-link loginlink-sidebar" href="login">
+              <i class="fa-solid fa-right-to-bracket fa-fw me-2"></i> Entrar
+            </a>
+          </nav>
+        </aside>
+      <?php endif; ?>
     </div>
   </div>
-  <?php endif; ?>
+
 
 </body>
 

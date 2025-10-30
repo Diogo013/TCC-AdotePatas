@@ -1,0 +1,397 @@
+@import "./partials/header.css";
+@import "../../global/global.css";
+
+/* ==========================================================================
+   ESTILOS DA PÁGINA DE CHAT
+   ========================================================================== */
+
+/* 1. Configuração do Corpo da Página */
+.chat-page-body {
+    background-color: var(--cor-laranja-claro);
+    overflow-x: hidden;
+}
+
+/* 2. Contêiner Principal do Chat */
+.chat-container {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    max-height: calc(100vh - 90px - 4rem); 
+    height: calc(100vh - 90px - 4rem);
+}
+
+.chat-main-card {
+    background-color: var(--cor-branca);
+    border-radius: 16px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.07);
+    height: 100%;
+    overflow: hidden; 
+}
+
+/* 3. Coluna Esquerda (Sidebar de Conversas) */
+.chat-sidebar {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100%; 
+    overflow: hidden;
+    border-right: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.chat-sidebar-header {
+    padding: 1.5rem;
+    flex-shrink: 0; 
+}
+
+.chat-title {
+    font-family: "Kawaii RT";
+    font-size: 2rem;
+    color: var(--cor-vermelho);
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+}
+
+.chat-search-wrapper {
+    position: relative;
+}
+
+.chat-search-input {
+    border-radius: 10px;
+    background-color: var(--cor-laranja-claro);
+    border: 2px solid transparent; 
+    padding-left: 3.2rem; 
+    font-family: "Poppins", sans-serif;
+    font-size: 1.4rem;
+}
+.chat-search-input:focus {
+    background-color: var(--cor-branca);
+    box-shadow: none;
+    border-color: var(--cor-rosa-pastel);
+}
+
+.search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--cor-cinza-texto);
+    opacity: 0.8;
+    font-size: 1.3rem;
+}
+
+.chat-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1.5rem;
+    font-family: "Poppins", sans-serif;
+    font-weight: 600;
+    font-size: 1.4rem;
+    color: var(--cor-cinza-texto);
+    flex-shrink: 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.chat-new-button {
+    color: var(--cor-rosa-escuro);
+    font-size: 1.6rem;
+    transition: color 0.2s ease;
+}
+.chat-new-button:hover {
+    color: var(--cor-vermelho);
+}
+
+/* 4. Lista de Conversas (Scrollável) */
+.chat-list {
+    overflow-y: auto;
+    flex-grow: 1; 
+    padding: 0.5rem 1rem;
+}
+
+.chat-list-item {
+    display: flex;
+    align-items: center;
+    padding: 1.2rem 1rem;
+    border-radius: 12px;
+    margin-bottom: 0.25rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    text-decoration: none;
+}
+
+.chat-list-item:hover {
+    background-color: var(--cor-laranja-claro);
+}
+
+.chat-list-item.active,
+.chat-list-item.active:hover {
+    background-color: var(--cor-rosa-pastel-claro); /* Usando a variável */
+    padding-left: calc(1rem - 4px);
+}
+
+.chat-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 1.2rem;
+    flex-shrink: 0;
+    background-color: var(--cor-laranja-pastel); 
+}
+
+.chat-item-details {
+    flex-grow: 1;
+    overflow: hidden; 
+}
+
+.chat-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.2rem;
+}
+
+.chat-name {
+    font-family: "Poppins", sans-serif;
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: var(--cor-cinza-texto);
+    white-space: nowrap;
+}
+
+.chat-date {
+    font-family: "Poppins", sans-serif;
+    font-size: 1.2rem;
+    color: var(--cor-cinza-texto);
+    opacity: 0.7;
+    white-space: nowrap;
+    margin-left: 0.5rem;
+    flex-shrink: 0;
+}
+
+.chat-preview {
+    font-family: "Poppins", sans-serif;
+    font-size: 1.3rem;
+    color: var(--cor-cinza-texto);
+    opacity: 0.8;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; 
+}
+
+.chat-list-item.active .chat-name {
+    color: var(--cor-vermelho);
+}
+.chat-list-item.active .chat-preview,
+.chat-list-item.active .chat-date {
+    color: var(--cor-rosa-escuro);
+    opacity: 1;
+    font-weight: 500;
+}
+
+
+/* 5. Coluna Direita (Área da Conversa) */
+.chat-conversation-area {
+    display: flex;
+    flex-direction: column; /* Organiza header, mensagens, input em coluna */
+    height: 100%;
+    position: relative; /* Para o background-image */
+
+    /* === NOVO: O WALLPAPER DE FUNDO === */
+    background-image: url('../../../images/chat/wallpaper.jpg'); /* Caminho correto para o seu wallpaper */
+    background-repeat: repeat;
+    background-size: 150px; /* Ajuste o tamanho conforme desejar */
+    background-color: var(--cor-laranja-claro); /* Cor de fallback caso a imagem não carregue */
+}
+
+/* Placeholder quando NENHUMA conversa está selecionada */
+.chat-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center; /* Centraliza verticalmente também */
+    text-align: center;
+    padding: 2rem;
+    height: 100%; /* Ocupa a altura total */
+}
+
+.chat-placeholder-logo {
+    width: 100px;
+    height: 100px;
+}
+
+.chat-placeholder .adote-patas {
+    font-family: "Kawaii RT";
+    color: var(--cor-vermelho);
+    opacity: 0.7;
+    font-size: 4rem;
+    margin-top: 1rem;
+}
+
+.chat-placeholder p {
+    font-family: "Poppins", sans-serif;
+    font-size: 1.6rem;
+    color: var(--cor-cinza-texto);
+}
+
+/* === NOVO: Estilos para a conversa ATIVA === */
+
+/* Header da conversa ativa */
+.chat-active-header {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    background-color: var(--cor-branca); /* Fundo branco para o cabeçalho */
+    flex-shrink: 0; /* Impede que ele encolha */
+    z-index: 10; /* Garante que fique acima das mensagens */
+}
+
+.chat-active-header .chat-avatar {
+    margin-right: 1rem;
+}
+
+.chat-active-name {
+    font-family: "Poppins", sans-serif;
+    font-weight: 700;
+    font-size: 1.7rem;
+    color: var(--cor-cinza-texto);
+}
+
+/* Área de mensagens */
+.chat-messages {
+    flex-grow: 1; /* Ocupa o espaço restante */
+    padding: 1.5rem;
+    overflow-y: auto; /* Permite rolar as mensagens */
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Espaçamento entre as mensagens */
+}
+
+.message {
+    max-width: 75%;
+    padding: 0.8rem 1.2rem;
+    border-radius: 18px;
+    font-family: "Poppins", sans-serif;
+    font-size: 1.4rem;
+    line-height: 1.4;
+    word-wrap: break-word; /* Quebra palavras longas */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.message.received {
+    background-color: var(--cor-branca);
+    color: var(--cor-cinza-texto);
+    align-self: flex-start; /* Alinha à esquerda */
+    border-bottom-left-radius: 4px; /* Ponta de balão sutil */
+}
+
+.message.sent {
+    background-color: var(--cor-rosa-claro); /* Cor de envio */
+    color: var(--cor-vermelho-escuro); /* Texto mais escuro para contraste */
+    align-self: flex-end; /* Alinha à direita */
+    border-bottom-right-radius: 4px; /* Ponta de balão sutil */
+}
+
+
+/* === NOVO: Input e Botão de Envio === */
+.chat-input-area {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    background-color: var(--cor-branca); /* Fundo branco para a área de input */
+    flex-shrink: 0; /* Impede que ele encolha */
+    gap: 10px; /* Espaçamento entre input e botão */
+}
+
+.chat-message-input {
+    flex-grow: 1; /* Ocupa o máximo de espaço possível */
+    border-radius: 25px; /* Mais arredondado */
+    border: 1px solid var(--cor-laranja-claro);
+    padding: 1rem 1.5rem;
+    font-family: "Poppins", sans-serif;
+    font-size: 1.4rem;
+    background-color: var(--cor-laranja-claro);
+    transition: all 0.2s ease;
+}
+
+.chat-message-input:focus {
+    background-color: var(--cor-branca);
+    border-color: var(--cor-rosa-pastel);
+    box-shadow: 0 0 0 2px rgba(var(--cor-rosa-pastel-rgb), 0.5); /* Sombra mais sutil */
+}
+
+.chat-send-btn {
+    background-color: var(--cor-vermelho); /* Botão da cor principal */
+    color: var(--cor-branca);
+    border-radius: 50%; /* Botão redondo */
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    flex-shrink: 0; /* Impede que encolha */
+}
+
+.chat-send-btn:hover {
+    background-color: var(--cor-branca); /* Escurece no hover */
+    color: var(--cor-vermelho);
+    border: solid 1px var(--cor-vermelho);
+    transform: scale(1.07);
+}
+.chat-send-btn:active {
+    background-color: var(--cor-branca); /* Escurece no hover */
+    color: var(--cor-vermelho);
+    border: solid 1px var(--cor-vermelho);
+    transform: scale(0.95);
+}
+
+
+/* 6. Responsividade */
+@media (max-width: 991.98px) {
+    .chat-page-body {
+        padding-top: 70px; /* Header é menor no mobile */
+    }
+    .chat-container {
+        max-height: none;
+        height: auto;
+        padding-top: 1.5rem;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .chat-main-card {
+        border-radius: 0;
+        border: none;
+        box-shadow: none;
+    }
+    
+    .chat-sidebar {
+        height: auto;
+        min-height: calc(100vh - 70px); 
+        border-right: none;
+    }
+
+    .chat-conversation-area {
+        display: none !important;
+    }
+}
+
+/* Novo media query para o layout mobile do chat (coluna da conversa visível) */
+@media (max-width: 767.98px) {
+    /* Quando uma conversa é selecionada no mobile, a sidebar é oculta e a área de conversa aparece */
+    body.chat-active-mobile .chat-sidebar {
+        display: none;
+    }
+    body.chat-active-mobile .chat-conversation-area {
+        display: flex !important; /* Força a exibição */
+        width: 100%;
+        border-radius: 0; /* Remove bordas para ocupar a tela toda */
+        box-shadow: none;
+        height: calc(100vh - 70px); /* Altura total da viewport menos o header */
+    }
+}

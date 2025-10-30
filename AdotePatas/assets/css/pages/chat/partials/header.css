@@ -1,0 +1,100 @@
+/* ==========================================================================
+   HEADER DA APLICAÇÃO (LOGADO)
+   - Usado em /perfil, /chat, etc.
+   - Diferente do header transparente da landing page.
+   ========================================================================== */
+
+/* Garante que o header esteja sempre visível e acima do conteúdo */
+.app-header {
+    background-color: var(--cor-branca);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    padding: 0.5rem 0;
+    z-index: 1000;
+    position: sticky; /* Gruda no topo */
+    top: 0;
+}
+
+.app-header .navbar-logo {
+    width: clamp(55px, 10vw, 70px); /* Tamanho do logo */
+    height: auto;
+    object-fit: contain;
+}
+
+.app-header .navbar-logo-nome {
+    width: clamp(100px, 20vw, 140px);
+    height: auto;
+    object-fit: contain;
+    margin-left: 0.5rem;
+    display: inline-block; /* Padrão */
+}
+
+.app-header .navbar-nav {
+    gap: 1rem;
+    align-items: center;
+}
+
+.app-header .nav-link {
+    font-family: "Poppins", sans-serif;
+    font-weight: 700;
+    font-size: 1.5rem; /* Tamanho da fonte dos links */
+    color: var(--cor-cinza-texto);
+    position: relative;
+    padding: 10px 15px;
+    transition: color 0.3s ease;
+}
+
+/* Efeito de sublinhado (similar ao seu perfil.css) */
+.app-header .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 5px;
+    left: 15px;
+    width: calc(100% - 30px);
+    height: 2px;
+    background: var(--cor-rosa-escuro);
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.app-header .nav-link:hover,
+.app-header .nav-link:focus {
+    color: var(--cor-rosa-escuro) !important;
+}
+
+.app-header .nav-link:hover::after,
+.app-header .nav-link:focus::after {
+    transform: scaleX(1);
+}
+
+/* Estilo para os ícones de navegação (Perfil, Menu) */
+.app-header .nav-icon .nav-link {
+    font-size: 2.2rem; /* Ícones maiores */
+    padding: 5px;
+}
+
+/* Remove o efeito de sublinhado para ícones */
+.app-header .nav-icon .nav-link::after {
+    display: none;
+}
+
+/* --- Responsividade do Header --- */
+@media (max-width: 991.98px) {
+    .app-header .navbar-collapse {
+        background: var(--cor-branca);
+        margin-top: 1rem;
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        padding: 1rem;
+    }
+    .app-header .nav-link {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 400px) {
+    /* Em telas muito pequenas, esconde o nome e deixa só o logo */
+    .app-header .navbar-logo-nome {
+        display: none;
+    }
+}

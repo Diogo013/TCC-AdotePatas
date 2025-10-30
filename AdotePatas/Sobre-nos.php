@@ -256,17 +256,12 @@ if ($logado) {
 </center>
 
 
-<!-- Offcanvas Menu (replicado do index.php, aparece quando logado) -->
-<?php if ($logado): ?>
-  <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
-    <div class="offcanvas-header border-bottom">
-      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-    </div>
-    
-    <div class="offcanvas-body p-0">
+  <div class="offcanvas-body p-0">
+    <?php if ($logado): ?>
+      <!-- Conteúdo para usuário LOGADO -->
       <aside class="profile-sidebar p-3">
         <div class="sidebar-header text-center mb-4">
-          <i class="fa-regular fa-circle-user sidebar-profile-icon"></i>
+          <i class="fa-regular fa-circle-user sidebar-profile-icon logged-in"></i>
           <h5 class="mt-2 mb-0">
             <?php echo htmlspecialchars($usuario['nome'] ?? 'Usuário'); ?>
           </h5>
@@ -276,21 +271,32 @@ if ($logado) {
         </div>
         
         <nav class="nav nav-pills flex-column profile-nav">
+          <!-- Links que aparecem apenas no offcanvas em telas pequenas -->
+          <div class="d-xl-none">
+            <a class="nav-link" href="sobre-nos.php">
+              <i class="fa-solid fa-info-circle fa-fw me-2"></i> Sobre Nós
+            </a>
+            <a class="nav-link" href="#">
+              <i class="fa-solid fa-question-circle fa-fw me-2"></i> Ajuda
+            </a>
+            <hr class="my-2">
+          </div>
+          
           <a class="nav-link <?php echo ($pagina == 'perfil') ? 'active' : ''; ?>" 
-             href="perfil.php?page=perfil" 
-             <?php echo ($pagina == 'perfil') ? 'aria-current=\"page\"' : ''; ?>>
+             href="perfil?page=perfil" 
+             <?php echo ($pagina == 'perfil') ? 'aria-current="page"' : ''; ?>>
             <i class="fa-regular fa-circle-user fa-fw me-2"></i> Meu Perfil
           </a>
           
           <a class="nav-link <?php echo ($pagina == 'meus-pets') ? 'active' : ''; ?>" 
-             href="perfil.php?page=meus-pets"
-             <?php echo ($pagina == 'meus-pets') ? 'aria-current=\"page\"' : ''; ?>>
+             href="perfil?page=meus-pets"
+             <?php echo ($pagina == 'meus-pets') ? 'aria-current="page"' : ''; ?>>
             <i class="fa-solid fa-paw fa-fw me-2"></i> Meus Pets
           </a>
 
           <a class="nav-link <?php echo ($pagina == 'pets-curtidos') ? 'active' : ''; ?>" 
-             href="perfil.php?page=pets-curtidos"
-             <?php echo ($pagina == 'pets-curtidos') ? 'aria-current=\"page\"' : ''; ?>>
+             href="perfil?page=pets-curtidos"
+             <?php echo ($pagina == 'pets-curtidos') ? 'aria-current="page"' : ''; ?>>
             <i class="fa-regular fa-heart fa-fw me-2"></i> Pets Curtidos
           </a>
 
@@ -301,9 +307,34 @@ if ($logado) {
           </a>
         </nav>
       </aside>
-    </div>
+    <?php else: ?>
+      <!-- Conteúdo para usuário NÃO LOGADO -->
+      <aside class="profile-sidebar p-3">
+        <div class="sidebar-header text-center mb-4">
+          <i class="fa-regular fa-circle-user sidebar-profile-icon logged-out"></i>
+          <h5 class="mt-2 mb-0">Visitante</h5>
+          <small class="text-muted fs-6">Faça login para acessar mais recursos</small>
+        </div>
+        
+        <nav class="nav nav-pills flex-column profile-nav">
+          <a class="nav-link" href="sobre-nos.php">
+            <i class="fa-solid fa-info-circle fa-fw me-2"></i> Sobre Nós
+          </a>
+          
+          <a class="nav-link" href="#">
+            <i class="fa-solid fa-question-circle fa-fw me-2"></i> Ajuda
+          </a>
+          
+          <hr class="my-2">
+          
+          <a class="nav-link loginlink-sidebar" href="login">
+            <i class="fa-solid fa-right-to-bracket fa-fw me-2"></i> Entrar
+          </a>
+        </nav>
+      </aside>
+    <?php endif; ?>
   </div>
-<?php endif; ?>
+</div>
 
   
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>

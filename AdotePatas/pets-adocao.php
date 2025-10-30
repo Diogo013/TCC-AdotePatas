@@ -77,7 +77,7 @@ try {
 <header>
   <nav class="navbar navbar-expand-lg">
     <div class="container">
-      <a class="navbar-brand" href="index.php">
+      <a class="navbar-brand" href="./">
         <img src="./images/global/logo-AdotePatas.png" alt="Logo Adote Patas" class="navbar-logo">
       </a>
 
@@ -95,7 +95,7 @@ try {
         <a href="perfil?page=perfil" class="profile-info-link ms-lg-4" style="text-decoration: none;" title="Ver meu perfil">
           <div class="profile-info d-flex flex-row-reverse align-items-center gap-lg-2">
             <i class="fa-regular fa-circle-user profile-icon"></i>
-            <span class="profile-name fs-5 mb-1 d-none d-lg-inline" style="color: var(--cor-vermelho);">
+            <span class="profile-name fs-5 d-none d-lg-inline" style="color: var(--cor-vermelho);">
               <?php echo htmlspecialchars($primeiro_nome); ?>
             </span>
           </div>

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   IMPORTS - Carregando todos os arquivos de estilo parciais
+   IMPORTS
    ========================================================================== */
 @import "./partials/botao-patinhas.css";
 @import "./partials/cachorro-andando.css";
@@ -7,6 +7,9 @@
 @import "../perfil/perfil.css";
 @import "../../global/global.css";
 
+/* ==========================================================================
+   ESTILOS GERAIS
+   ========================================================================== */
 body {
   background-color: var(--cor-laranja-claro) !important;
   overflow-x: hidden;
@@ -14,141 +17,19 @@ body {
 }
 
 /* ==========================================================================
-   CORREÇÕES DO OFFCANVAS
+   HEADER E NAVEGAÇÃO
    ========================================================================== */
-
-/* Remove todos os comportamentos de empurrar conteúdo */
-.offcanvas {
-  position: fixed;
-  z-index: 1045;
-  transition: transform 0.3s ease-in-out;
-}
-
-/* Garante que o offcanvas sempre fique por cima do conteúdo */
-.offcanvas-end {
-  transform: translateX(100%);
-}
-
-.offcanvas.show {
-  transform: translateX(0);
-}
-
-/* Backdrop personalizado para garantir que cubra tudo */
-.offcanvas-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 1040;
-  width: 100vw;
-  height: 100vh;
-  background-color: #000;
-}
-
-.offcanvas-backdrop.show {
-  opacity: 0.5;
-}
-
-/* Remove qualquer transição conflitante do Bootstrap */
-.offcanvas {
-  visibility: visible !important;
-}
-
-/* Corrige o problema do "piscar" removendo transições conflitantes */
-body {
-  overflow-x: hidden;
-}
-
-/* Garante que o header tenha z-index adequado */
 header {
   position: relative;
   z-index: 1030;
 }
 
-/* Garante que o conteúdo principal não seja afetado pelo offcanvas */
-main, section, footer {
-  position: relative;
-  z-index: 1;
-}
 
-/* Remove qualquer transformação do body que possa causar recuos */
-body.offcanvas-open {
-  overflow: hidden;
-}
 
-/* Corrige possíveis problemas de scroll */
-html.offcanvas-open,
-body.offcanvas-open {
-  overflow: hidden !important;
-  position: fixed;
-  width: 100%;
-}
-
-/* Ajustes específicos para telas maiores */
-@media (min-width: 768px) {
-  .offcanvas {
-    width: 400px !important; /* Largura fixa para desktop */
-  }
-  
-  /* Garante que o offcanvas não empurre o conteúdo */
-  body:not(.offcanvas-open) {
-    padding-right: 0 !important;
-  }
-}
-
-/* Ajustes para mobile */
-@media (max-width: 767.98px) {
-  .offcanvas {
-    width: 85% !important; /* Largura menor no mobile */
-  }
-}
-
-/* Estilização do conteúdo do offcanvas */
-.profile-sidebar {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.sidebar-profile-icon {
-  font-size: 4rem;
-  color: var(--cor-vermelho);
-}
-
-.profile-nav .nav-link {
-  color: var(--cor-cinza-texto);
-  font-weight: 500;
-  font-size: 1rem;
-  display: flex;
-  align-items: center;
-  transition: all 0.2s ease;
-  margin-bottom: 0.25rem;
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-}
-
-.profile-nav .nav-link:hover {
-  background-color: var(--cor-laranja-claro);
-  color: var(--cor-rosa-escuro);
-}
-
-.profile-nav .nav-link.active {
-  background-color: var(--cor-vermelho);
-  color: var(--cor-branca);
-}
-
-.logout-link-sidebar {
-  color: var(--cor-vermelho) !important;
-}
-
-.logout-link-sidebar:hover {
-  background-color: #fcebeb !important;
-}
-
-/* Remove qualquer margin ou padding que possa causar recuos */
 .navbar {
- margin-bottom: -165px;
   background: transparent;
   padding: 0.5rem 1rem;
+  margin-bottom: -165px;
   position: relative;
   z-index: 1030;
 }
@@ -163,6 +44,8 @@ body.offcanvas-open {
 .navbar-nav {
   gap: 1.5rem;
   align-items: center;
+  flex-direction: row !important;
+  margin: 0 !important;
 }
 
 .nav-link {
@@ -205,68 +88,54 @@ body.offcanvas-open {
   transform: scaleX(1);
 }
 
-.profile-container {
-      display: flex;
-      align-items: center;
-      gap: 15px; /* Espaçamento entre os ícones e o perfil */
-      position: relative;
-      z-index: 1031;
+/* ==========================================================================
+   BARRA VERTICAL ENTRE AJUDA E ENTRAR
+   ========================================================================== */
+
+/* Para usuário NÃO LOGADO - Barra entre Ajuda e Entrar */
+.navbar-nav .nav-item:has(.loginlink) {
+  position: relative;
 }
-.profile-info {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  color: #555;
+
+.navbar-nav .nav-item:has(.loginlink)::before {
+  content: "|";
+  position: absolute;
+  left: -12px;
+  top: 45%;
+  transform: translateY(-50%);
+  color: var(--cor-cinza);
+  font-weight: 300;
+  font-size: 1.8rem;
 }
-.profile-icon {
-  font-size: 3rem; /* Tamanho do ícone de perfil */
+
+/* Alternativa mais compatível se o :has() não funcionar */
+.navbar-nav .nav-item + .nav-item:has(.loginlink)::before {
+  content: "|";
+  position: absolute;
+  left: -12px;
+  top: 45%;
+  transform: translateY(-50%);
   color: var(--cor-vermelho);
-}
-.profile-name {
-  font-size: 14px;
-  font-weight: bold;
-  margin-top: 4px;
-  text-decoration: none;
-}
-.nav-icon {
-  font-size: 24px;
-  color: #555;
-}
-.offcanvas-header {
-  border-bottom: 1px solid #eee;
-}
-.offcanvas-title {
-    font-weight: bold;
-    color: #e87a7a;
-}
-.offcanvas-body .nav-link {
-    font-size: 0.5rem;
-    padding: 10px 15px;
-    color: #333;
-    border-radius: 8px;
-}
-.offcanvas-body .nav-link:hover {
-    background-color: #f5f5f5;
-}
-.offcanvas-body .logout-link {
-    color: #e87a7a;
-    font-weight: bold;
+  font-weight: 500;
+  font-size: 1.8rem;
 }
 
-.profile-info-link {
-  text-decoration: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  color: #555;
+/* Fallback para navegadores que não suportam :has() */
+.navbar-nav .nav-item:nth-child(2) + .nav-item::before {
+  content: "|";
+  position: absolute;
+  left: -12px;
+  top: 45%;
+  transform: translateY(-50%);
+  color: var(--cor-vermelho);
+  font-weight: 500;
+  font-size: 1.8rem;
 }
 
+/* Ajuste para garantir que o loginlink não tenha margin-left */
 .loginlink {
   color: var(--cor-vermelho) !important;
-  position: relative;
-  margin-left: 1.5rem;
+  margin-left: 0 !important;
 }
 
 .loginlink::after {
@@ -292,18 +161,128 @@ body.offcanvas-open {
   transform: scaleX(1);
 }
 
-.loginlink::before {
-  content: "|";
-  position: absolute;
-  left: -25%;
-  top: 45%;
-  transform: translateY(-50%);
-  color: var(--cor-cinza);
-  font-weight: 300;
-  font-size: 2.5rem;
+/* ==========================================================================
+   PERFIL E ÍCONES
+   ========================================================================== */
+.profile-icon.logged-in {
+  color: var(--cor-vermelho) !important;
+  font-size: 3rem;
 }
 
-/* --- ESTILOS GERAIS DO HERO --- */
+.profile-name {
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.profile-info-link {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nav-icon {
+  font-size: 2rem;
+  color: #555;
+}
+
+/* ==========================================================================
+   OFFCANVAS
+   ========================================================================== */
+.offcanvas {
+  position: fixed;
+  z-index: 1045;
+  transition: transform 0.3s ease-in-out;
+  visibility: visible !important;
+}
+
+.offcanvas-end {
+  transform: translateX(100%);
+}
+
+.offcanvas.show {
+  transform: translateX(0);
+}
+
+.offcanvas-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1040;
+  width: 100vw;
+  height: 100vh;
+  background-color: #000;
+}
+
+.offcanvas-backdrop.show {
+  opacity: 0.5;
+}
+
+.offcanvas-header {
+  border-bottom: 1px solid #eee;
+}
+
+/* Sidebar do perfil */
+.profile-sidebar {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-profile-icon.logged-in {
+  font-size: 4rem;
+  color: var(--cor-vermelho);
+}
+
+.sidebar-profile-icon.logged-out {
+  font-size: 4rem;
+  color: var(--cor-cinza);
+  opacity: 0.7;
+}
+
+.profile-nav .nav-link {
+  color: var(--cor-cinza-texto);
+  font-weight: 500;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s ease;
+  margin-bottom: 0.25rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+}
+
+.profile-nav .nav-link:hover {
+  background-color: var(--cor-laranja-claro);
+  color: var(--cor-rosa-escuro);
+}
+
+.profile-nav .nav-link.active {
+  background-color: var(--cor-vermelho);
+  color: var(--cor-branca);
+}
+
+.logout-link-sidebar {
+  color: var(--cor-vermelho) !important;
+}
+
+.logout-link-sidebar:hover {
+  background-color: #fcebeb !important;
+}
+
+.loginlink-sidebar {
+  color: var(--cor-vermelho) !important;
+  font-weight: 600;
+}
+
+.loginlink-sidebar:hover {
+  background-color: #fcebeb !important;
+  color: var(--cor-vermelho) !important;
+}
+
+/* ==========================================================================
+   HERO SECTION
+   ========================================================================== */
 .hero {
   position: relative;
   z-index: 2;
@@ -312,14 +291,15 @@ body.offcanvas-open {
   min-height: 100vh;
   background-image: url("../../../../images/index/fundo-header.jpg");
   background-size: cover;
-  background-position: right bottom; /* Mude de 'center' para 'right bottom' */
+  background-position: right bottom;
   background-repeat: no-repeat;
   align-items: center;
-  margin-bottom:  -5rem;
+  margin-bottom: -5rem;
   margin-top: 50px;
 }
-.hero .row {
-  position: relative;
+
+.hero-conteudo {
+  margin-top: 5rem;
 }
 
 .adote-patas {
@@ -348,50 +328,70 @@ body.offcanvas-open {
   max-width: 600px;
 }
 
-.image-background::before {
-  content: "";
-  position: absolute;
-  top: 100%;
-  left: 100%;
-  width: 100%;
-  height: 100%;
-  background-image: url("../../../../images/index/fundo-section.jpg");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  opacity: 1;
-  z-index: -5;
-}
-
-/* No seu index.css, adicione: */
-.hero {
-  position: relative;
-  z-index: 2;
-}
-
+/* ==========================================================================
+   BACKGROUND SECTIONS
+   ========================================================================== */
 .image-background {
   position: relative;
   z-index: 1;
 }
 
-.cards-section {
-  position: relative;
-  z-index: 2;
+.image-background::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(
+                    to bottom,
+                    #f7f4f2 0%,
+                    rgba(247, 244, 242, 0) 35%,
+                    rgba(247, 244, 242, 0) 75%,
+                    #f7f4f2 100%
+                  ),
+                  url("../../../../images/index/fundo-section.jpg");
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  opacity: 0.15;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.image-background-2::before {
+  margin-top: -6px;
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(
+                    to bottom,
+                    #f7f4f2 0%,
+                    rgba(247, 244, 242, 0) 10%,
+                    rgba(247, 244, 242, 0) 80%,
+                    #f7f4f2 100%
+                  ),
+                  url("../../../../images/index/fundo-about.jpg");
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  opacity: 1;
+  z-index: -1;
+  pointer-events: none;
 }
 
 /* ==========================================================================
-   SEÇÃO DE CARDS
+   CARDS SECTION
    ========================================================================== */
 .cards-section {
   display: flex;
   align-items: center;
   min-height: 60vh;
+  position: relative;
+  z-index: 2;
 }
 
 .card-item {
   aspect-ratio: 1 / 1;
   width: 100%;
-  max-width: 220px; /* Aumentado de 180px para 220px */
+  max-width: 220px;
   margin: 0 auto;
   cursor: pointer;
   background-color: var(--cor-rosa-escuro, #bf6464);
@@ -406,11 +406,10 @@ body.offcanvas-open {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 1rem; /* Aumentado de 0.7rem para um respiro maior */
+  padding: 1rem;
   transition: transform 0.8s ease, box-shadow 0.5s ease;
 }
 
-/* Animação de brilho ao passar o mouse (mantida) */
 .card-item::before {
   content: "";
   position: absolute;
@@ -438,7 +437,7 @@ body.offcanvas-open {
 }
 
 .card-icon {
-  margin-bottom: 1.8rem; /* Aumentado de 1.5rem para melhor espaçamento */
+  margin-bottom: 1.8rem;
   transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
@@ -447,15 +446,14 @@ body.offcanvas-open {
 }
 
 .card-icon i {
-  /* Aumentei o clamp para permitir que o ícone cresça um pouco mais */
   font-size: clamp(60px, 12vw, 80px);
   color: var(--cor-branca);
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
 }
 
 .card-icon img {
-  width: 90px; /* Aumentado de 80px */
-  height: 90px; /* Aumentado de 80px */
+  width: 90px;
+  height: 90px;
   object-fit: contain;
   user-select: none;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
@@ -463,7 +461,7 @@ body.offcanvas-open {
 
 .card-item h3 {
   font-family: "Poppins", sans-serif;
-  font-size: 2rem; /* Aumentado de 2.5rem */
+  font-size: 2rem;
   font-weight: 700;
   margin: 0;
   color: var(--cor-branca);
@@ -471,7 +469,7 @@ body.offcanvas-open {
 }
 
 /* ==========================================================================
-   SEÇÃO PETS PARA ADOÇÃO
+   PETS SECTION
    ========================================================================== */
 .pets-section {
   padding: 2rem 0 4rem 0;
@@ -487,9 +485,6 @@ body.offcanvas-open {
   text-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
 }
 
-/* =====================
-   CARD DE PET
-   ===================== */
 .pet-card {
   background-color: var(--card-bg);
   border-radius: 20px;
@@ -504,7 +499,6 @@ body.offcanvas-open {
   box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.15);
 }
 
-/* Área da imagem com recorte */
 .pet-card-img {
   width: 100%;
   aspect-ratio: 4 / 2;
@@ -525,7 +519,6 @@ body.offcanvas-open {
   transform: scale(1.08);
 }
 
-/* Corpo do card */
 .pet-card-body {
   padding: 1rem 1.5rem 1.5rem;
   display: flex;
@@ -534,7 +527,6 @@ body.offcanvas-open {
   gap: 0.6rem;
 }
 
-/* Nome do pet */
 .pet-name {
   font-family: "Poppins", sans-serif;
   font-weight: 700;
@@ -543,7 +535,6 @@ body.offcanvas-open {
   margin: 0;
 }
 
-/* Ícones */
 .pet-gender-female,
 .pet-gender-male,
 .pet-like {
@@ -561,16 +552,62 @@ body.offcanvas-open {
 .pet-like {
   color: var(--cor-vermelho);
 }
-/* ==========================================================================
-   CARROSSEL DE CARDS COM CSS E JS PUROS
-   ========================================================================== */
 
+/* ==========================================================================
+   ABOUT SECTION
+   ========================================================================== */
+.about-text {
+  font-size: 2rem;
+  line-height: 1.2;
+  font-family: "Poppins", sans-serif;
+  color: var(--cor-cinza-texto);
+  margin-right: 1rem;
+}
+
+.conclusao-about {
+  font-size: 2rem;
+  line-height: 1.4;
+  font-family: "Poppins", sans-serif;
+  color: var(--cor-cinza-texto);
+  font-weight: bold;
+}
+
+.destaque-amor,
+.destaque-confianca,
+.destaque-recomeco {
+  display: inline;
+}
+
+.conclusao-about .destaque-amor,
+.conclusao-about .destaque-confianca,
+.conclusao-about .destaque-recomeco {
+  font-weight: normal;
+}
+
+span.destaque-amor {
+  font-family: "Kawaii RT";
+  color: var(--cor-vermelho);
+}
+
+span.destaque-confianca {
+  font-family: "Kawaii RT";
+  color: var(--cor-rosa-escuro);
+}
+
+span.destaque-recomeco {
+  font-family: "Kawaii RT";
+  color: var(--cor-verde-pastel);
+}
+
+/* ==========================================================================
+   CARD CAROUSEL
+   ========================================================================== */
 .card-carousel-container {
   position: relative;
   width: 90%;
-  max-width: 400px; /* Largura máxima do card ativo */
-  height: 500px; /* Altura fixa para o container */
-  margin: 10px; /* O Bootstrap já cuida do alinhamento da coluna */
+  max-width: 400px;
+  height: 500px;
+  margin: 10px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -582,7 +619,6 @@ body.offcanvas-open {
   height: 100%;
 }
 
-/* Estilo base para todos os cards no baralho */
 .card-item-deck {
   position: absolute;
   top: 0;
@@ -591,17 +627,13 @@ body.offcanvas-open {
   height: 100%;
   background: transparent;
   cursor: pointer;
-  /* A transição é a chave para a animação suave */
   transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.6s ease;
-  /* Usamos variáveis para controlar a posição e rotação via JS */
   transform: translateX(var(--x-offset, 0px)) translateY(var(--y-offset, 0px))
     scale(var(--scale, 1)) rotate(var(--rotation, 0deg));
-
   opacity: var(--opacity, 1);
   z-index: var(--z-index, 1);
 }
 
-/* O conteúdo visual do card (a imagem, borda, etc.) */
 .card-item-deck .card-content {
   width: 90%;
   height: 90%;
@@ -610,76 +642,27 @@ body.offcanvas-open {
   background-position: center;
   border: solid 10px var(--cor-rosa-claro);
   box-shadow: rgba(0, 0, 0, 0.15) 0px 8px 20px -3px;
-
-  /* Rotação única e "permanente" de cada card */
   transform: rotate(var(--random-rotation, 0deg));
 }
-/* ==========================================================================
-   Texto de como nós surgimos
-   ========================================================================== */
-
-.about-text {
-  font-size: 2rem;
-  line-height: 1.2;
-  font-family: "Poppins", sans-serif;
-  color: var(--cor-cinza-texto);
-  margin-right: 1rem;
-}
-.conclusao-about {
-  font-size: 2rem;
-  line-height: 1.4;
-  font-family: "Poppins", sans-serif;
-  color: var(--cor-cinza-texto);
-  font-weight: bold;
-}
-.destaque-amor,
-.destaque-confianca,
-.destaque-recomeco {
-  display: inline;
-}
-.conclusao-about .destaque-amor,
-.conclusao-about .destaque-confianca,
-.conclusao-about .destaque-recomeco {
-  font-weight: normal;
-}
-span.destaque-amor {
-  font-family: "Kawaii RT";
-  color: var(--cor-vermelho); /* Tom vibrante de vermelho */
-}
-span.destaque-confianca {
-  font-family: "Kawaii RT";
-  color: var(--cor-rosa-escuro); /* Tom vibrante de rosa escuro */
-}
-span.destaque-recomeco {
-  font-family: "Kawaii RT";
-  color: var(--cor-verde-pastel); /* Tom vibrante de rosa pastel */
-}
 
 /* ==========================================================================
-   FOOTER - COMBINANDO CLIP-PATH E PATA DE FUNDO
+   FOOTER
    ========================================================================== */
-
 .site-footer {
   position: relative;
   background-color: var(--cor-laranja-pastel);
-  color: #fff; /* Texto branco para melhor contraste */
+  color: #fff;
   text-align: center;
-  overflow: hidden; /* Necessário para o pseudo-elemento não vazar */
+  overflow: hidden;
   z-index: 1;
-
-  /* --- REINTEGRAÇÃO DO SEU CLIP-PATH --- */
-  /* Estilo base (mobile) com a concavidade mais suave */
   -webkit-clip-path: url(#footerConcavityShallow);
   clip-path: url(#footerConcavityShallow);
   padding: 8rem 0 3rem;
   margin-top: -5rem;
-
-  /* Workaround para um bug de renderização do clip-path em alguns navegadores */
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
 }
 
-/* Pseudo-elemento para a pata de fundo */
 .site-footer::before {
   content: "";
   position: absolute;
@@ -687,47 +670,20 @@ span.destaque-recomeco {
   left: 70%;
   width: 150%;
   height: 150%;
-  /* Caminho para a imagem da pata */
   background-image: url("../../../../images/index/pata-footer.svg");
   background-repeat: no-repeat;
   background-position: center center;
   background-size: contain;
-  /* Transformação para centralizar e ajustar */
   transform: translate(-50%, -50%) rotate(5deg) scale(1.1);
-
-  /* Opacidade reduzida para o efeito de marca d'água */
   opacity: 0.2;
-  z-index: -1; /* Coloca a pata atrás do conteúdo */
+  z-index: -1;
 }
 
-/* Container para o conteúdo, garantindo que fique acima da pata */
 .footer-container {
   position: relative;
   z-index: 2;
 }
 
-/* --- MEDIA QUERIES PARA AJUSTAR A CONCAVIDADE --- */
-/* Tablets (A partir de 768px) */
-@media (min-width: 768px) {
-  .site-footer {
-    -webkit-clip-path: url(#footerConcavityDeep);
-    clip-path: url(#footerConcavityDeep);
-    padding-top: 10rem;
-    margin-top: -6rem;
-  }
-}
-
-/* Desktops (A partir de 1200px) */
-@media (min-width: 1200px) {
-  .site-footer {
-    -webkit-clip-path: url(#footerConcavityExtraDeep);
-    clip-path: url(#footerConcavityExtraDeep);
-    padding-top: 12rem;
-    margin-top: -7rem;
-  }
-}
-
-/* --- ESTILOS DO CONTEÚDO INTERNO (Mantidos) --- */
 .footer-column {
   padding: 1rem;
   min-height: 180px;
@@ -776,43 +732,6 @@ span.destaque-recomeco {
   font-size: 1.1rem;
 }
 
-/* --- RESPONSIVIDADE DAS COLUNAS E DIVISÓRIAS --- */
-@media (min-width: 992px) {
-  .footer-column {
-    align-items: flex-start; /* Alinha o texto à esquerda em desktops */
-    text-align: left;
-  }
-  .footer-column:not(:last-child) {
-    border-right: 1px solid rgba(255, 255, 255, 0.3);
-  }
-}
-
-@media (max-width: 991.98px) {
-    .navbar{
-    margin-bottom: -200px !important;
-  }
-  .footer-column {
-    min-height: auto;
-    margin-bottom: 2rem;
-  }
-}
-/* --- Responsividade para o conteúdo do Footer (Mobile) --- */
-@media (max-width: 768px) {
-  .footer-content {
-    flex-direction: column;
-    text-align: center;
-    align-items: center;
-    gap: 2.5rem;
-  }
-
-  .footer-column {
-    width: 100%;
-    border: none !important;
-    padding: 0 !important;
-  }
-}
-
-/* --- Linhas divisórias (apenas para desktop) --- */
 .footer-column:not(:last-child) {
   border-right: 1px solid rgba(255, 255, 255, 0.5);
   padding-right: 1.5rem;
@@ -822,92 +741,40 @@ span.destaque-recomeco {
   padding-left: 1.5rem;
 }
 
-/* --- Responsividade para o conteúdo do Footer (Mobile) --- */
-@media (max-width: 768px) {
-  .footer-content {
-    flex-direction: column;
-    text-align: center;
-    align-items: center; /* Centraliza as colunas empilhadas */
-    gap: 2.5rem; /* Aumenta o espaçamento vertical entre as seções */
-  }
-    .navbar{
-    margin-bottom: -26  0px !important;
-  }
-  .profile-name{
-    display: none;
-  }
-  .footer-column {
-    width: 100%;
-    /* Remove as bordas e paddings laterais no mobile */
-    border: none !important;
-    padding: 0 !important;
-  }
-}
-
-@media (max-width: 467px){
-  .profile-icon{
-    display: none !important;
-  }
-}
 /* ==========================================================================
-   MEDIA QUERIES - Estilos Responsivos
+   MEDIA QUERIES - RESPONSIVIDADE
    ========================================================================== */
 
-   @media (max-width: 1500px){
-    .hero{
-      padding: -20rem;
-    }
-   }
-
-@media (min-width: 992px) {
-  .hero {
-    align-items: flex-start;
+/* Ajustes para telas menores que 1200px (1000px+) */
+@media (max-width: 1199.98px) {
+  /* Para NÃO LOGADOS: esconde Sobre Nós, Ajuda, Entrar da navbar */
+  .d-none.d-xl-block .navbar-nav {
+    display: none !important;
   }
-  .hero .row {
-    min-height: 70vh;
-  }
-  .hero-text-content {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    text-align: left;
-    padding-top: 4rem;
-  }
-  .hero-image-container {
-    position: absolute;
-    right: 0;
-    bottom: -40px;
-    width: 650px;
-    max-width: none;
-    z-index: 10;
-    bottom: -50px;
-    right: -10%;
-    width: 75%;
-    max-width: 700px;
+  
+  /* Garante que o botão do menu fique visível para todos */
+  .navbar button[data-bs-toggle="offcanvas"] {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
   }
 }
 
+/* Ajustes para tablets */
 @media (max-width: 991.98px) {
   .navbar {
     margin-bottom: -170px;
   }
+  
   .navbar-nav {
     gap: 2rem;
-    flex-direction: row !important;
-    align-items: center;
   }
+  
   .nav-link {
     font-size: 1rem !important;
     padding: 8px 6px;
-    justify-content: flex-end;
   }
-  .loginlink {
-    margin-left: 0;
-  }
-  .loginlink::before {
-    font-size: 1.8rem;
-    left: -10px;
-  }
+  
   .hero {
     margin-top: 4rem;
     padding-top: 120px;
@@ -915,90 +782,134 @@ span.destaque-recomeco {
     background-image: url("../../../../images/index/fundo-header-mobile.jpg");
     background-position: center;
   }
+  
   .hero-text-content {
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
   }
+  
   .adote-patas,
   .adote-vidas {
     font-size: clamp(2.6rem, 6vw, 5.9rem);
   }
+  
   .hero-text-content p {
     font-size: 1rem;
     max-width: 90%;
   }
-  .hero-image-container {
-    margin-top: 2rem;
-    text-align: center;
-  }
-  .hero-image-container img {
-    width: 100%;
-    height: auto;
-    min-width: 350px;
-    max-width: 800px;
-  }
-  .btn-container {
-    margin-top: 2rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  
+  .footer-column {
+    min-height: auto;
+    margin-bottom: 2rem;
   }
 }
 
-/* Ajustes para manter os cards em linha e diminuir o conteúdo */
-@media (max-width: 768px) {
+/* Ajustes para mobile */
+@media (max-width: 767.98px) {
+  .offcanvas {
+    width: 85% !important;
+  }
+  
   .card-item {
     max-width: 140px;
     padding: 0.4rem;
   }
+  
   .card-icon i {
     font-size: 2.5rem;
   }
+  
   .card-icon img {
     width: 40px;
     height: 40px;
   }
+  
   .card-item h3 {
     font-size: 1rem;
   }
+  
+  .site-footer::before {
+    display: none;
+  }
+  
+  .footer-content {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+    gap: 2.5rem;
+  }
+  
+  .footer-column {
+    width: 100%;
+    border: none !important;
+    padding: 0 !important;
+  }
+  
+  .about {
+    margin-left: 1.3rem;
+    margin-right: 1.3rem;
+  }
 }
 
-@media (max-width: 576px) {
+/* Ajustes para telas muito pequenas */
+@media (max-width: 575.98px) {
+  .profile-name {
+    display: none !important;
+  }
+  
+  .profile-icon.logged-in {
+    font-size: 2.2rem;
+  }
+  
   .card-icon {
     margin-bottom: 0.8rem;
   }
+  
   .card-icon i {
     font-size: 2rem;
   }
+  
   .card-icon img {
     width: 35px;
     height: 35px;
   }
+  
   .card-item h3 {
     font-size: 0.9rem;
   }
-}
-
-@media (max-width: 380px) {
-  .loginlink::before {
-    display: none;
-  }
-  .navbar-nav {
-    gap: 0.5rem;
-  }
-  .nav-link {
-    padding: 8px 4px;
-  }
-  .about-text,
-  .conclusao-about {
-    max-width: 300px;
+  
+  .adote-patas, .adote-vidas {
+    margin: 0 5rem;
+    font-size: 2rem;
   }
 }
 
-@media (max-width: 419px){
-  .navbar{
+@media (max-width: 419px) {
+  .navbar {
     margin-bottom: -250px !important;
   }
+  
+  .profile-icon {
+    display: none !important;
+  }
+}
+
+/* Remove qualquer transformação do body que possa causar recuos */
+body.offcanvas-open {
+  overflow: hidden;
+}
+
+html.offcanvas-open,
+body.offcanvas-open {
+  overflow: hidden !important;
+  position: fixed;
+  width: 100%;
+}
+
+/* Garante que o conteúdo principal não seja afetado pelo offcanvas */
+main, section, footer {
+  position: relative;
+  z-index: 1;
 }
