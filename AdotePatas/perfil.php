@@ -42,8 +42,8 @@ try {
 }
 
 /* ==========================================================================
-   LÓGICA DE NAVEGAÇÃO (SWITCH CASE) E BANNER
-   ========================================================================== */
+   LÓGICA DE NAVEGAÇÃO (SWITCH CASE) E BANNER
+   ========================================================================== */
 
 // 1. Determina a página atual. O padrão é 'perfil'.
 // Usamos um parâmetro URL 'page' para controlar o switch
@@ -261,7 +261,7 @@ if ($pagina == 'pets-curtidos') {
             <div class="no-pets-illustration mb-4">
                  <lottie-player src="animações/pets.json" background="transparent" speed="1" style="width: 250px; height: 250px;"
     loop autoplay>
-  </lottie-player>
+</lottie-player>
             </div>
             <h2 class="section-title mb-3" style="color: var(--cor-cinza-texto)">Ainda não tem um pet registrado?</h2>
             <p class="section-description mb-4">
@@ -336,10 +336,10 @@ if ($pagina == 'pets-curtidos') {
                             <?php elseif (empty($pets_curtidos)): ?>
 
                                 <div class="alert text-center flex-column d-flex justify-content align-items-center text-center" style="margin-top: -1.5rem; animation: fadeIn 0.8s ease-out;">
-                                                         
+                                         
                                 <lottie-player src="animações/dog-beijos.json" background="transparent" speed="1" style="width: 200px; height: 200px;"
-                            loop autoplay>
-                        </lottie-player>
+                                loop autoplay>
+                            </lottie-player>
                                     <h5 class="mb-1">Você ainda não curtiu nenhum amiguinho.</h5>
                                     <p>Que tal curtir seu novo amigo?</p>
                                     <a href="pets" class="btn btn-danger btn-add-pet-header" style="box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;">Ver pets para adoção</a>
@@ -351,7 +351,6 @@ if ($pagina == 'pets-curtidos') {
                                     <?php foreach ($pets_curtidos as $pet): ?>
                                     <div class="col">
                                         <div class="pet-card">
-                                            <!-- Link na Imagem -->
                                             <a href="pet-detalhe.php?id=<?php echo $pet['id_pet']; ?>" class="pet-card-link-img">
                                                 <div class="pet-card-img">
                                                     <img src="<?php echo htmlspecialchars($pet['foto'] ?? 'images/global/placeholder-pet.png'); ?>" 
@@ -359,16 +358,13 @@ if ($pagina == 'pets-curtidos') {
                                                          onerror="this.src='images/perfil/teste.jpg';">
                                                 </div>
                                             </a>
-                                            <!-- Corpo do Card -->
                                             <div class="pet-card-body">
                                                 <h2 class="pet-name">
-                                                    <!-- Link no Nome -->
                                                     <a href="pet-detalhe.php?id=<?php echo $pet['id_pet']; ?>" class="pet-card-link-nome">
                                                         <?php echo htmlspecialchars($pet['nome']); ?>
                                                     </a>
                                                 </h2>
                                                 
-                                                <!-- Gênero -->
                                                 <?php if (!empty($pet['sexo'])): ?>
                                                     <?php if ($pet['sexo'] == 'femea'): ?>
                                                         <i class="fa-solid fa-venus pet-gender-female" title="Fêmea"></i>
@@ -377,7 +373,6 @@ if ($pagina == 'pets-curtidos') {
                                                     <?php endif; ?>
                                                 <?php endif; ?>
                                                 
-                                                <!-- Coração (Sempre favoritado) -->
                                                 <i class="pet-like fa-solid fa-heart favorited" 
                                                    data-pet-id="<?php echo $pet['id_pet']; ?>" 
                                                    aria-label="Desfavoritar" 
@@ -430,7 +425,10 @@ if ($pagina == 'pets-curtidos') {
                                <?php echo ($pagina == 'pets-curtidos') ? 'aria-current="page"' : ''; ?>>
                                 <i class="fa-regular fa-heart fa-fw me-2"></i> Pets Curtidos
                             </a>
-                            
+
+                            <a class="nav-link" href="chat.php">
+                                <i class="fa-regular fa-comments fa-fw me-2"></i> Chats
+                            </a>
                             <hr class="my-2">
                             
                             <a class="nav-link logout-link-sidebar" href="sair.php">
@@ -442,8 +440,7 @@ if ($pagina == 'pets-curtidos') {
             </div>
 
 
-            <!--MODAL DE DELETAR PET-->
-    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+            <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -456,8 +453,7 @@ if ($pagina == 'pets-curtidos') {
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <!-- Este botão 'Confirmar' receberá o link de exclusão via JS -->
-                     <a href="#" id="confirmDeleteBtn"><button type="button" class="btn btn-danger">Excluir</button></a>
+                    <a href="#" id="confirmDeleteBtn"><button type="button" class="btn btn-danger">Excluir</button></a>
                     
                 </div>
             </div>
@@ -582,12 +578,12 @@ if ($pagina == 'pets-curtidos') {
                             if (petsGrid.querySelectorAll('.col').length === 0) {
                                 document.querySelector('.pets-grid-container').innerHTML = `
 
-                            <h1 class="mb-4">Pets Curtidos</h1>
+                        <h1 class="mb-4">Pets Curtidos</h1>
 
-                          <div class="alert text-center flex-column d-flex justify-content align-items-center text-center" style="margin-top: -1.5rem; animation: fadeIn 0.8s ease-out;">
+                        <div class="alert text-center flex-column d-flex justify-content align-items-center text-center" style="margin-top: -1.5rem; animation: fadeIn 0.8s ease-out;">
                                 <lottie-player src="animações/dog-beijos.json" background="transparent" speed="1" style="width: 200px; height: 200px;"
-                            loop autoplay>
-                        </lottie-player>
+                                loop autoplay>
+                            </lottie-player>
                                     <h5 class="mb-1">Você ainda não curtiu nenhum amiguinho.</h5>
                                     <p>Que tal curtir seu novo amigo?</p>
                                     <a href="pets" class="btn btn-danger btn-add-pet-header" style="box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;">Ver pets para adoção</a>

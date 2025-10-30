@@ -4,97 +4,139 @@
    - Diferente do header transparente da landing page.
    ========================================================================== */
 
-/* Garante que o header esteja sempre visível e acima do conteúdo */
-.app-header {
-    background-color: var(--cor-branca);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    padding: 0.5rem 0;
-    z-index: 1000;
-    position: sticky; /* Gruda no topo */
-    top: 0;
+/* NOTA: Os estilos do OFFCANVAS foram movidos para 
+  /assets/css/global/partials/offcanvas.css 
+  e são carregados via global.css 
+*/
+
+/* Container principal alinhado */
+.navbar > .container {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.app-header .navbar-logo {
-    width: clamp(55px, 10vw, 70px); /* Tamanho do logo */
-    height: auto;
-    object-fit: contain;
+.navbar {
+  background: transparent;
+  padding: 0.5rem 1rem;
+  margin-bottom: 0 !important;
+  position: relative;
+  z-index: 1030;
 }
 
-.app-header .navbar-logo-nome {
-    width: clamp(100px, 20vw, 140px);
-    height: auto;
-    object-fit: contain;
-    margin-left: 0.5rem;
-    display: inline-block; /* Padrão */
+.navbar-logo {
+  width: clamp(60px, 10vw, 80px);
+  height: clamp(60px, 10vw, 80px);
+  object-fit: contain;
+  user-select: none;
 }
 
-.app-header .navbar-nav {
-    gap: 1rem;
-    align-items: center;
+.navbar-nav {
+  gap: 1.5rem;
+  align-items: center;
+  flex-direction: row !important;
+  margin: 0 !important;
 }
 
-.app-header .nav-link {
-    font-family: "Poppins", sans-serif;
-    font-weight: 700;
-    font-size: 1.5rem; /* Tamanho da fonte dos links */
-    color: var(--cor-cinza-texto);
-    position: relative;
-    padding: 10px 15px;
-    transition: color 0.3s ease;
+.nav-link {
+  font-weight: bold !important;
+  cursor: pointer;
+  position: relative;
+  padding: 10px 15px;
+  transition: color 0.3s ease;
+  display: flex;
+  align-items: center;
+  font-size: 1.5rem !important;
+  white-space: nowrap;
+  border-radius: 4px;
 }
 
-/* Efeito de sublinhado (similar ao seu perfil.css) */
-.app-header .nav-link::after {
-    content: '';
-    position: absolute;
-    bottom: 5px;
-    left: 15px;
-    width: calc(100% - 30px);
-    height: 2px;
-    background: var(--cor-rosa-escuro);
-    transform: scaleX(0);
-    transform-origin: center;
-    transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+.navlink {
+  color: var(--cor-cinza-texto);
 }
 
-.app-header .nav-link:hover,
-.app-header .nav-link:focus {
-    color: var(--cor-rosa-escuro) !important;
+.navlink::after {
+  content: "";
+  position: absolute;
+  bottom: 5px;
+  left: 15px;
+  width: calc(100% - 30px);
+  height: 2px;
+  background: var(--cor-rosa-escuro);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
-.app-header .nav-link:hover::after,
-.app-header .nav-link:focus::after {
-    transform: scaleX(1);
+.navlink:hover,
+.navlink:focus {
+  color: var(--cor-rosa-escuro) !important;
 }
 
-/* Estilo para os ícones de navegação (Perfil, Menu) */
-.app-header .nav-icon .nav-link {
-    font-size: 2.2rem; /* Ícones maiores */
-    padding: 5px;
+.navlink:hover::after,
+.navlink:focus::after,
+.navlink.active::after {
+  transform: scaleX(1);
 }
 
-/* Remove o efeito de sublinhado para ícones */
-.app-header .nav-icon .nav-link::after {
-    display: none;
+.navlink.active {
+  color: var(--cor-rosa-escuro) !important;
 }
 
-/* --- Responsividade do Header --- */
-@media (max-width: 991.98px) {
-    .app-header .navbar-collapse {
-        background: var(--cor-branca);
-        margin-top: 1rem;
-        border-radius: 8px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        padding: 1rem;
-    }
-    .app-header .nav-link {
-        justify-content: center;
-    }
+.loginlink {
+  color: var(--cor-vermelho) !important;
+  position: relative;
+  margin-left: 0 !important;
 }
 
-@media (max-width: 400px) {
-    /* Em telas muito pequenas, esconde o nome e deixa só o logo */
-    .app-header .navbar-logo-nome {
-        display: none;
-    }
+.loginlink::after {
+  content: "";
+  position: absolute;
+  bottom: 5px;
+  left: 15px;
+  width: calc(100% - 30px);
+  height: 2px;
+  background: var(--cor-vermelho);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.loginlink:hover,
+.loginlink:focus {
+  color: var(--cor-vermelho);
+}
+
+.loginlink:hover::after,
+.loginlink:focus::after {
+  transform: scaleX(1);
+}
+
+/* Remove a barra vertical antiga do loginlink */
+.loginlink::before {
+  display: none;
+}
+
+
+/* Container do perfil logado */
+.profile-info-link .d-flex {
+  flex-direction: row-reverse;
+}
+
+.profile-name {
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.profile-info-link {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nav-icon {
+  font-size: 2rem;
+  color: #555;
 }
