@@ -41,6 +41,7 @@ RewriteRule ^pet-detalhe/([0-9]+)/?$ pet-detalhe.php?id=$1   [NC,L]
 # Esta regra captura /perfil e passa automaticamente qualquer
 # query string (como ?page=meus-pets) para o perfil.php.
 RewriteRule ^perfil/?$ perfil.php [NC,L]
+RewriteRule ^sobre-nos/?$ sobre-nos.php [NC,L]
 
 
 # --- REGRAS PRINCIPAIS DE ROTEAMENTO (Catch-all) ---

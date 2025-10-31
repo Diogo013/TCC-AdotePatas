@@ -276,7 +276,7 @@ try {
 
         async function toggleFavorite(petId, iconElement) {
             try {
-                const response = await fetch('favoritar-pet.php', {
+                const response = await fetch('<?php echo $base_path; ?>favoritar-pet.php', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
                     body: JSON.stringify({ id_pet: petId })

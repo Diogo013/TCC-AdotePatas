@@ -78,7 +78,7 @@ try {
     // 2. (Opcional, mas recomendado) Informa o PHP para usar UTF-8 internamente
     mb_internal_encoding('UTF-8');
 
-    $reset_link = "http://localhost/TCC-AdotePatas/AdotePatas/trocar-senha.php?token=" . $token;
+    $reset_link = "https://localhost/TCC-AdotePatas/AdotePatas/trocar-senha.php?token=" . $token;
 
     $mail = new PHPMailer(true);
 
