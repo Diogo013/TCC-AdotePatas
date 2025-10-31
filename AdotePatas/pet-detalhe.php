@@ -1,37 +1,64 @@
 <?php
 session_start();
-include_once 'conexao.php'; // Inclui a conexão
-include_once 'session.php'; // Inclui as funções de sessão
+include_once 'conexao.php';
+include_once 'session.php';
 
 $base_path = '/TCC-AdotePatas/AdotePatas/';
+$pagina = "pet-detalhe";
 
-
-// --- 1. IDENTIFICAR PET E USUÁRIO ---
 $id_pet = $_GET['id'] ?? 0;
 $id_pet = (int)$id_pet;
 
-$id_usuario_logado = $_SESSION['user_id'] ?? null;
+$id_usuario_logado = $_SESSION['user_id'];
+$user_tipo = $_SESSION['user_tipo'];
+$usuario = null;
+$primeiro_nome = '';
+
+try {
+    if ($user_tipo == 'adotante') {
+        $sql_user = "SELECT nome, email, cpf FROM usuario WHERE id_usuario = :id LIMIT 1";
+    } elseif ($user_tipo == 'protetor') {
+        $sql_user = "SELECT nome, email, cnpj FROM ong WHERE id_ong = :id LIMIT 1";
+    } else {
+        $sql_user = null;
+    }
+
+    if (!empty($sql_user)) {
+        $stmt_user = $conn->prepare($sql_user);
+        $stmt_user->bindParam(':id', $id_usuario_logado, PDO::PARAM_INT);
+        $stmt_user->execute();
+        $usuario = $stmt_user->fetch(PDO::FETCH_ASSOC);
+    }
+} catch (PDOException $e) {
+    error_log("Erro ao buscar dados do usuário: " . $e->getMessage());
+}
+
+if (isset($_SESSION['nome'])) {
+    $partes = explode(' ', $_SESSION['nome']);
+    $primeiro_nome = $partes[0] ?? '';
+} elseif ($usuario && isset($usuario['nome'])) {
+     $partes = explode(' ', $usuario['nome']);
+     $primeiro_nome = $partes[0] ?? '';
+}
+
 $pet = null;
 $doador = null;
 $caracteristicas = [];
 $outros_pets = [];
 
 if (empty($id_pet)) {
-    // Redireciona se nenhum ID for fornecido
-    header('Location: pets-adocao.php');
+    header('Location: ' . $base_path . 'pets');
     exit;
 }
 
-// --- 2. BUSCAR DADOS DO PET E DOADOR ---
 try {
-    // Query principal: Pega o pet e também o nome/localização do doador (ONG ou Usuário)
     $sql = "SELECT 
                 p.*, 
                 COALESCE(o.nome, u.nome) as doador_nome,
-                u.cidade as doador_cidade,     -- Apenas de 'usuario' (OK)
-                u.estado as doador_estado,     -- Apenas de 'usuario' (OK)
-                o.endereco as ong_endereco,    -- Apenas de 'ong' (OK)
-                o.telefone as doador_telefone  -- Apenas de 'ong' (OK)
+                u.cidade as doador_cidade,
+                u.estado as doador_estado,
+                o.endereco as ong_endereco,
+                o.telefone as doador_telefone
             FROM pet AS p
             LEFT JOIN ong AS o ON p.id_ong_fk = o.id_ong
             LEFT JOIN usuario AS u ON p.id_usuario_fk = u.id_usuario
@@ -42,24 +69,20 @@ try {
     $pet = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$pet) {
-        // Se o pet não for encontrado, volta para a listagem
-        header('Location: pets-adocao.php');
+        header('Location: ' . $base_path . 'pets');
         exit;
     }
 
-    // Decodifica as características salvas no banco
     $caracteristicas = json_decode($pet['caracteristicas'] ?? '[]', true);
 
-    // --- 3. BUSCAR OUTROS PETS (SUGESTÕES) ---
     $sql_outros = "SELECT id_pet, nome, foto 
                    FROM pet 
                    WHERE id_pet != :id_pet AND status_disponibilidade = 'disponivel' 
-                   LIMIT 4"; // Limita a 4 sugestões
+                   LIMIT 4"; 
     $stmt_outros = $conn->prepare($sql_outros);
     $stmt_outros->execute([':id_pet' => $id_pet]);
     $outros_pets = $stmt_outros->fetchAll(PDO::FETCH_ASSOC);
     
-    // --- 4. VERIFICAR SE É FAVORITO (igual da listagem) ---
     $is_favorito = false;
     if ($id_usuario_logado) {
         $sql_fav = "SELECT id_favorito FROM favorito WHERE id_usuario = :id_usuario AND id_pet = :id_pet LIMIT 1";
@@ -71,12 +94,9 @@ try {
     }
 
 } catch (PDOException $e) {
-    // Em caso de erro, redireciona
     echo("Erro em pet-detalhe.php: " . $e->getMessage());
-    
     exit;
 }
-
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -88,58 +108,75 @@ try {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="icon" type="image/png" href="<?php echo $base_path; ?>images/global/Logo-AdotePatas.png"/>
-    
-    <!-- CSS da página de perfil (para o toast) e o novo CSS de detalhes -->
-    <link rel="stylesheet" href="<?php echo $base_path; ?>assets/css/global/toast.css">
-    <link rel="stylesheet" href="<?php echo $base_path; ?>assets/css/pages/detalhe-pet/detalhe-pet.css"> <!-- NOVO CSS -->
-    <style>
-    
-    </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="<?php echo $base_path; ?>assets/css/pages/detalhe-pet/detalhe-pet.css"> 
 </head>
 <body class="pet-detalhe-body">
 
-    <!-- NAV/HEADER (você pode incluir seu header.php aqui se tiver) -->
-    <header class="main-header shadow-sm">
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <div class="container">
-                <a class="navbar-brand" href="<?php echo $base_path; ?>./">
-                    <img src="<?php echo $base_path; ?>images/global/Logo-AdotePatas.png" alt="Logo Adote Pet" class="logo-img">
-                </a>
-                <a href="perfil.php" class="ms-auto me-3">
-                    <i class="fa-regular fa-circle-user" style="font-size: 2.5rem; color: #666;"></i>
-                </a>
+    <header>
+      <nav class="navbar navbar-expand">
+        <div class="container">
+          <a class="navbar-brand" href="<?php echo $base_path; ?>./">
+            <img src="<?php echo $base_path; ?>images/global/logo-AdotePatas.png" alt="Logo Adote Patas" class="navbar-logo">
+          </a>
+    
+          <div class="d-flex align-items-center gap-4">
+            <div class="d-none d-xl-block">
+              <ul class="navbar-nav d-flex flex-row gap-4 mb-0">
+                <li class="nav-item">
+                  <a class="nav-link navlink" href="<?php echo $base_path; ?>sobre-nos.php">Sobre Nós</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link navlink" href="#">Ajuda</a>
+                </li>
+              </ul>
             </div>
-        </nav>
+    
+            <a href="<?php echo $base_path; ?>perfil?page=perfil" class="profile-info-link d-flex align-items-center gap-3 text-decoration-none" title="Ver meu perfil">
+              <div class="d-flex align-items-center flex-row-reverse gap-2">
+                <i class="fa-regular fa-circle-user profile-icon logged-in"></i>
+                <span class="profile-name fs-5" style="color: var(--cor-vermelho);"><?php echo htmlspecialchars($primeiro_nome); ?></span>
+              </div>
+            </a>
+    
+            <button class="border-0 bg-transparent p-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Abrir menu">
+              <span class="fas fa-bars nav-icon" style="font-size: 2rem;"></span>
+            </button>
+          </div>
+        </div>
+      </nav>
     </header>
 
-    <!-- Toast (para o JS de favoritar) -->
-    <div id="toast-notification" class="toast p-0" style="display: none;">
-        <div id="toast-icon" class="toast-icon"></div>
-        <div class="toast-content"><p id="toast-message" class="toast-message"></p></div>
-        <div class="toast-progress-bar"></div>
+    <div id="toast-notification" 
+         class="adp-toast p-0" 
+         style="display: none;"
+         role="alert" 
+         aria-live="assertive" 
+         aria-atomic="true">
+        <div id="toast-icon" class="adp-toast-icon"></div>
+        <div class="adp-toast-content">
+            <p id="toast-message" class="adp-toast-message">Mensagem</p>
+        </div>
+        <div class="adp-toast-progress-bar"></div>
     </div>
 
     <main class="container my-4">
         
-        <!-- Breadcrumb (Adote > Caramelo) -->
         <nav aria-label="breadcrumb" class="detalhe-breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="<?php echo $base_path; ?>pets-adocao.php">Adote</a></li>
+                <li class="breadcrumb-item"><a href="<?php echo $base_path; ?>pets">Adote</a></li>
                 <li class="breadcrumb-item active" aria-current="page"><?php echo htmlspecialchars($pet['nome']); ?></li>
             </ol>
         </nav>
 
-        <!-- Conteúdo Principal (Duas Colunas) -->
         <div class="detalhe-main-content">
             
-            <!-- Coluna da Esquerda (Fotos) -->
             <div class="detalhe-fotos">
                 <div class="detalhe-foto-principal shadow-sm">
                     <img src="<?php echo $base_path; ?><?php echo htmlspecialchars($pet['foto'] ?? 'images/perfil/teste.jpg'); ?>" 
                          alt="Foto principal de <?php echo htmlspecialchars($pet['nome']); ?>"
                          onerror="this.src='<?php echo $base_path; ?>images/perfil/teste.jpg';">
                 </div>
-                <!-- Galeria de Thumbnails (usando a mesma foto como placeholder) -->
                 <div class="detalhe-thumbnails">
                     <img class="shadow-sm active" src="<?php echo $base_path; ?><?php echo htmlspecialchars($pet['foto'] ?? 'images/perfil/teste.jpg'); ?>" alt="thumbnail 1">
                     <img class="shadow-sm" src="<?php echo $base_path; ?><?php echo htmlspecialchars($pet['foto'] ?? 'images/perfil/teste.jpg'); ?>" alt="thumbnail 2">
@@ -148,19 +185,16 @@ try {
                 </div>
             </div>
 
-            <!-- Coluna da Direita (Info Card) -->
             <div class="detalhe-info-card shadow-sm">
                 <div class="d-flex justify-content-between align-items-start">
                     <h1>
                         <?php echo htmlspecialchars($pet['nome']); ?>
-                        <!-- Ícone de Gênero -->
                         <?php if ($pet['sexo'] == 'femea'): ?>
-                            <i class="fa-solid fa-venus pet-gender-female" title="Fêmea"></i>
+                            <i class="fa-solid fa-venus pet-gender-female" style="font-size: 2rem;" title="Fêmea"></i>
                         <?php else: ?>
-                            <i class="fa-solid fa-mars pet-gender-male" title="Macho"></i>
+                            <i class="fa-solid fa-mars pet-gender-male" style="font-size: 2rem;" title="Macho"></i>
                         <?php endif; ?>
                     </h1>
-                    <!-- Coração de Favorito -->
                     <i class="pet-like <?php echo $is_favorito ? 'fa-solid fa-heart favorited' : 'fa-regular fa-heart'; ?>" 
                        data-pet-id="<?php echo $pet['id_pet']; ?>" 
                        aria-label="Favoritar" 
@@ -168,7 +202,6 @@ try {
                     </i>
                 </div>
 
-                <!-- Tags de Info -->
                 <div class="info-tags-container">
                     <span><?php echo htmlspecialchars($pet['idade']); ?> Ano(s)</span>
                     <span class="<?php echo ($pet['status_vacinacao'] == 'sim') ? 'tag-vacinado' : ''; ?>">
@@ -181,36 +214,44 @@ try {
                     <span><?php echo htmlspecialchars($pet['raca']); ?></span>
                 </div>
 
-                <!-- Botão Adotar -->
-                <a href="formulario-adocao.php?id_pet=<?php echo $pet['id_pet']; ?>" class="btn-adotar">
-                    Quero Adotar!
-                </a>
+                <div class="d-flex justify-content-center">
+                    <div class="flex justify-center mx-auto"> <a href="<?php echo $base_path; ?>formulario?id_pet=<?php echo $pet['id_pet']; ?>" class="adopt-btn">
+                        <div class="heart-background" aria-hidden="true">
+                            <i class="bi bi-heart-fill"></i>
+                        </div>
+                        <span>Quero Adotar!</span>
+                    </a>
+                </div>
+                
+</div>
 
-                <!-- Localização -->
                 <div class="location">
-                    <i class="fa-solid fa-location-dot"></i>
+                    <i class="fa-solid fa-location-dot" style="font-size: 1.2rem; color: var(--cor-vermelho);"></i>
                     <?php 
                         $cidade = $pet['doador_cidade'] ?? 'Localização';
                         $estado = $pet['doador_estado'] ?? 'não informada';
                         echo htmlspecialchars($cidade) . ' - ' . htmlspecialchars($estado);
                     ?>
+                    <div class="maps">
+                        <a style="color: var(--cor-vermelho); text-decoration: underline;" target="_blank"href="https://www.google.com/maps/place/Etec+de+Praia+Grande/@-24.0089687,-46.4373564,16.5z/data=!4m6!3m5!1s0x94ce1d5858ac3641:0x99fe8e3b11617077!8m2!3d-24.0085484!4d-46.4354463!16s%2Fg%2F11sw0llbtt?entry=ttu&g_ep=EgoyMDI1MTAyOC4wIKXMDSoASAFQAw%3D%3D">
+                            Ver no Mapa
+                        </a>
+                    </div>
+                    
                 </div>
             </div>
         </div>
 
-        <!-- Seção "Sobre" -->
         <div class="detalhe-secao shadow-sm">
             <h2>Sobre o <?php echo htmlspecialchars($pet['nome']); ?></h2>
             <p><?php echo nl2br(htmlspecialchars($pet['comportamento'] ?? 'Nenhuma descrição fornecida.')); ?></p>
         </div>
 
-        <!-- Seção "Características" -->
         <?php if (!empty($caracteristicas)): ?>
         <div class="detalhe-secao shadow-sm">
             <h2>Características</h2>
             <div class="caracteristicas-container">
                 <?php foreach ($caracteristicas as $carac): ?>
-                    <!-- Usando as classes de cor do modal-caracteristicas.css -->
                     <span class="char-tag-display">
                         <?php echo htmlspecialchars($carac); ?>
                     </span>
@@ -219,7 +260,6 @@ try {
         </div>
         <?php endif; ?>
 
-        <!-- Seção "Outros Pets" -->
         <?php if (!empty($outros_pets)): ?>
         <div class="detalhe-secao">
             <h2>Outros Pets que Você Pode Gostar</h2>
@@ -240,28 +280,51 @@ try {
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Script de Favoritar (copiado do pets-adocao.php) -->
-    <script>
+    <script src="<?php echo $base_path; ?>assets/js/pages/index/offcanvas-fix.js"></script> 
+
+        <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Função para mostrar o Toast
+        
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast-notification');
             const toastIcon = document.getElementById('toast-icon');
             const toastMessage = document.getElementById('toast-message');
             if (!toast || !toastIcon || !toastMessage) return;
+
             toastMessage.textContent = message;
-            toast.classList.remove('success', 'danger', 'warning');
-            toastIcon.className = 'toast-icon';
-            toast.classList.add(type);
+
+            toast.classList.remove('adp-toast--success', 'adp-toast--danger', 'adp-toast--warning', 'show', 'hide');
+            toastIcon.className = 'adp-toast-icon';
+
+            toast.classList.add('adp-toast--' + type);
+
             if (type === 'success') toastIcon.classList.add('fas', 'fa-check');
             else if (type === 'danger') toastIcon.classList.add('fas', 'fa-times');
             else if (type === 'warning') toastIcon.classList.add('fas', 'fa-exclamation-triangle');
-            toast.style.display = 'block';
-            const progressBar = toast.querySelector('.toast-progress-bar');
-            progressBar.style.animation = 'none';
-            void progressBar.offsetWidth;
-            progressBar.style.animation = 'progress 3s linear forwards';
-            setTimeout(() => { toast.style.display = 'none'; }, 3000);
+
+            toast.style.display = 'flex';
+            
+            const progressBar = toast.querySelector('.adp-toast-progress-bar');
+            if (progressBar) {
+                progressBar.style.animation = 'none';
+                void progressBar.offsetWidth;
+                progressBar.style.animation = 'shrink 3s linear forwards';
+            }
+
+            toast.classList.add('show');
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+                toast.classList.add('hide');
+                
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                    toast.classList.remove('hide', 'adp-toast--' + type);
+                    toastIcon.className = 'adp-toast-icon';
+                    if (progressBar) progressBar.style.animation = 'none';
+                }, 500);
+            
+            }, 3000);
         }
 
         const heartIcon = document.querySelector('.pet-like');
@@ -276,7 +339,7 @@ try {
 
         async function toggleFavorite(petId, iconElement) {
             try {
-                const response = await fetch('favoritar-pet.php', {
+                const response = await fetch('<?php echo $base_path; ?>favoritar-pet.php', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
                     body: JSON.stringify({ id_pet: petId })
@@ -295,7 +358,7 @@ try {
                 } else {
                     if (response.status === 403) {
                         showToast(result.message, 'danger');
-                        setTimeout(() => { window.location.href = 'login'; }, 1500);
+                        setTimeout(() => { window.location.href = '<?php echo $base_path; ?>login'; }, 1500);
                     } else {
                         showToast(result.message || 'Erro ao favoritar.', 'danger');
                     }
@@ -307,5 +370,65 @@ try {
         }
     });
     </script>
+    
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+  <div class="offcanvas-header border-bottom">
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  
+  <div class="offcanvas-body p-0">
+    <aside class="profile-sidebar p-3">
+      <div class="sidebar-header text-center mb-4">
+        <i class="fa-regular fa-circle-user sidebar-profile-icon logged-in"></i>
+        <h5 class="mt-2 mb-0">
+          <?php echo htmlspecialchars($usuario['nome'] ?? 'Usuário'); ?>
+        </h5>
+        <small class="text-muted fs-6">
+          <?php echo htmlspecialchars(ucfirst($user_tipo ?? '')); ?>
+        </small>
+      </div>
+      
+      <nav class="nav nav-pills flex-column profile-nav">
+        <div class="d-xl-none">
+          <a class="nav-link" href="<?php echo $base_path; ?>sobre-nos.php">
+            <i class="fa-solid fa-info-circle fa-fw me-2"></i> Sobre Nós
+          </a>
+          <a class="nav-link" href="#">
+            <i class="fa-solid fa-question-circle fa-fw me-2"></i> Ajuda
+          </a>
+          <hr class="my-2">
+        </div>
+        
+        <a class="nav-link <?php echo ($pagina == 'perfil') ? 'active' : ''; ?>" 
+           href="<?php echo $base_path; ?>perfil?page=perfil" 
+           <?php echo ($pagina == 'perfil') ? 'aria-current="page"' : ''; ?>>
+           <i class="fa-regular fa-circle-user fa-fw me-2"></i> Meu Perfil
+        </a>
+        
+        <a class="nav-link <?php echo ($pagina == 'meus-pets') ? 'active' : ''; ?>" 
+           href="<?php echo $base_path; ?>perfil?page=meus-pets"
+           <?php echo ($pagina == 'meus-pets') ? 'aria-current="page"' : ''; ?>>
+           <i class="fa-solid fa-paw fa-fw me-2"></i> Meus Pets
+        </a>
+
+        <a class="nav-link <?php echo ($pagina == 'pets-curtidos') ? 'active' : ''; ?>" 
+           href="<?php echo $base_path; ?>perfil?page=pets-curtidos"
+           <?php echo ($pagina == 'pets-curtidos') ? 'aria-current="page"' : ''; ?>>
+           <i class="fa-regular fa-heart fa-fw me-2"></i> Pets Curtidos
+        </a>
+
+        <a class="nav-link" href="<?php echo $base_path; ?>chat.php">
+            <i class="fa-regular fa-comments fa-fw me-3"></i> Chats
+        </a>
+
+        <hr class="my-2">
+        
+        <a class="nav-link logout-link-sidebar" href="<?php echo $base_path; ?>sair.php">
+          <i class="fa-solid fa-right-from-bracket fa-fw me-2"></i> Sair
+        </a>
+      </nav>
+    </aside>
+  </div>
+</div>
 </body>
 </html>

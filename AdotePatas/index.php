@@ -74,6 +74,7 @@ $pagina = "";
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
   <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
 
 <body>
@@ -165,17 +166,14 @@ $pagina = "";
 
           <img src="images/index/cabeca-cachorro.png" class="img-fluid d-none" id="cachorro" alt="cachorro fofo deitado olhando para frente">
 
-          <div class="btn-container mb-5">
-            <a href="<?php
-                  echo  $acesso
-                  ?>">
-              <button class="adopt-btn" id="adoptBtn">
-                <div class="heart-background" style="user-select: none;">❤</div>
-                <span>Quero adotar</span>
-              </button>
-            </a>
-            <div class="paw-prints" id="pawPrints"></div>
-          </div>
+<div class="btn-container"> <a href="<?php echo $acesso ?>" class="adopt-btn" id="adoptBtn" style="text-decoration: none">
+    <div class="heart-background" aria-hidden="true">
+      <i class="bi bi-heart-fill"></i>
+    </div>
+    <span>Quero adotar</span>
+  </a>
+  <div class="paw-prints" id="pawPrints"></div>
+</div>
 
         </div> </div>
     </div>
@@ -212,11 +210,13 @@ $pagina = "";
 
           <div class="col-4">
             <div class="card-item">
-              <div class="card-icon">
-                <i class="fa-solid fa-heart"></i>
+              <a href="como-adotar.php"  style="text-decoration: none;">
+                <div class="card-icon">
+                  <i class="fa-solid fa-heart"></i>
+                </div>
+                <h4>Como Adotar</h4>
               </div>
-              <h3>Doações</h3>
-            </div>
+            </a>
           </div>
 
         </div>
@@ -275,16 +275,14 @@ $pagina = "";
         </div>
 
         <center>
-          <div class="btn-container">
-           <a href="<?php
-                  echo  $acesso
-                  ?>">
-            <button class="adopt-btn" id="adoptBtn">
-              <div class="heart-background" style="user-select: none;">❤</div>
-              <span>Ver mais patinhas</span>
-            </button>
-          </a>
-          </div>
+<div class="btn-container"> <a href="<?php echo $acesso ?>" class="adopt-btn" id="adoptBtn" style="text-decoration: none">
+    <div class="heart-background" aria-hidden="true">
+      <i class="bi bi-heart-fill"></i>
+    </div>
+    <span>Quero adotar</span>
+  </a>
+  <div class="paw-prints" id="pawPrints"></div>
+</div>
         </center>
 
       </div>
@@ -382,10 +380,9 @@ $pagina = "";
           <h3>Links</h3>
           <ul>
             <li><a href="#">Home</a></li>
-            <li><a href="#">Adote</a></li>
-            <li><a href="#">Sobre nós</a></li>
-            <li><a href="#">ONGs</a></li>
-            <li><a href="#">Histórias</a></li>
+            <li><a href="pets">Adote</a></li>
+            <li><a href="sobre-nos.php">Sobre nós</a></li>
+            <li><a href="ongs">ONGs</a></li>
             <li><a href="#">Política de privacidade</a></li>
             <li><a href="#">Termos de uso</a></li>
           </ul>
@@ -501,6 +498,10 @@ window.addEventListener('resize', verificarLarguraTela);
                <?php echo ($pagina == 'pets-curtidos') ? 'aria-current="page"' : ''; ?>>
               <i class="fa-regular fa-heart fa-fw me-2"></i> Pets Curtidos
             </a>
+
+            <a class="nav-link" href="chat.php">
+                                <i class="fa-regular fa-comments fa-fw me-3"></i> Chats
+                            </a>
             
             <hr class="my-2">
             

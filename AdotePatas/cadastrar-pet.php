@@ -194,6 +194,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link rel="icon" type="image/png" href="images/global/Logo-AdotePatas.png"/>
     <link rel="stylesheet" href="assets/css/pages/cadastro-pet/caracteristica.css">
     <link rel="stylesheet" href="assets/css/pages/autenticacao/autenticacao.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
 
 
     <style>
@@ -368,12 +370,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <textarea name="comportamento" id="comportamento" rows="4" placeholder="Conte um pouco sobre o pet (Ex: Dócil, adora crianças...)" class="input-style w-full"><?php echo htmlspecialchars($comportamento); ?></textarea>
             </div>
 
-            <!-- Linha 7: Botão de Envio -->
-            <div class="flex justify-center w-55 mx-auto">
-                <button type="submit" class="adopt-btn">
-                    <div class="heart-background">❤</div><span>Cadastrar Pet</span>
-                </button>
             </div>
+
+            <!-- Linha 7: Botão de Envio -->
+<div class="flex justify-center w-55 mx-auto">
+    <button type="submit" class="adopt-btn">
+        
+        <div class="heart-background" aria-hidden="true">
+            <i class="bi bi-heart-fill"></i>
+        </div>
+        
+        <span>Cadastrar Pet</span>
+    </button>
+</div>
+
         </form>
     </div>
 </div>

@@ -50,7 +50,6 @@ main {
   /* Para garantir que a main ocupe toda a altura necessária para o degradê ser visível */
   min-height: calc(100vh - 100px); /* Ajuste 100px para a altura do seu header/footer */
   padding-bottom: 50px; /* Um padding para o conteúdo não colar na base */
-  margin-top: 108px;
 }
 /* =====================
     CARD DE PET

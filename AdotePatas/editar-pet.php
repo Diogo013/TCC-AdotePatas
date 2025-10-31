@@ -75,6 +75,8 @@ unset($_SESSION['tipo_mensagem']);
     <link rel="stylesheet" href="assets/css/pages/autenticacao/autenticacao.css">
     <link rel="stylesheet" href="assets/css/pages/cadastro-pet/caracteristica.css">
     <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
 
     <!-- Estilo customizado para o input[file] -->
     <style>
@@ -261,11 +263,18 @@ unset($_SESSION['tipo_mensagem']);
             </div>
 
             <!-- Linha 8: Botão de Envio -->
-            <div class="flex justify-center w-55 mx-auto">
-                <button type="submit" class="adopt-btn">
-                    <div class="heart-background">❤</div><span>Salvar Alterações</span>
-                </button>
-            </div>
+<div class="flex justify-center w-55 mx-auto">
+    <button type="submit" class="adopt-btn">
+        
+        <div class="heart-background" aria-hidden="true">
+            <i class="bi bi-heart-fill"></i>
+        </div>
+        
+        <span>Salvar Alterações</span>
+    </button>
+</div>
+
+
         </form>
     </div>
 </div>
