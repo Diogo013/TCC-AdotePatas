@@ -358,6 +358,8 @@ case 'cadastro_ong':
     <link rel="icon" type="image/png" href="images/global/Logo-AdotePatas.png"/>
     <link rel="stylesheet" href="assets/css/pages/autenticacao/autenticacao.css">
     <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4">
 
@@ -430,11 +432,18 @@ $animationMessage = $_GET['message'] ?? 'Redirecionando...';
                             class="input-style w-full">
                         <p id="recovery-error-message" class="text-sm text-red-500 mt-1 hidden text-left"></p>
                     </div>
-                    <div class="flex justify-center">
-                        <button type="submit" class="adopt-btn w-48 justify-center">
-                            <div class="heart-background">❤</div><span>Enviar Link</span>
-                        </button>
-                    </div>
+
+<div class="flex justify-center">
+    <button type="submit" class="adopt-btn w-48 justify-center">
+        
+        <div class="heart-background" aria-hidden="true">
+            <i class="bi bi-heart-fill"></i>
+        </div>
+        
+        <span>Enviar Link</span>
+    </button>
+</div>
+
                 </form>
             </div>
 
@@ -518,11 +527,18 @@ $animationMessage = $_GET['message'] ?? 'Redirecionando...';
         <div class="flex justify-end pt-2">
             <a href="#" id="open-recovery-modal" class="link-style">Esqueci a senha</a>
         </div>
-        <div class="flex justify-center w-40 mx-auto">
-            <button type="submit" class="adopt-btn">
-                <div class="heart-background">❤</div><span>Entrar</span>
-            </button>
+
+<div class="flex justify-center w-40 mx-auto">
+    <button type="submit" class="adopt-btn">
+        
+        <div class="heart-background" aria-hidden="true">
+            <i class="bi bi-heart-fill"></i>
         </div>
+        
+        <span>Entrar</span>
+    </button>
+</div>
+
     </form>
 </div>
 
@@ -560,11 +576,18 @@ $animationMessage = $_GET['message'] ?? 'Redirecionando...';
             </div>
             <div id="mensagem-confirma-senha-cadastro" class="mensagem-validacao"></div>
         </div>
-        <div class="flex justify-center w-40 mx-auto">
-            <button type="submit" id="cadastro-cliente" class="adopt-btn">
-                <div class="heart-background">❤</div><span>Cadastrar</span>
-            </button>
+
+<div class="flex justify-center w-40 mx-auto">
+    <button type="submit" class="adopt-btn">
+        
+        <div class="heart-background" aria-hidden="true">
+            <i class="bi bi-heart-fill"></i>
         </div>
+        
+        <span>Cadastrar</span>
+    </button>
+</div>
+
     </form>
 </div>
 
@@ -601,11 +624,18 @@ $animationMessage = $_GET['message'] ?? 'Redirecionando...';
             </div>
             <div id="mensagem-confirma_senha_ong" class="mensagem-validacao"></div>
         </div>
-        <div class="flex justify-center w-55 mx-auto">
-            <button type="submit" class="adopt-btn">
-                <div class="heart-background">❤</div><span>Cadastrar ONG</span>
-            </button>
+
+<div class="flex justify-center w-55 mx-auto">
+    <button type="submit" class="adopt-btn">
+        
+        <div class="heart-background" aria-hidden="true">
+            <i class="bi bi-heart-fill"></i>
         </div>
+        
+        <span>Cadastrar ONG</span>
+    </button>
+</div>
+
     </form>
 </div>
 

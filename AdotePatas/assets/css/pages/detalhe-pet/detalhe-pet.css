@@ -1,8 +1,415 @@
+/* ==========================================================================
+   HEADER RESPONSIVO (IMPLEMENTAÇÃO COMPLETA DO sobre-nos.php)
+   ========================================================================== */
+@import "../../global/global.css";
+
+
+.adopt-btn {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+  cursor: pointer;
+  background-color: #b92b2b;
+  color: #f0e9e9;
+  font-family: "Poppins", sans-serif;
+  font-weight: 700;
+  font-size: 1.5rem; /* Ajustado para caber melhor */
+  padding: 0.75rem 3rem; /* py-3 */
+  width: 100%;
+  max-width: 280px;
+  border-radius: 1rem; /* rounded-2xl */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.19);
+}
+
+.adopt-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25), 0 10px 25px rgba(0, 0, 0, 0.22);
+}
+
+.adopt-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.heart-background {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  font-size: 2.5rem;
+  margin-top: 3px;
+  line-height: 1;
+  color: #a82626;
+  user-select: none;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3),
+    -1px -1px 2px rgba(255, 255, 255, 0.15);
+}
+
+.adopt-btn span {
+  position: relative;
+  z-index: 2;
+  text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.3);
+
+}
+
+/* Container principal alinhado */
+.navbar > .container {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navbar {
+  background-color: var(--cor-branca);
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+  padding: 0.5rem 1rem;
+  margin-bottom: 0 !important;
+  position: relative;
+  z-index: 1030;
+}
+
+.navbar-logo {
+  width: clamp(60px, 10vw, 80px);
+  height: clamp(60px, 10vw, 80px);
+  object-fit: contain;
+  user-select: none;
+}
+
+.navbar-nav {
+  gap: 1.5rem;
+  align-items: center;
+  flex-direction: row !important;
+  margin: 0 !important;
+}
+
+.nav-link {
+  font-weight: bold !important;
+  cursor: pointer;
+  position: relative;
+  padding: 10px 15px;
+  transition: color 0.3s ease;
+  display: flex;
+  align-items: center;
+  font-size: 1.5rem !important;
+  white-space: nowrap;
+  border-radius: 4px;
+}
+
+.navlink {
+  color: var(--cor-cinza-texto);
+}
+
+.navlink::after {
+  content: "";
+  position: absolute;
+  bottom: 5px;
+  left: 15px;
+  width: calc(100% - 30px);
+  height: 2px;
+  background: var(--cor-rosa-escuro);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.navlink:hover,
+.navlink:focus {
+  color: var(--cor-rosa-escuro) !important;
+}
+
+.navlink:hover::after,
+.navlink:focus::after,
+.navlink.active::after {
+  transform: scaleX(1);
+}
+
+.navlink.active {
+  color: var(--cor-rosa-escuro) !important;
+}
+
+.loginlink {
+  color: var(--cor-vermelho) !important;
+  position: relative;
+  margin-left: 0 !important;
+}
+
+.loginlink::after {
+  content: "";
+  position: absolute;
+  bottom: 5px;
+  left: 15px;
+  width: calc(100% - 30px);
+  height: 2px;
+  background: var(--cor-vermelho);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.loginlink:hover,
+.loginlink:focus {
+  color: var(--cor-vermelho);
+}
+
+.loginlink:hover::after,
+.loginlink:focus::after {
+  transform: scaleX(1);
+}
+
+.loginlink::before {
+  display: none;
+}
+
+.navbar-nav .nav-item:has(.loginlink) {
+  position: relative;
+}
+
+.navbar-nav .nav-item:has(.loginlink)::before {
+  content: "|";
+  position: absolute;
+  left: -12px;
+  top: 45%;
+  transform: translateY(-50%);
+  color: var(--cor-cinza);
+  font-weight: 300;
+  font-size: 1.8rem;
+}
+
+.navbar-nav .nav-item + .nav-item:has(.loginlink)::before {
+  content: "|";
+  position: absolute;
+  left: -12px;
+  top: 45%;
+  transform: translateY(-50%);
+  color: var(--cor-vermelho);
+  font-weight: 500;
+  font-size: 1.8rem;
+}
+
+.navbar-nav .nav-item:nth-child(2) + .nav-item::before {
+  content: "|";
+  position: absolute;
+  left: -12px;
+  top: 45%;
+  transform: translateY(-50%);
+  color: var(--cor-vermelho);
+  font-weight: 500;
+  font-size: 1.8rem;
+}
+
+.navbar-nav .nav-item.position-relative {
+  padding-left: 8px;
+}
+
+.profile-icon.logged-in,
+.sidebar-profile-icon.logged-in {
+  color: var(--cor-vermelho) !important;
+  font-size: 3rem;
+}
+
+.sidebar-profile-icon.logged-out {
+  color: var(--cor-cinza) !important;
+  opacity: 0.7;
+  font-size: 4rem;
+}
+
+.profile-info-link .d-flex {
+  flex-direction: row-reverse;
+}
+
+.profile-name {
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.profile-info-link {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nav-icon {
+  font-size: 2rem;
+  color: #555;
+}
+
+/* ==========================================================================
+   OFFCANVAS - ESTILOS COMPLETOS (de sobre.css)
+   ========================================================================== */
+.offcanvas {
+  position: fixed;
+  z-index: 1045;
+  transition: transform 0.3s ease-in-out;
+  visibility: visible !important;
+}
+
+.offcanvas-end {
+  transform: translateX(100%);
+}
+
+.offcanvas.show {
+  transform: translateX(0);
+}
+
+.offcanvas-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1040;
+  width: 100vw;
+  height: 100vh;
+  background-color: #000;
+}
+
+.offcanvas-backdrop.show {
+  opacity: 0.5;
+}
+
+.offcanvas-header {
+  border-bottom: 1px solid #eee;
+}
+
+.offcanvas-title {
+  font-weight: bold;
+  color: #e87a7a;
+}
+
+.profile-sidebar {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-nav .nav-link {
+  color: var(--cor-cinza-texto);
+  font-weight: 500;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s ease;
+  margin-bottom: 0.25rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+}
+
+.profile-nav .nav-link:hover {
+  background-color: var(--cor-laranja-claro);
+  color: var(--cor-rosa-escuro);
+}
+
+.profile-nav .nav-link.active {
+  background-color: var(--cor-vermelho);
+  color: var(--cor-branca);
+}
+
+.logout-link-sidebar {
+  color: var(--cor-vermelho) !important;
+}
+
+.logout-link-sidebar:hover {
+  background-color: #fcebeb !important;
+}
+
+.loginlink-sidebar {
+  color: var(--cor-vermelho) !important;
+  font-weight: 600;
+}
+
+.loginlink-sidebar:hover {
+  background-color: #fcebeb !important;
+  color: var(--cor-vermelho) !important;
+}
+
+/* ==========================================================================
+   RESPONSIVIDADE DO HEADER/OFFCANVAS (de sobre.css)
+   ========================================================================== */
+
+@media (max-width: 1199.98px) {
+  .d-none.d-xl-block .navbar-nav {
+    display: none !important;
+  }
+  
+  .navbar button[data-bs-toggle="offcanvas"] {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .profile-name {
+    display: none !important;
+  }
+  
+  .profile-icon.logged-in {
+    font-size: 2.2rem;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .navbar {
+    background-color: var(--cor-branca);
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+  }
+  
+  .navbar-nav {
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .offcanvas {
+    width: 85% !important;
+  }
+}
+
+@media (max-width: 500px) {
+  .navbar .navlink {
+    font-size: 1rem !important;
+  }
+}
+
+body.offcanvas-open {
+  overflow: hidden;
+}
+
+html.offcanvas-open,
+body.offcanvas-open {
+  overflow: hidden !important;
+  position: fixed;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .offcanvas {
+    width: 400px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .navbar,
+  .navlink::after {
+    transition: none;
+  }
+}
+/* ==========================================================================
+   FIM DOS ESTILOS DO HEADER/OFFCANVAS
+   ========================================================================== */
+
+
+
 /* :root (Pode ser do seu CSS global, mas para garantir) */
 :root {
-    --cor-vermelho: #d9006c;
-    --cor-vermelho-claro: #fdeee4;
-    --cor-texto: #555;
+    /* --cor-vermelho: #d9006c; */ /* Comentado - Já deve existir no global.css */
+    /* --cor-vermelho-claro: #fdeee4; */ /* Comentado - Já deve existir no global.css */
+    /* --cor-texto: #555; */ /* Comentado - Já deve existir no global.css */
     --cor-verde: #00a884;
 }
 
@@ -11,19 +418,17 @@ body.pet-detalhe-body {
     color: var(--cor-texto);
 }
 
-.main-header {
-    border-bottom: 1px solid #e0e0e0;
-}
-.logo-img {
-    max-height: 40px;
-}
+/* ESTILOS ANTIGOS DE HEADER REMOVIDOS */
 
 /* Breadcrumb */
 .detalhe-breadcrumb {
     font-size: 0.9rem;
+    /* Adiciona espaçamento do novo header */
+    margin-top: 1rem; 
 }
 .detalhe-breadcrumb a {
     text-decoration: none;
+    font-weight: 600;
     color: var(--cor-vermelho);
 }
 
@@ -69,7 +474,7 @@ body.pet-detalhe-body {
 
 /* Coluna da Direita (Info Card) */
 .detalhe-info-card {
-    background-color: var(--cor-vermelho-claro);
+    background-color: var(--cor-rosa);
     padding: 2rem;
     border-radius: 20px;
     height: fit-content; /* Para o card não esticar */
@@ -79,12 +484,11 @@ body.pet-detalhe-body {
 
 .detalhe-info-card h1 {
     font-weight: 700;
-    color: #333;
+    color: var(--cor-vermelho);
     font-size: 2.5rem;
     margin-bottom: 0.5rem;
 }
-.detalhe-info-card h1 i {
-    font-size: 1.8rem;
+.detalhe-info-card i {
     margin-left: 5px;
 }
 .pet-gender-female { color: #e91e63; }
@@ -92,7 +496,7 @@ body.pet-detalhe-body {
 
 /* Coração de Favorito */
 .pet-like {
-    font-size: 2.2rem;
+    font-size: 1.5rem;
     color: #ccc;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -189,6 +593,13 @@ body.pet-detalhe-body {
     border: 1px solid #eee;
 }
 
+.char-tag-display:hover{
+    background-color: var(--cor-vermelho);
+    color: #f4f4f4;
+    transition: linear 0.3s;
+    transform: translateY(-3px);
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+}
 /* Grid "Outros Pets" */
 .outros-pets-grid {
     display: grid;
@@ -247,4 +658,130 @@ body.pet-detalhe-body {
     .outros-pets-grid {
         grid-template-columns: repeat(2, 1fr); /* 2 colunas em mobile */
     }
+}
+
+/* ==========================================================================
+   ADP-TOAST (NOTIFICAÇÃO) - Estilos e Animações (Portado de pets.css)
+   ========================================================================== */
+.adp-toast {
+  position: fixed;
+  top: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  margin-top: 1.5rem;
+  min-width: 350px;
+  max-width: 90%;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  font-family: "Poppins", sans-serif;
+  /* Garante que o display: none; do HTML seja sobreposto */
+  display: none !important;
+}
+
+.adp-toast.show {
+  opacity: 1;
+  pointer-events: auto;
+  /* JS usará 'flex' para sobrescrever o 'none !important' */
+  display: flex !important;
+  animation: slideIn 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.adp-toast.hide {
+  display: flex !important; /* Garante que permaneça visível durante a animação de saída */
+  animation: slideOut 0.5s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards;
+}
+
+.adp-toast-icon {
+  flex-shrink: 0;
+  width: 110px;
+  height: 70px;
+  /* Centraliza totalmente o ícone dentro da caixa */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1; /* evita deslocamentos verticais do ícone */
+  font-size: 2  rem; /* controla o tamanho do ícone dentro da caixa */
+}
+
+.adp-toast-content {
+  flex-grow: 1;
+}
+
+.adp-toast-message {
+  margin: 0;
+  font-weight: 500;
+  font-size: 1rem;
+  line-height: 1.4;
+  padding: 0.5rem;
+  text-align: center;
+}
+
+/* --- Cores por tipo --- */
+.adp-toast--success {
+  background-color: #d1fae5; /* Verde claro */
+  color: #065f46; /* Verde escuro */
+}
+
+.adp-toast--warning,
+.adp-toast--danger {
+  background-color: #fee2e2; /* Vermelho claro */
+  color: #991b1b; /* Vermelho escuro */
+}
+
+/* --- Barra de Progresso --- */
+.adp-toast-progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 5px;
+}
+
+.adp-toast--success .adp-toast-progress-bar {
+  background-color: #34d399;
+}
+
+.adp-toast--warning .adp-toast-progress-bar,
+.adp-toast--danger .adp-toast-progress-bar {
+  background-color: #f87171;
+}
+
+/* A animação 'shrink' é controlada via JS, não aqui */
+
+/* --- Animações --- */
+@keyframes slideIn {
+  from {
+    top: -100px;
+    opacity: 0;
+  }
+  to {
+    top: 2rem;
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    top: 2rem;
+    opacity: 1;
+  }
+  to {
+    top: -100px;
+    opacity: 0;
+  }
+}
+
+@keyframes shrink {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
 }

@@ -295,6 +295,10 @@ if ($logado) {
             <i class="fa-regular fa-heart fa-fw me-2"></i> Pets Curtidos
           </a>
 
+          <a class="nav-link" href="chat.php">
+                                <i class="fa-regular fa-comments fa-fw me-3"></i> Chats
+                            </a>
+
           <hr class="my-2">
           
           <a class="nav-link logout-link-sidebar" href="sair.php">

@@ -41,6 +41,7 @@ if (!$token) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="images/global/Logo-AdotePatas.png"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     
     <link rel="stylesheet" href="assets/css/pages/troca-senha/troca-senha.css">
 
@@ -146,15 +147,21 @@ if (!$token) {
                     <div id="mensagem-confirma_senha" class="mensagem-validacao"></div>
                 </div>
 
-                <div class="flex justify-center w-55 mx-auto pt-4">
-                    <button type="submit" id="reset-submit-btn" class="adopt-btn">
-                        <div class="heart-background">❤</div>
-                        <span>
-                            <span class="spinner-border spinner-border-sm hidden me-2" role="status" aria-hidden="true"></span>
-                            <span class="button-text">Trocar Senha</span>
-                        </span>
-                    </button>
-                </div>
+<div class="flex justify-center w-55 mx-auto pt-4">
+    <button type="submit" id="reset-submit-btn" class="adopt-btn">
+        
+        <div class="heart-background" aria-hidden="true">
+            <i class="bi bi-heart-fill"></i>
+        </div>
+        
+        <span>
+            <span class="spinner-border spinner-border-sm hidden me-2" role="status" aria-hidden="true"></span>
+            <span class="button-text">Trocar Senha</span>
+        </span>
+    </button>
+</div>
+
+
             </form>
         <?php endif; ?>
     </div>

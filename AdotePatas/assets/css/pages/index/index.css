@@ -459,9 +459,18 @@ header {
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
 }
 
-.card-item h3 {
+.card-item h3{
   font-family: "Poppins", sans-serif;
-  font-size: 2rem;
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--cor-branca);
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
+
+.card-item h4 {
+  font-family: "Poppins", sans-serif;
+  font-size: 1.4rem;
   font-weight: 700;
   margin: 0;
   color: var(--cor-branca);
