@@ -1,35 +1,113 @@
 /* ==========================================================================
-   NOVOS ESTILOS DE HEADER (para esta página)
-  ========================================================================== 
-*/
+   ESTILOS DO HEADER (Fundo Branco)
+   ========================================================================== */
+
+   @import "../sobre/sobre.css";
+
+/* Aplica o fundo branco e a sombra ao header */
 .navbar-static-white {
     background-color: var(--cor-branca) !important;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    padding: 0.2rem 0;
-    margin-bottom: 0 !important; /* Remove o margin-bottom que o index.css aplicava */
+    padding-top: 0.2rem;
+    padding-bottom: 0.2rem;
+    margin-bottom: 0 !important; /* Remove o margin-bottom do index.css */
+    z-index: 1030;
+    position: relative;
 }
 
-/* Garante que o ícone do hamburger seja visível no fundo branco */
+/* Garante que o logo fique no tamanho correto no header branco */
+.navbar-static-white .navbar-logo {
+    width: clamp(55px, 10vw, 70px);
+    height: auto;
+}
+
+/* Garante que o ícone do hamburger seja escuro no fundo branco */
 .navbar-static-white .hamburger .line {
     stroke: var(--cor-cinza-texto);
 }
 
+/* Estilo do hamburger quando o menu está aberto */
 .navbar-static-white .hamburger[aria-expanded="true"] svg .line {
     stroke: var(--cor-vermelho);
 }
 
-.navbar-static-white .navbar-logo {
-    width: clamp(55px, 10vw, 70px);
-    height: auto; /* Mantém a proporção */
+/* Estilos para os links do menu desktop (copiado do header.css do chat) */
+.navbar-static-white .nav-link {
+    font-weight: bold !important;
+    cursor: pointer;
+    position: relative;
+    padding: 10px 15px;
+    transition: color 0.3s ease;
+    font-size: 1.5rem !important;
+    white-space: nowrap;
 }
 
-/* ==========================================================================
-   FIM DOS NOVOS ESTILOS DE HEADER
-  ========================================================================== 
-*/
+.navbar-static-white .navlink {
+    color: var(--cor-cinza-texto);
+}
+.navbar-static-white .navlink::after {
+    content: "";
+    position: absolute;
+    bottom: 5px;
+    left: 15px;
+    width: calc(100% - 30px);
+    height: 2px;
+    background: var(--cor-rosa-escuro);
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+}
+.navbar-static-white .navlink:hover,
+.navbar-static-white .navlink:focus {
+    color: var(--cor-rosa-escuro) !important;
+}
+.navbar-static-white .navlink:hover::after,
+.navbar-static-white .navlink:focus::after {
+    transform: scaleX(1);
+}
+
+.navbar-static-white .loginlink {
+    color: var(--cor-vermelho) !important;
+    position: relative;
+}
+.navbar-static-white .loginlink::after {
+    content: "";
+    position: absolute;
+    bottom: 5px;
+    left: 15px;
+    width: calc(100% - 30px);
+    height: 2px;
+    background: var(--cor-vermelho);
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+}
+.navbar-static-white .loginlink:hover,
+.navbar-static-white .loginlink:focus {
+    color: var(--cor-vermelho);
+}
+.navbar-static-white .loginlink:hover::after,
+.navbar-static-white .loginlink:focus::after {
+    transform: scaleX(1);
+}
+
+/* Estilos para o link de perfil no desktop */
+.navbar-static-white .profile-info-link {
+    text-decoration: none;
+}
+.navbar-static-white .profile-info-link .profile-icon {
+    font-size: 2.2rem;
+    color: var(--cor-vermelho);
+}
+.navbar-static-white .profile-info-link .profile-name {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--cor-vermelho);
+}
+
 
 /* ==========================================================================
-   SEÇÃO COMO ADOTAR (partials/como-adotar.css)
+   SEÇÃO COMO ADOTAR (Seu CSS original)
    ========================================================================== */
 
 .como-adotar-section {

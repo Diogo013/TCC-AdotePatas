@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-// 1. Verificação de Login (Não é obrigatória, mas define as variáveis)
+// 1. Verificação de Login
 $logado = isset($_SESSION['user_id']) && isset($_SESSION['user_tipo']);
 $usuario = null;
 $user_id = null;
@@ -12,38 +12,40 @@ $primeiro_nome = '';
 if ($logado) {
     // Inclui conexão SÓ SE precisar
     // Certifique-se que o caminho para conexao.php está correto
-    include_once 'conexao.php'; 
+    if (file_exists('conexao.php')) {
+        include_once 'conexao.php'; 
+    }
     
     $user_id = $_SESSION['user_id'];
     $user_tipo = $_SESSION['user_tipo'];
 
-    try {
-        if ($user_tipo == 'adotante') {
-            $sql = "SELECT nome FROM usuario WHERE id_usuario = :id LIMIT 1";
-        } elseif ($user_tipo == 'protetor') {
-            $sql = "SELECT nome FROM ong WHERE id_ong = :id LIMIT 1";
-        } else {
-            $sql = null;
-        }
-
-        if ($sql && isset($conn)) {
-            $stmt = $conn->prepare($sql);
-            $stmt->bindParam(':id', $user_id, PDO::PARAM_INT);
-            $stmt->execute();
-            $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
-        }
-    } catch (PDOException $e) {
-        // Silencioso, não quebra a página se o DB falhar
-    }
-
-    // Define o primeiro nome para exibição
-    if ($usuario && isset($usuario['nome'])) {
-        $partes = explode(' ', $usuario['nome']);
-        $primeiro_nome = $partes[0];
-    } elseif (isset($_SESSION['nome'])) {
-         // Fallback para o nome da sessão se a busca falhar
+    // Define o primeiro nome
+    if (isset($_SESSION['nome'])) {
         $partes = explode(' ', $_SESSION['nome']);
         $primeiro_nome = $partes[0] ?? '';
+    } elseif (isset($conn)) { // Tenta buscar no DB se a sessão 'nome' não existir
+        try {
+            if ($user_tipo == 'adotante') {
+                $sql = "SELECT nome FROM usuario WHERE id_usuario = :id LIMIT 1";
+            } elseif ($user_tipo == 'protetor') {
+                $sql = "SELECT nome FROM ong WHERE id_ong = :id LIMIT 1";
+            } else {
+                $sql = null;
+            }
+
+            if ($sql) {
+                $stmt = $conn->prepare($sql);
+                $stmt->bindParam(':id', $user_id, PDO::PARAM_INT);
+                $stmt->execute();
+                $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
+                if ($usuario && isset($usuario['nome'])) {
+                    $partes = explode(' ', $usuario['nome']);
+                    $primeiro_nome = $partes[0];
+                }
+            }
+        } catch (PDOException $e) {
+            // Silencioso, não quebra a página se o DB falhar
+        }
     }
 }
 ?>
@@ -57,35 +59,71 @@ if ($logado) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"> <link rel="stylesheet" href="assets/css/global/global.css">
-    
-    <link rel="stylesheet" href="assets/css/pages/como-adotar/adote.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-    </head>
+    <link rel="stylesheet" href="assets/css/pages/como-adotar/adote.css">
+</head>
 <body>
 
 <header>
   <nav class="navbar navbar-expand-lg navbar-static-white">
     <div class="container">
-      <a class="navbar-brand" href="#">
-        <img src="./images/global/logo-AdotePatas.png" alt="Logo Adote Patas" class="navbar-logo">
-      </a>
       
-      <button class="navbar-toggler hamburger" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
-        <svg fill="none" viewBox="0 0 50 50" height="50" width="50">
-          <path class="lineTop line" stroke-linecap="round" stroke-width="4" stroke="black" d="M6 11L44 11"></path>
-          <path class="lineMid line" stroke-linecap="round" stroke-width="4" stroke="black" d="M6 24H43"></path>
-          <path class="lineBottom line" stroke-linecap="round" stroke-width="4" stroke="black" d="M6 37H43"></path>
-        </svg>
-      </button>
+      <a class="navbar-brand" href="./"> <img src="./images/global/logo-AdotePatas.png" alt="Logo Adote Patas" class="navbar-logo">
+      </a>
 
-      </div>
+      <?php if ($logado): ?>
+        <div class="d-flex align-items-center gap-2">
+            <div class="d-none d-lg-block">
+                <ul class="navbar-nav d-flex flex-row gap-3">
+                    <li class="nav-item">
+                        <a class="nav-link navlink" href="sobre-nos.php">Sobre Nós</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link navlink" href="#">Ajuda</a>
+                    </li>
+                </ul>
+            </div>
+            
+            <a href="perfil?page=perfil" class="profile-info-link d-none d-lg-flex align-items-center gap-2 text-decoration-none" title="Ver meu perfil">
+              <span class="profile-name" style="color: var(--cor-vermelho);"><?php echo htmlspecialchars($primeiro_nome); ?></span>
+                <i class="fa-regular fa-circle-user profile-icon logged-in mr-4"></i>
+            </a>
+
+            <button class="border-0 bg-transparent p-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
+              <span class="fas fa-bars nav-icon" style="font-size: 2rem;"></span>
+            </button>
+        </div>
+
+      <?php else: ?>
+<button class="navbar-toggler hamburger d-lg-none" style="border: none" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
+  <span class="fas fa-bars nav-icon" style="font-size: 2rem;"></span>
+</button>
+
+        <div class="d-flex align-items-center gap-2">
+            <div class="d-none d-lg-block">
+                <ul class="navbar-nav d-flex flex-row gap-3">
+                    <li class="nav-item">
+                        <a class="nav-link navlink" href="sobre-nos.php">Sobre Nós</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link navlink" href="#">Ajuda</a>
+                    </li>
+                    <li class="nav-item position-relative">
+                      <a class="nav-link loginlink" href="login">Entrar</a>
+                    </li>
+                </ul>
+            </div>
+        
+
+      <?php endif; ?>
+
+    </div>
   </nav>
 </header>
 
 <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
   <div class="offcanvas-header border-bottom">
-    <h5 class="offcanvas-title" id="offcanvasNavbarLabel">Menu</h5>
     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
   </div>
   
@@ -104,34 +142,26 @@ if ($logado) {
         </div>
         
         <nav class="nav nav-pills flex-column profile-nav">
-          <a class="nav-link" href="perfil?page=perfil">
-            <i class="fa-regular fa-circle-user fa-fw me-2"></i> Meu Perfil
-          </a>
-          <a class="nav-link" href="perfil?page=meus-pets">
-            <i class="fa-solid fa-paw fa-fw me-2"></i> Meus Pets
-          </a>
-          <a class="nav-link" href="perfil?page=pets-curtidos">
-            <i class="fa-regular fa-heart fa-fw me-2"></i> Pets Curtidos
-          </a>
-          <a class="nav-link" href="chat.php">
-            <i class="fa-regular fa-comments fa-fw me-2"></i> Chat
-          </a>
+          <a class="nav-link" href="sobre-nos.php"><i class="fa-solid fa-info-circle fa-fw me-2"></i> Sobre Nós</a>
+          <a class="nav-link" href="#"><i class="fa-solid fa-question-circle fa-fw me-2"></i> Ajuda</a>
           <hr class="my-2">
-          <a class="nav-link" href="sobre-nos.php">
-            <i class="fa-solid fa-info-circle fa-fw me-2"></i> Sobre Nós
-          </a>
-          <a class="nav-link" href="#">
-            <i class="fa-solid fa-question-circle fa-fw me-2"></i> Ajuda
-          </a>
+          <a class="nav-link" href="perfil?page=perfil"><i class="fa-regular fa-circle-user fa-fw me-2"></i> Meu Perfil</a>
+          <a class="nav-link" href="perfil?page=meus-pets"><i class="fa-solid fa-paw fa-fw me-2"></i> Meus Pets</a>
+          <a class="nav-link" href="perfil?page=pets-curtidos"><i class="fa-regular fa-heart fa-fw me-2"></i> Pets Curtidos</a>
+          <a class="nav-link" href="chat.php"><i class="fa-regular fa-comments fa-fw me-2"></i> Chats</a>
           <hr class="my-2">
-          <a class="nav-link logout-link-sidebar" href="sair.php">
-            <i class="fa-solid fa-right-from-bracket fa-fw me-2"></i> Sair
-          </a>
+          <a class="nav-link logout-link-sidebar" href="sair.php"><i class="fa-solid fa-right-from-bracket fa-fw me-2"></i> Sair</a>
         </nav>
       </aside>
 
     <?php else: ?>
       <aside class="profile-sidebar p-3">
+        <div class="sidebar-header text-center mb-4">
+          <i class="fa-regular fa-circle-user sidebar-profile-icon logged-out"></i>
+          <h5 class="mt-2 mb-0">Visitante</h5>
+          <small class="text-muted fs-6">Faça login para ver seu perfil</small>
+        </div>
+
         <nav class="nav nav-pills flex-column profile-nav">
           <a class="nav-link" href="sobre-nos.php">
             <i class="fa-solid fa-info-circle fa-fw me-2"></i> Sobre Nós
@@ -139,11 +169,8 @@ if ($logado) {
           <a class="nav-link" href="#">
             <i class="fa-solid fa-question-circle fa-fw me-2"></i> Ajuda
           </a>
-          <a class="nav-link" href="chat.php">
-            <i class="fa-regular fa-comments fa-fw me-2"></i> Chat
-          </a>
           <hr class="my-2">
-          <a class="nav-link loginlink-sidebar" href="login.php">
+          <a class="nav-link loginlink-sidebar" href="login">
             <i class="fa-solid fa-right-to-bracket fa-fw me-2"></i> Entrar
           </a>
         </nav>
@@ -152,7 +179,7 @@ if ($logado) {
 
   </div>
 </div>
-<main class="como-adotar-section" style="margin-top: 4.3rem;" id="como-adotar">
+<main class="como-adotar-section"id="como-adotar">
   <div class="container">
     
     <div class="row">
