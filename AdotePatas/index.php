@@ -422,12 +422,14 @@ $pagina = "";
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
     integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
     crossorigin="anonymous"></script>
-  <script src="assets/js/pages/index/patinhas.js"></script>
-  <script src="assets/js/pages/index/pet-likes.js"></script>
-  <script src="assets/js/pages/index/card-deck.js"></script>
-  <script src="assets/js/pages/index/loading.js"></script>
-  <script src="assets/js/pages/index/offcanvas-fix.js"></script>
-  <script>
+<script src="https://unpkg.com/scrollreveal"></script>
+    <script src="assets/js/pages/index/patinhas.js"></script>
+  <script src="assets/js/pages/index/pet-likes.js"></script>
+  <script src="assets/js/pages/index/card-deck.js"></script>
+  <script src="assets/js/pages/index/loading.js"></script>
+  <script src="assets/js/pages/index/offcanvas-fix.js"></script>
+
+  <script src="assets/js/pages/index/scroll-reveal-init.js"></script>  <script>
     // Seleciona o elemento que você quer modificar
 const elemento = document.querySelector('#cachorro'); // troque pelo seletor desejado
 const direitos = document.querySelector('#direitos');
