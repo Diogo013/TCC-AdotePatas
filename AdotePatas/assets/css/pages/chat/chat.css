@@ -345,11 +345,41 @@
     transform: scale(1.07);
 }
 .chat-send-btn:active {
+    background-color: var(--cor-branca) !important; /* Escurece no hover */
+    color: var(--cor-vermelho) !important;
+    border: solid 1px var(--cor-vermelho) !important;
+    transform: scale(0.95);
+}
+.chat-send-files {
+    background-color: var(--cor-vermelho); /* Botão da cor principal */
+    color: var(--cor-branca);
+    border-radius: 50%; /* Botão redondo */
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    flex-shrink: 0; /* Impede que encolha */
+    padding: 7.5px 15px;
+}
+
+.chat-send-files:hover {
+    background-color: var(--cor-branca); /* Escurece no hover */
+    color: var(--cor-vermelho);
+    border: solid 1px var(--cor-vermelho);
+    transform: scale(1.07);
+}
+.chat-send-files:active {
     background-color: var(--cor-branca); /* Escurece no hover */
     color: var(--cor-vermelho);
     border: solid 1px var(--cor-vermelho);
     transform: scale(0.95);
 }
+
+
+
 .message-timestamp {
     font-family: "Poppins", sans-serif;
     font-size: 0.8rem; /* Tamanho menor para a data/hora */

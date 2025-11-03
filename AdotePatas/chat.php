@@ -238,6 +238,9 @@ $horario_completo = date('H:i');
             </div>
 
         <div class="chat-input-area">
+          <button class="files chat-send-files" type="button">
+            <i class="fa-solid fa-plus"></i>
+          </button>
             <input type="text" class="form-control chat-message-input" placeholder="Digite sua mensagem...">
             <button class="btn chat-send-btn" type="button" aria-label="Enviar mensagem">
                 <i class="fa-solid fa-paper-plane me-1"></i>
