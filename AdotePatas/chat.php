@@ -247,6 +247,33 @@ $horario_completo = date('H:i');
             </button>
         </div>
 
+        <!-- Adicione este código dentro da section chat-conversation-area, após o chat-input-area -->
+  <div class="modal fade" id="fileModal" tabindex="-1" aria-labelledby="fileModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-sm modal-dialog-centered">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h5 class="modal-title" id="fileModalLabel">Enviar Arquivo</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                  <div class="d-grid gap-2">
+                      <button type="button" class="btn btn-outline-primary btn-lg" id="documentBtn">
+                          <i class="fa-solid fa-file-lines me-2"></i>Documento
+                      </button>
+                      <button type="button" class="btn btn-outline-success btn-lg" id="mediaBtn">
+                          <i class="fa-solid fa-image me-2"></i>Fotos/Vídeos
+                      </button>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+  
+  <!-- Inputs de arquivo ocultos -->
+  <input type="file" id="documentInput" accept=".pdf,.doc,.docx,.txt,.rtf" hidden>
+  <input type="file" id="mediaInput" accept="image/*,video/*" hidden>
+
+
       <?php else: ?>
         <div class="chat-placeholder">
             <img src="images/global/Logo-AdotePatas.png" alt="" class="chat-placeholder-logo">
@@ -254,11 +281,22 @@ $horario_completo = date('H:i');
             <p>Selecione uma conversa ao lado para começar.</p>
         </div>
       <?php endif; ?>
+
+
       
     </section>
 
   </div>
 </main>
+
+<!-- Toast Personalizado -->
+<div id="toast-notification" class="adp-toast p-0" style="display: none;">
+    <div id="toast-icon" class="adp-toast-icon" style="font-size: 1.6rem"></div>
+    <div class="adp-toast-content">
+        <p id="toast-message" class="adp-toast-message text-center"></p>
+    </div>
+    <div class="adp-toast-progress-bar"></div>
+</div>
 
 
 <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
@@ -326,5 +364,6 @@ $horario_completo = date('H:i');
 
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="assets/js/pages/chat/file-size-upload.js" ></script>
 </body>
 </html>

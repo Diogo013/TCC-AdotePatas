@@ -9,7 +9,6 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_tipo'])) {
     header("Location: login");
     exit;
 }
-
 // 3. Pega os dados básicos da sessão
 $user_id = $_SESSION['user_id'];
 $user_tipo = $_SESSION['user_tipo'];
@@ -19,9 +18,9 @@ $erro = '';
 // 4. Busca os dados completos do usuário no banco (Isso só executa UMA VEZ)
 try {
     if ($user_tipo == 'adotante') {
-        $sql = "SELECT nome, email, cpf FROM usuario WHERE id_usuario = :id LIMIT 1";
+        $sql = "SELECT nome, email, cpf, banner_fixo FROM usuario WHERE id_usuario = :id LIMIT 1";
     } elseif ($user_tipo == 'protetor') {
-        $sql = "SELECT nome, email, cnpj FROM ong WHERE id_ong = :id LIMIT 1";
+        $sql = "SELECT nome, email, cnpj, banner_fixo FROM ong WHERE id_ong = :id LIMIT 1";
     } else {
         $erro = "Tipo de usuário inválido.";
     }
@@ -52,16 +51,11 @@ $pagina = $_GET['page'] ?? 'perfil';
 // 2. Prepara a lógica do banner, MAS só se a página for 'perfil'
 $caminhoBanner = ''; // Inicializa a variável
 if ($pagina == 'perfil') {
-    $listaDeBanners = [
-        'banner1.jpg',
-        'banner2.jpg',
-        'banner3.jpg',
-        'banner4.jpg',
-        'banner5.jpg'
-    ];
-    $nomeBannerSorteado = $listaDeBanners[array_rand($listaDeBanners)];
-    $caminhoBanner = 'images/perfil/' . $nomeBannerSorteado;
+    // Usa o banner fixo do banco, se existir, senão usa o banner1.jpg
+    $bannerFixo = $usuario['banner_fixo'] ?? 'banner1.jpg';
+    $caminhoBanner = 'images/perfil/' . $bannerFixo;
 }
+
 // ==========================================================
 // INÍCIO DO BLOCO ADICIONADO
 // Lógica para buscar os pets do usuário (APENAS se a página for 'meus-pets')
@@ -176,8 +170,14 @@ if ($pagina == 'pets-curtidos') {
                         <main class="profile-card" style=" animation: fadeIn 0.8s ease-out;">
 
                             <div class="banner">
-                                <img src="<?php echo htmlspecialchars($caminhoBanner); ?>" alt="Banner do Usuário">
-                            </div>
+    <img src="<?php echo htmlspecialchars($caminhoBanner); ?>" alt="Banner do Usuário">
+    <!-- Botão para trocar banner - AGORA NO CANTO INFERIOR DIREITO -->
+    <div class="banner-actions">
+        <button type="button" class="btn btn-sm btn-light btn-change-banner" data-bs-toggle="modal" data-bs-target="#bannerModal">
+            <i class="fa-solid fa-image me-1"></i> Trocar Banner
+        </button>
+    </div>
+</div>
 
                             <h1>Meu Perfil</h1>
 
@@ -464,6 +464,42 @@ if ($pagina == 'pets-curtidos') {
         </div>
     </div>
 
+<!-- Modal de Seleção de Banner -->
+<div class="modal fade" id="bannerModal" tabindex="-1" aria-labelledby="bannerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header" id="modalBanner">
+                <button type="button" class="btn-close" onclick="refresh()" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h3 class="modal-title" id="bannerModalLabel">Escolha seu Banner de Perfil</h3>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <?php
+                    $banners = ['banner1.jpg', 'banner2.jpg', 'banner3.jpg', 'banner4.jpg', 'banner5.jpg'];
+                    // Busca o banner atual do banco de dados
+                    $bannerAtual = $usuario['banner_fixo'] ?? 'banner1.jpg';
+                    
+                    foreach ($banners as $banner) {
+                        $isActive = ($bannerAtual == $banner) ? 'active' : '';
+                        echo "
+                        <div class='col-6 col-md-4 mb-3'>
+                            <div class='banner-option $isActive' data-banner='$banner'>
+                                <img src='images/perfil/$banner' alt='Banner $banner' class='img-fluid rounded'>
+                                " . ($isActive ? "<div class='badge mt-2' style='  background-color: var(--cor-verde-pastel) !important;'><i class='fa-solid fa-check me-1'></i>Em uso</div>" : "") . "
+                            </div>
+                        </div>";
+                    }
+                    ?>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary cancelar" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary salvar" id="saveBanner">Salvar Banner</button>
+            </div>
+        </div>
+    </div>
+</div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/5.0.8/jquery.inputmask.min.js"></script>
@@ -609,6 +645,136 @@ if ($pagina == 'pets-curtidos') {
         }
     });
     </script>
+
+    <script>
+        function refresh() {
+             window.location.reload();
+        }
+    </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const bannerModal = document.getElementById('bannerModal');
+    const saveBannerBtn = document.getElementById('saveBanner');
+    let selectedBanner = '';
+
+    // Função Toast global
+    function showToast(message, type = 'success') {
+        const toast = document.getElementById('toast-notification');
+        const toastIcon = document.getElementById('toast-icon');
+        const toastMessage = document.getElementById('toast-message');
+        if (!toast || !toastIcon || !toastMessage) return;
+        toastMessage.textContent = message;
+        toast.classList.remove('success', 'danger', 'warning');
+        toastIcon.className = 'toast-icon';
+        toast.classList.add(type);
+        if (type === 'success') toastIcon.classList.add('fas', 'fa-check');
+        else if (type === 'danger') toastIcon.classList.add('fas', 'fa-times');
+        else if (type === 'warning') toastIcon.classList.add('fas', 'fa-exclamation-triangle');
+        toast.style.display = 'block';
+        const progressBar = toast.querySelector('.toast-progress-bar');
+        progressBar.style.animation = 'none';
+        void progressBar.offsetWidth;
+        progressBar.style.animation = 'progress 3s linear forwards';
+        setTimeout(() => { toast.style.display = 'none'; }, 3000);
+    }
+
+    // Quando o modal é aberto, configura os eventos
+    bannerModal.addEventListener('show.bs.modal', function() {
+        const activeBanner = document.querySelector('.banner-option.active');
+        if (activeBanner) {
+            selectedBanner = activeBanner.dataset.banner;
+        }
+
+        // Adiciona evento de clique nas opções de banner
+        document.querySelectorAll('.banner-option').forEach(option => {
+            option.addEventListener('click', function() {
+                // Remove a classe active de todas as opções
+                document.querySelectorAll('.banner-option').forEach(opt => {
+                    opt.classList.remove('active');
+                    // Remove o badge "Em uso" ou "Selecionado"
+                    const badge = opt.querySelector('.badge');
+                    if (badge) badge.remove();
+                });
+
+                // Adiciona a classe active na opção clicada
+                this.classList.add('active');
+                
+                // Adiciona badge "Selecionado"
+                const selectedBadge = document.createElement('div');
+                selectedBadge.className = 'badge mt-2';
+                selectedBadge.style = '  background-color: var(--cor-laranja-pastel) !important;';
+                selectedBadge.innerHTML = '<i class="fa-solid fa-check me-1"></i>Selecionado';
+                this.appendChild(selectedBadge);
+
+                selectedBanner = this.dataset.banner;
+            });
+        });
+    });
+
+    // Salvar banner selecionado
+    saveBannerBtn.addEventListener('click', function() {
+        if (!selectedBanner) {
+            showToast('Por favor, selecione um banner.', 'warning');
+            return;
+        }
+
+        // Desabilita o botão durante a requisição
+        saveBannerBtn.disabled = true;
+        saveBannerBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Salvando...';
+
+        // Envia requisição para salvar o banner
+        fetch('atualizar-banner.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `banner=${selectedBanner}`
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erro na rede: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                showToast('Banner atualizado com sucesso! A página será recarregada.', 'success');
+                
+                // Fecha o modal
+                const modal = bootstrap.Modal.getInstance(bannerModal);
+                modal.hide();
+                
+                // Recarrega a página após 1.5 segundos para mostrar o novo banner
+                setTimeout(() => {
+                    window.location.reload();
+                }, 400);
+                
+            } else {
+                showToast(data.message || 'Erro ao atualizar banner.', 'danger');
+                // Reabilita o botão em caso de erro
+                saveBannerBtn.disabled = false;
+                saveBannerBtn.innerHTML = 'Salvar Banner';
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            showToast('Erro de conexão. Tente novamente.', 'danger');
+            // Reabilita o botão em caso de erro
+            saveBannerBtn.disabled = false;
+            saveBannerBtn.innerHTML = 'Salvar Banner';
+        });
+    });
+
+    // Fecha o modal quando clica no X ou Cancelar
+    bannerModal.addEventListener('hidden.bs.modal', function () {
+        // Reseta o botão quando o modal é fechado
+        saveBannerBtn.disabled = false;
+        saveBannerBtn.innerHTML = 'Salvar Banner';
+    });
+});
+</script>
+
 
 </body>
 </html>

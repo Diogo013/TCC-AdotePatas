@@ -378,7 +378,74 @@
     transform: scale(0.95);
 }
 
+/* Estilos para o modal de arquivos */
+#fileModal .modal-content {
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
 
+#fileModal .modal-header {
+    border-bottom: 1px solid var(--cor-laranja-claro);
+    background-color: var(--cor-rosa-pastel-claro);
+}
+
+#fileModal .modal-title {
+    color: var(--cor-vermelho);
+    font-family: "Poppins", sans-serif;
+    font-weight: 600;
+}
+
+#fileModal .btn {
+    border-radius: 10px;
+    padding: 0.75rem;
+    font-family: "Poppins", sans-serif;
+    font-size: 1.5rem;
+    transition: all 0.3s ease;
+}
+.btn-close:active{
+    border: none !important;
+    box-shadow: none !important
+}
+.btn-close:focus{
+    border: none !important;
+    box-shadow: none !important
+}
+
+#fileModal .btn-outline-primary {
+    border-color: var(--cor-vermelho);
+    color: var(--cor-vermelho);
+}
+
+#fileModal .btn-outline-primary:hover {
+    background-color: var(--cor-vermelho);
+    color: white;
+}
+
+#fileModal .btn-outline-success {
+    border-color: var(--cor-verde-pastel);
+    color: var(--cor-verde-pastel);
+}
+
+#fileModal .btn-outline-success:hover {
+    background-color: var(--cor-verde-pastel);
+    color: white;
+}
+
+/* Loading spinner */
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Alertas de upload */
+.upload-alert {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1060;
+    min-width: 300px;
+}
 
 .message-timestamp {
     font-family: "Poppins", sans-serif;
@@ -444,4 +511,141 @@
         box-shadow: none;
         height: calc(100vh - 70px); /* Altura total da viewport menos o header */
     }
+}
+
+/* ==========================================================================
+   ADP-TOAST (NOTIFICAÇÃO) - Estilos e Animações
+   ========================================================================== */
+.adp-toast {
+  position: fixed;
+  top: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  margin-top: 1.5rem;
+  min-width: 350px;
+  max-width: 90%;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  font-family: "Poppins", sans-serif;
+}
+
+.adp-toast.show {
+  opacity: 1;
+  pointer-events: auto;
+  animation: slideIn 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.adp-toast.hide {
+  animation: slideOut 0.5s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards;
+}
+
+.adp-toast-icon {
+  flex-shrink: 0;
+  width: 110px;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  font-size: 2.8rem;
+}
+
+.adp-toast-content {
+  flex-grow: 1;
+}
+
+.adp-toast-message {
+  margin: 0;
+  font-weight: 500;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  padding: 0.5rem;
+}
+
+/* Cores por tipo */
+.adp-toast--success {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.adp-toast--warning {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.adp-toast--danger {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.adp-toast--info {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+/* Barra de Progresso */
+.adp-toast-progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 5px;
+}
+
+.adp-toast--success .adp-toast-progress-bar {
+  background-color: #34d399;
+}
+
+.adp-toast--warning .adp-toast-progress-bar {
+  background-color: #f59e0b;
+}
+
+.adp-toast--danger .adp-toast-progress-bar {
+  background-color: #f87171;
+}
+
+.adp-toast--info .adp-toast-progress-bar {
+  background-color: #60a5fa;
+}
+
+.adp-toast.show .adp-toast-progress-bar {
+  animation: shrink 5s linear forwards;
+}
+
+/* Animações */
+@keyframes slideIn {
+  from {
+    top: -100px;
+    opacity: 0;
+  }
+  to {
+    top: 2rem;
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    top: 2rem;
+    opacity: 1;
+  }
+  to {
+    top: -100px;
+    opacity: 0;
+  }
+}
+
+@keyframes shrink {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
 }
