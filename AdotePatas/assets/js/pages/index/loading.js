@@ -1,13 +1,11 @@
-// assets/js/pages/index/loading.js
-
 window.onload = function () {
+  // Esta linha é a chave:
   const loadingScreen = document.getElementById("loading");
 
-  if (loadingScreen) {
-    // Define um tempo mínimo de exibição de 2 segundos APÓS a página carregar
+  // Este "if" garante que o script não quebre caso o PHP não renderize o HTML
+  if (loadingScreen) { 
     setTimeout(() => {
-      // Adiciona a classe que inicia a transição de fade-out
       loadingScreen.classList.add("hidden");
-    }, 3000); // 3000 milissegundos = 3 segundos. Altere este valor conforme necessário.
+    }, 3000); 
   }
 };
