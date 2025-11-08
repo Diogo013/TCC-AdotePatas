@@ -3,7 +3,12 @@ session_start();
 include_once 'conexao.php';
 include_once 'session.php';
 
-$base_path = '/TCC-AdotePatas/AdotePatas/';
+
+if ($_SERVER['SERVER_NAME'] == 'localhost') {
+    $base_path = '/TCC-AdotePatas/AdotePatas/';
+} else {
+    $base_path = '/'; // Para a Hostinger (adotepatas.com)
+}
 $pagina = "pet-detalhe";
 
 $id_pet = $_GET['id'] ?? 0;
@@ -15,9 +20,9 @@ $usuario = null;
 $primeiro_nome = '';
 
 try {
-    if ($user_tipo == 'adotante') {
+    if ($user_tipo == 'usuario') {
         $sql_user = "SELECT nome, email, cpf FROM usuario WHERE id_usuario = :id LIMIT 1";
-    } elseif ($user_tipo == 'protetor') {
+    } elseif ($user_tipo == 'ong') {
         $sql_user = "SELECT nome, email, cnpj FROM ong WHERE id_ong = :id LIMIT 1";
     } else {
         $sql_user = null;
@@ -117,14 +122,14 @@ try {
       <nav class="navbar navbar-expand">
         <div class="container">
           <a class="navbar-brand" href="<?php echo $base_path; ?>./">
-            <img src="<?php echo $base_path; ?>images/global/logo-AdotePatas.png" alt="Logo Adote Patas" class="navbar-logo">
+            <img src="<?php echo $base_path; ?>images/global/Logo-AdotePatas.png" alt="Logo Adote Patas" class="navbar-logo">
           </a>
     
           <div class="d-flex align-items-center gap-4">
             <div class="d-none d-xl-block">
               <ul class="navbar-nav d-flex flex-row gap-4 mb-0">
                 <li class="nav-item">
-                  <a class="nav-link navlink" href="<?php echo $base_path; ?>sobre-nos.php">Sobre Nós</a>
+                  <a class="nav-link navlink" href="<?php echo $base_path; ?>sobre-nos">Sobre Nós</a>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link navlink" href="#">Ajuda</a>
@@ -390,7 +395,7 @@ try {
       
       <nav class="nav nav-pills flex-column profile-nav">
         <div class="d-xl-none">
-          <a class="nav-link" href="<?php echo $base_path; ?>sobre-nos.php">
+          <a class="nav-link" href="<?php echo $base_path; ?>sobre-nos">
             <i class="fa-solid fa-info-circle fa-fw me-2"></i> Sobre Nós
           </a>
           <a class="nav-link" href="#">

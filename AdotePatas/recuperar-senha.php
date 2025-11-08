@@ -4,6 +4,13 @@ require 'vendor/autoload.php';
 include_once 'conexao.php'; // Sua conexão PDO
 include_once 'session.php'; // Inclui session_start()
 
+
+if ($_SERVER['SERVER_NAME'] == 'localhost') {
+    $base_path = 'localhost/TCC-AdotePatas/AdotePatas/';
+} else {
+    $base_path = '/'; // Para a Hostinger (adotepatas.com)
+}
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
@@ -78,7 +85,7 @@ try {
     // 2. (Opcional, mas recomendado) Informa o PHP para usar UTF-8 internamente
     mb_internal_encoding('UTF-8');
 
-    $reset_link = "https://localhost/TCC-AdotePatas/AdotePatas/trocar-senha.php?token=" . $token;
+    $reset_link = "https:$base_path/trocar-senha.php?token=" . $token;
 
     $mail = new PHPMailer(true);
 

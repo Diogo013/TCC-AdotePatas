@@ -114,13 +114,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         $_SESSION['nome'] = $usuario['nome'];
                         $_SESSION['user_id'] = $usuario['id_usuario'];
                         $_SESSION['user_email'] = $email;
-                        $_SESSION['user_tipo'] = 'adotante';
+                        $_SESSION['user_tipo'] = 'usuario';
                         $logado = true;
                         header("Location:  ./");
                         exit;
                     }
                 } catch (PDOException $e) {
-                    error_log("Erro ao logar como adotante: " . $e->getMessage());
+                    error_log("Erro ao logar como usuario: " . $e->getMessage());
                 }
 
                 // Tenta logar como Protetor/ONG (Tabela: ong)
@@ -137,13 +137,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             $_SESSION['nome'] = $usuario['nome'];
                             $_SESSION['user_id'] = $usuario['id_ong'];
                             $_SESSION['user_email'] = $email;
-                            $_SESSION['user_tipo'] = 'protetor';
+                            $_SESSION['user_tipo'] = 'ong';
                             $logado = true;
                             header("Location: ./ ");
                             exit;
                         }
                     } catch (PDOException $e) {
-                        error_log("Erro ao logar como protetor: " . $e->getMessage());
+                        error_log("Erro ao logar como ong: " . $e->getMessage());
                     }
                 }
                 

@@ -32,9 +32,9 @@ if (!in_array($banner, $bannersPermitidos)) {
 }
 
 try {
-    if ($user_tipo == 'adotante') {
+    if ($user_tipo == 'usuario') {
         $sql = "UPDATE usuario SET banner_fixo = :banner WHERE id_usuario = :id";
-    } elseif ($user_tipo == 'protetor') {
+    } elseif ($user_tipo == 'ong') {
         $sql = "UPDATE ong SET banner_fixo = :banner WHERE id_ong = :id";
     } else {
         error_log("Tipo de usuário inválido: $user_tipo");

@@ -4,8 +4,13 @@ RewriteEngine On
 # Impede que os usuários listem o conteúdo das pastas
 Options -Indexes
 
-# Define a base do seu projeto
+# --- AUTO-DETECÇÃO DE AMBIENTE ---
+# Por padrão, assume a raiz
+RewriteBase /
+
+RewriteCond %{HTTP_HOST} ^localhost$ [NC]
 RewriteBase /TCC-AdotePatas/AdotePatas/
+# --- FIM DA AUTO-DETECÇÃO ---
 
 # --- REGRAS DE SEGURANÇA ---
 # Protege arquivos sensíveis de acesso direto

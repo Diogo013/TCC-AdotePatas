@@ -69,7 +69,7 @@ if ($logado) {
   <nav class="navbar navbar-expand-lg navbar-static-white">
     <div class="container">
       
-      <a class="navbar-brand" href="./"> <img src="./images/global/logo-AdotePatas.png" alt="Logo Adote Patas" class="navbar-logo">
+      <a class="navbar-brand" href="./"> <img src="./images/global/Logo-AdotePatas.png" alt="Logo Adote Patas" class="navbar-logo">
       </a>
 
       <?php if ($logado): ?>
@@ -77,7 +77,7 @@ if ($logado) {
             <div class="d-none d-lg-block">
                 <ul class="navbar-nav d-flex flex-row gap-3">
                     <li class="nav-item">
-                        <a class="nav-link navlink" href="sobre-nos.php">Sobre Nós</a>
+                        <a class="nav-link navlink" href="sobre-nos">Sobre Nós</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link navlink" href="#">Ajuda</a>
@@ -104,7 +104,7 @@ if ($logado) {
             <div class="d-none d-lg-block">
                 <ul class="navbar-nav d-flex flex-row gap-3">
                     <li class="nav-item">
-                        <a class="nav-link navlink" href="sobre-nos.php">Sobre Nós</a>
+                        <a class="nav-link navlink" href="sobre-nos">Sobre Nós</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link navlink" href="#">Ajuda</a>
@@ -142,7 +142,7 @@ if ($logado) {
         </div>
         
         <nav class="nav nav-pills flex-column profile-nav">
-          <a class="nav-link" href="sobre-nos.php"><i class="fa-solid fa-info-circle fa-fw me-2"></i> Sobre Nós</a>
+          <a class="nav-link" href="sobre-nos"><i class="fa-solid fa-info-circle fa-fw me-2"></i> Sobre Nós</a>
           <a class="nav-link" href="#"><i class="fa-solid fa-question-circle fa-fw me-2"></i> Ajuda</a>
           <hr class="my-2">
           <a class="nav-link" href="perfil?page=perfil"><i class="fa-regular fa-circle-user fa-fw me-2"></i> Meu Perfil</a>
@@ -163,7 +163,7 @@ if ($logado) {
         </div>
 
         <nav class="nav nav-pills flex-column profile-nav">
-          <a class="nav-link" href="sobre-nos.php">
+          <a class="nav-link" href="sobre-nos">
             <i class="fa-solid fa-info-circle fa-fw me-2"></i> Sobre Nós
           </a>
           <a class="nav-link" href="#">

@@ -19,9 +19,9 @@ $primeiro_nome = '';
 
 // Carrega dados completos do usuário (para o offcanvas)
 try {
-    if ($user_tipo == 'adotante') {
+    if ($user_tipo == 'usuario') {
         $sql = "SELECT nome, email, cpf FROM usuario WHERE id_usuario = :id LIMIT 1";
-    } elseif ($user_tipo == 'protetor') {
+    } elseif ($user_tipo == 'ong') {
         $sql = "SELECT nome, email, cnpj FROM ong WHERE id_ong = :id LIMIT 1";
     } else {
         $sql = null; // Segurança
@@ -105,14 +105,14 @@ try {
   <nav class="navbar navbar-expand">
     <div class="container">
       <a class="navbar-brand" href="./">
-        <img src="./images/global/logo-AdotePatas.png" alt="Logo Adote Patas" class="navbar-logo">
+        <img src="./images/global/Logo-AdotePatas.png" alt="Logo Adote Patas" class="navbar-logo">
       </a>
 
       <div class="d-flex align-items-center gap-4">
         <div class="d-none d-xl-block">
           <ul class="navbar-nav d-flex flex-row gap-4 mb-0">
             <li class="nav-item">
-              <a class="nav-link navlink" href="sobre-nos.php">Sobre Nós</a>
+              <a class="nav-link navlink" href="sobre-nos">Sobre Nós</a>
             </li>
             <li class="nav-item">
               <a class="nav-link navlink" href="#">Ajuda</a>
@@ -512,7 +512,7 @@ try {
       
       <nav class="nav nav-pills flex-column profile-nav">
         <div class="d-xl-none">
-          <a class="nav-link" href="sobre-nos.php"> <i class="fa-solid fa-info-circle fa-fw me-2"></i> Sobre Nós
+          <a class="nav-link" href="sobre-nos"> <i class="fa-solid fa-info-circle fa-fw me-2"></i> Sobre Nós
           </a>
           <a class="nav-link" href="#">
             <i class="fa-solid fa-question-circle fa-fw me-2"></i> Ajuda

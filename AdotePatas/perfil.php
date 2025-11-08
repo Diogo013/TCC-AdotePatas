@@ -17,9 +17,9 @@ $erro = '';
 
 // 4. Busca os dados completos do usuário no banco (Isso só executa UMA VEZ)
 try {
-    if ($user_tipo == 'adotante') {
+    if ($user_tipo == 'usuario') {
         $sql = "SELECT nome, email, cpf, banner_fixo FROM usuario WHERE id_usuario = :id LIMIT 1";
-    } elseif ($user_tipo == 'protetor') {
+    } elseif ($user_tipo == 'ong') {
         $sql = "SELECT nome, email, cnpj, banner_fixo FROM ong WHERE id_ong = :id LIMIT 1";
     } else {
         $erro = "Tipo de usuário inválido.";
@@ -37,7 +37,7 @@ try {
     }
 } catch (PDOException $e) {
     $erro = "Ocorreu um erro ao buscar seus dados. Tente novamente.";
-    // Para debug: error_log("Erro no perfil.php: " . $e->getMessage());
+    echo "Erro no perfil.php: " . $e->getMessage();
 }
 
 /* ==========================================================================
@@ -66,10 +66,10 @@ if ($pagina == 'meus-pets') {
     try {
         $sql_pets = "SELECT id_pet, nome, foto, sexo, status_disponibilidade, raca, idade FROM pet WHERE ";
         
-        if ($user_tipo == 'adotante') {
+        if ($user_tipo == 'usuario') {
             // [Cite: adote_patas.sql, Tabela pet, Coluna id_usuario_fk]
             $sql_pets .= "id_usuario_fk = :id_usuario"; 
-        } elseif ($user_tipo == 'protetor') {
+        } elseif ($user_tipo == 'ong') {
             // [Cite: adote_patas.sql, Tabela pet, Coluna id_ong_fk]
             $sql_pets .= "id_ong_fk = :id_usuario";
         } else {
