@@ -3,6 +3,15 @@ session_start();
 
 include_once 'conexao.php'; // 1. Inclui a conexão com o banco
 
+// LÓGICA DO LOADER
+$show_loader = false; // Por padrão, não mostramos o loader
+
+// Verifica se a flag 'loader_shown' AINDA NÃO FOI SETADA nesta sessão
+if (!isset($_SESSION['loader_shown'])) {
+    $show_loader = true; // Se não foi, ativamos para mostrar
+    $_SESSION['loader_shown'] = true; // E imediatamente setamos a flag
+}
+
 // Verifica se o usuário está logado ANTES de tentar acessar as variáveis de sessão
 $logado = isset($_SESSION['user_id']);
 $usuario = null;
@@ -79,15 +88,13 @@ $pagina = "";
 
 <body>
 
-
-
-  <!-- LOADING SCREEN DESATIVADO PARA MAIOR PRODUTIVIDADE
+<?php if ($show_loader): ?>
   <div class="loading-screen" id="loading">
     <lottie-player src="animações/loading.json" background="transparent" speed="1" style="width: 250px; height: 250px;"
     loop autoplay>
   </lottie-player>
 </div>
-!-->
+<?php endif; ?>
 
   <header>
     <nav class="navbar navbar-expand">

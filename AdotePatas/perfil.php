@@ -3,6 +3,8 @@ session_start();
 
 include_once 'conexao.php'; // 1. Inclui a conexão com o banco
 
+
+
 // 2. Segurança: Verifica se o usuário está logado
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_tipo'])) {
     // Se não estiver logado, redireciona para a página de login
