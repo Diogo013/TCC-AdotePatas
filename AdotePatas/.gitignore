@@ -8,3 +8,5 @@
 # Ignora arquivos de sistema operacional
 .DS_Store
 Thumbs.db
+
+conexao.php
