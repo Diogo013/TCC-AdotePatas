@@ -16,9 +16,9 @@ if ($logado) {
     $user_tipo = $_SESSION['user_tipo'] ?? null;
 
     try {
-        if ($user_tipo == 'adotante') {
+        if ($user_tipo == 'usuario') {
             $sql = "SELECT nome, email, cpf FROM usuario WHERE id_usuario = :id LIMIT 1";
-        } elseif ($user_tipo == 'protetor') {
+        } elseif ($user_tipo == 'ong') {
             $sql = "SELECT nome, email, cnpj FROM ong WHERE id_ong = :id LIMIT 1";
         } else {
             $sql = null;

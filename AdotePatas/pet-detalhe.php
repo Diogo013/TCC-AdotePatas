@@ -50,6 +50,7 @@ $pet = null;
 $doador = null;
 $caracteristicas = [];
 $outros_pets = [];
+$pet_fotos = [];
 
 if (empty($id_pet)) {
     header('Location: ' . $base_path . 'pets');
@@ -78,15 +79,34 @@ try {
         exit;
     }
 
+    $sql_fotos = "SELECT id_foto, caminho_foto FROM pet_fotos WHERE id_pet_fk = :id_pet ORDER BY id_foto ASC";
+    $stmt_fotos = $conn->prepare($sql_fotos);
+    $stmt_fotos->execute([':id_pet' => $id_pet]);
+    $pet_fotos = $stmt_fotos->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Define uma foto padrão caso não ache nenhuma
+    $foto_principal = $base_path . 'images/perfil/teste.jpg';
+    if (!empty($pet_fotos)) {
+        $foto_principal = $base_path . htmlspecialchars($pet_fotos[0]['caminho_foto']);
+    }
+
     $caracteristicas = json_decode($pet['caracteristicas'] ?? '[]', true);
 
-    $sql_outros = "SELECT id_pet, nome, foto 
-                   FROM pet 
-                   WHERE id_pet != :id_pet AND status_disponibilidade = 'disponivel' 
+    // *** SQL ATUALIZADO: Busca a foto principal de outros pets ***
+    $sql_outros = "SELECT p.id_pet, p.nome, pf.caminho_foto as foto 
+                   FROM pet p
+                   LEFT JOIN (
+                       SELECT id_pet_fk, MIN(id_foto) as min_id_foto
+                       FROM pet_fotos
+                       GROUP BY id_pet_fk
+                   ) pf_min ON p.id_pet = pf_min.id_pet_fk
+                   LEFT JOIN pet_fotos pf ON pf.id_foto = pf_min.min_id_foto
+                   WHERE p.id_pet != :id_pet AND p.status_disponibilidade = 'disponivel' 
                    LIMIT 4"; 
     $stmt_outros = $conn->prepare($sql_outros);
     $stmt_outros->execute([':id_pet' => $id_pet]);
     $outros_pets = $stmt_outros->fetchAll(PDO::FETCH_ASSOC);
+    
     
     $is_favorito = false;
     if ($id_usuario_logado) {
@@ -178,16 +198,25 @@ try {
             
             <div class="detalhe-fotos">
                 <div class="detalhe-foto-principal shadow-sm">
-                    <img src="<?php echo $base_path; ?><?php echo htmlspecialchars($pet['foto'] ?? 'images/perfil/teste.jpg'); ?>" 
+                    <img id="foto-principal-img" 
+                         src="<?php echo $foto_principal; ?>" 
                          alt="Foto principal de <?php echo htmlspecialchars($pet['nome']); ?>"
                          onerror="this.src='<?php echo $base_path; ?>images/perfil/teste.jpg';">
                 </div>
+                
+                <?php if (count($pet_fotos) > 1): // Só mostra thumbnails se tiver mais de 1 foto ?>
                 <div class="detalhe-thumbnails">
-                    <img class="shadow-sm active" src="<?php echo $base_path; ?><?php echo htmlspecialchars($pet['foto'] ?? 'images/perfil/teste.jpg'); ?>" alt="thumbnail 1">
-                    <img class="shadow-sm" src="<?php echo $base_path; ?><?php echo htmlspecialchars($pet['foto'] ?? 'images/perfil/teste.jpg'); ?>" alt="thumbnail 2">
-                    <img class="shadow-sm" src="<?php echo $base_path; ?><?php echo htmlspecialchars($pet['foto'] ?? 'images/perfil/teste.jpg'); ?>" alt="thumbnail 3">
-                    <img class="shadow-sm" src="<?php echo $base_path; ?><?php echo htmlspecialchars($pet['foto'] ?? 'images/perfil/teste.jpg'); ?>" alt="thumbnail 4">
+                    <?php foreach ($pet_fotos as $index => $foto): 
+                        $caminho_foto_thumb = $base_path . htmlspecialchars($foto['caminho_foto']);
+                    ?>
+                        <img class="shadow-sm <?php echo ($index == 0) ? 'active' : ''; ?>" 
+                             src="<?php echo $caminho_foto_thumb; ?>" 
+                             alt="thumbnail <?php echo $index + 1; ?>"
+                             onclick="mudarFotoPrincipal('<?php echo $caminho_foto_thumb; ?>', this)"
+                             onerror="this.style.display='none';">
+                    <?php endforeach; ?>
                 </div>
+                <?php endif; ?>
             </div>
 
             <div class="detalhe-info-card shadow-sm">
@@ -288,7 +317,24 @@ try {
     <script src="<?php echo $base_path; ?>assets/js/pages/index/offcanvas-fix.js"></script> 
 
         <script>
+
+             function mudarFotoPrincipal(novaSrc, elementoClicado) {
+            const imgPrincipal = document.getElementById('foto-principal-img');
+            if (imgPrincipal) {
+                imgPrincipal.src = novaSrc;
+            }
+            
+            // Atualiza a classe 'active'
+            const thumbnails = document.querySelectorAll('.detalhe-thumbnails img');
+            thumbnails.forEach(img => img.classList.remove('active'));
+            
+            if (elementoClicado) {
+                elementoClicado.classList.add('active');
+            }
+        }
     document.addEventListener('DOMContentLoaded', function() {
+
+        
         
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast-notification');

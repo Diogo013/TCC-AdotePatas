@@ -66,7 +66,20 @@ $pets = [];
 $erro_pets = '';
 if ($pagina == 'meus-pets') {
     try {
-        $sql_pets = "SELECT id_pet, nome, foto, sexo, status_disponibilidade, raca, idade FROM pet WHERE ";
+        $sql_pets = "SELECT 
+                        p.id_pet, p.nome, p.sexo, p.status_disponibilidade, p.raca, p.idade,
+                        pf.caminho_foto AS foto
+                    FROM 
+                        pet AS p
+                    LEFT JOIN (
+                        -- Subquery para achar a primeira foto (menor ID) de cada pet
+                        SELECT id_pet_fk, MIN(id_foto) as min_id_foto
+                        FROM pet_fotos
+                        GROUP BY id_pet_fk
+                    ) pf_min ON p.id_pet = pf_min.id_pet_fk
+                    LEFT JOIN 
+                        pet_fotos AS pf ON pf.id_foto = pf_min.min_id_foto
+                    WHERE ";
         
         if ($user_tipo == 'usuario') {
             // [Cite: adote_patas.sql, Tabela pet, Coluna id_usuario_fk]
@@ -93,10 +106,23 @@ $erro_pets_curtidos = '';
 if ($pagina == 'pets-curtidos') {
     try {
         // SQL com JOIN para buscar os pets favoritados pelo usuário
-        $sql_curtidos = "SELECT p.id_pet, p.nome, p.foto, p.sexo
-                         FROM favorito AS f
-                         JOIN pet AS p ON f.id_pet = p.id_pet
-                         WHERE f.id_usuario = :id_usuario";
+        $sql_curtidos = "SELECT 
+                             p.id_pet, p.nome, p.sexo,
+                             pf.caminho_foto AS foto
+                         FROM 
+                             favorito AS f
+                         JOIN 
+                             pet AS p ON f.id_pet = p.id_pet
+                         LEFT JOIN (
+                            -- Subquery para achar a primeira foto
+                            SELECT id_pet_fk, MIN(id_foto) as min_id_foto
+                            FROM pet_fotos
+                            GROUP BY id_pet_fk
+                         ) pf_min ON p.id_pet = pf_min.id_pet_fk
+                         LEFT JOIN 
+                            pet_fotos AS pf ON pf.id_foto = pf_min.min_id_foto
+                         WHERE 
+                             f.id_usuario = :id_usuario";
                          // Opcional: AND p.status_disponibilidade = 'disponivel'
                          
         $stmt_curtidos = $conn->prepare($sql_curtidos);
@@ -207,14 +233,14 @@ if ($pagina == 'pets-curtidos') {
                                         <div id="feedbackEmail" class="feedback-message"></div>
                                     </div>
 
-                                    <?php if ($user_tipo == 'adotante'): ?>
+                                    <?php if ($user_tipo == 'usuario'): ?>
                                         <div class="mb-3">
                                             <label for="inputDocumento" class="form-label"><strong>CPF:</strong></label>
                                             <input type="text" class="form-control" id="inputDocumento" name="documento"
                                                    value="<?php echo htmlspecialchars($usuario['cpf']); ?>" disabled data-profile-field>
                                             <div id="feedbackDocumento" class="feedback-message"></div>
                                         </div>
-                                    <?php elseif ($user_tipo == 'protetor'): ?>
+                                    <?php elseif ($user_tipo == 'ong'): ?>
                                         <div class="mb-3">
                                             <label for="inputDocumento" class="form-label"><strong>CNPJ:</strong></label>
                                             <input type="text" class="form-control" id="inputDocumento" name="documento"

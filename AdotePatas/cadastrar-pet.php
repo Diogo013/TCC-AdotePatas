@@ -49,7 +49,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $tipo_usuario_logado = $_SESSION['user_tipo']; // 'adotante' ou 'protetor'
 
     $erros = [];
-    $caminho_foto_db = null; // Caminho da foto para salvar no banco
+    $fotos_salvas_paths = []; // Caminho da foto para salvar no banco
 
     // 2. Validações (PHP)
     
@@ -82,51 +82,64 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $erros[] = "Você só pode selecionar até 5 características.";
     }
 
-    // 3. Validação e Upload da Foto !ATENÇÂO! Desativado temporariamente
-    //if (isset($_FILES['foto']) && $_FILES['foto']['error'] == UPLOAD_ERR_OK) {
-    //    $upload_dir = 'uploads/pets/';
-    //    if (!is_dir($upload_dir)) {
-    //        mkdir($upload_dir, 0755, true); // Cria o diretório se não existir
-    //    }
-//
-    //    $file_info = $_FILES['foto'];
-    //    $file_name = $file_info['name'];
-    //    $file_tmp = $file_info['tmp_name'];
-    //    $file_size = $file_info['size'];
-    //    $file_ext_check = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
-    //    
-    //    $extensoes_permitidas = ['jpg', 'jpeg', 'png'];
-//
-    //    if (!in_array($file_ext_check, $extensoes_permitidas)) {
-    //        $erros[] = "Formato de imagem inválido. (Apenas JPG, JPEG, PNG)";
-    //    }
-    //    if ($file_size > 5 * 1024 * 1024) { // 5 MB
-    //        $erros[] = "A imagem é muito grande (Máx: 5MB).";
-    //    }
-//
-    //    if (empty($erros)) {
-    //        // Cria um nome único para o arquivo para evitar sobreposição
-    //        $novo_nome_arquivo = uniqid('', true) . '.' . $file_ext_check;
-    //        $caminho_completo = $upload_dir . $novo_nome_arquivo;
-//
-    //        if (move_uploaded_file($file_tmp, $caminho_completo)) {
-    //            $caminho_foto_db = $caminho_completo; // Salva o caminho para o DB
-    //        } else {
-    //            $erros[] = "Falha ao salvar a imagem. Tente novamente.";
-    //        }
-    //    }z
-    //} else {
-    //    $erros[] = "A foto do pet é obrigatória.";
-    //}
-    // 
+    // 3. Validação e Upload das Fotos (*** LÓGICA MÚLTIPLA ***)
+    
+    // Verifica se alguma foto foi enviada
+    if (isset($_FILES['fotos']) && !empty(array_filter($_FILES['fotos']['name']))) {
+        $total_files = count($_FILES['fotos']['name']);
+        
+        if ($total_files > 5) {
+            $erros[] = "Você só pode enviar no máximo 5 fotos.";
+        } else {
+            $upload_dir = 'uploads/pets/';
+            if (!is_dir($upload_dir)) {
+                mkdir($upload_dir, 0755, true); 
+            }
+            
+            $extensoes_permitidas = ['jpg', 'jpeg', 'png'];
 
+            for ($i = 0; $i < $total_files; $i++) {
+                $file_name = $_FILES['fotos']['name'][$i];
+                $file_tmp = $_FILES['fotos']['tmp_name'][$i];
+                $file_size = $_FILES['fotos']['size'][$i];
+                $file_error = $_FILES['fotos']['error'][$i];
+                
+                if ($file_error == UPLOAD_ERR_OK) {
+                    $file_ext_check = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+
+                    if (!in_array($file_ext_check, $extensoes_permitidas)) {
+                        $erros[] = "Foto '$file_name': Formato inválido. (Apenas JPG, JPEG, PNG)";
+                    }
+                    if ($file_size > 5 * 1024 * 1024) { // 5 MB
+                        $erros[] = "Foto '$file_name': Imagem muito grande (Máx: 5MB).";
+                    }
+
+                    if (empty($erros)) {
+                        $novo_nome_arquivo = uniqid('', true) . '.' . $file_ext_check;
+                        $caminho_completo = $upload_dir . $novo_nome_arquivo;
+
+                        if (move_uploaded_file($file_tmp, $caminho_completo)) {
+                            $fotos_salvas_paths[] = $caminho_completo; // Adiciona ao array
+                        } else {
+                            $erros[] = "Falha ao salvar a imagem '$file_name'.";
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+        $erros[] = "Pelo menos uma foto do pet é obrigatória.";
+    }
 
     // 4. Decisão Final: Inserir no Banco ou Mostrar Erro
-    
+
     if (!empty($erros)) {
         // Se houver erros, mostra a primeira mensagem
         $mensagem_status = $erros[0];
         $tipo_mensagem = 'danger';
+         foreach ($fotos_salvas_paths as $path) {
+            if (file_exists($path)) @unlink($path);
+        }
     } else {
         // Se NÃO houver erros, insere no banco
         
@@ -134,7 +147,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $id_usuario_fk = null;
         $id_ong_fk = null;
 
-        if ($tipo_usuario_logado == 'protetor') {
+        if ($tipo_usuario_logado == 'ong') {
             $id_ong_fk = $id_usuario_logado; //
         } else {
             // Assumindo 'adotante' ou 'doador'
@@ -143,9 +156,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         $caracteristicas_json = json_encode($caracteristicas, JSON_UNESCAPED_UNICODE);
 
+        $conn->beginTransaction();
         try {
-            $sql = "INSERT INTO pet (nome, especie, sexo, idade, porte, raca, cor, status_vacinacao, status_castracao, comportamento, foto, id_usuario_fk, id_ong_fk, status_disponibilidade, caracteristicas) 
-                    VALUES (:nome, :especie, :sexo, :idade, :porte, :raca, :cor, :status_vacinacao, :status_castracao, :comportamento, :foto, :id_usuario_fk, :id_ong_fk, 'disponivel', :caracteristicas)";
+            $sql = "INSERT INTO pet (nome, especie, sexo, idade, porte, raca, cor, status_vacinacao, status_castracao, comportamento, id_usuario_fk, id_ong_fk, status_disponibilidade, caracteristicas) 
+                        VALUES (:nome, :especie, :sexo, :idade, :porte, :raca, :cor, :status_vacinacao, :status_castracao, :comportamento, :id_usuario_fk, :id_ong_fk, 'disponivel', :caracteristicas)";
 
             $stmt = $conn->prepare($sql);
             $stmt->execute([
@@ -159,11 +173,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 ':status_vacinacao' => $status_vacinacao,
                 ':status_castracao' => $status_castracao,
                 ':comportamento' => $comportamento,
-                ':foto' => $caminho_foto_db,
                 ':id_usuario_fk' => $id_usuario_fk,
                 ':id_ong_fk' => $id_ong_fk,
                 ':caracteristicas' => $caracteristicas_json
             ]);
+            // Pega o ID do pet que acabou de ser inserido
+            $id_pet_inserido = $conn->lastInsertId();
+
+            // Passo 2: Insere as Fotos na tabela 'pet_fotos'
+            $sql_foto = "INSERT INTO pet_fotos (id_pet_fk, caminho_foto) VALUES (:id_pet_fk, :caminho_foto)";
+            $stmt_foto = $conn->prepare($sql_foto);
+
+            foreach ($fotos_salvas_paths as $caminho) {
+                $stmt_foto->execute([
+                    ':id_pet_fk' => $id_pet_inserido,
+                    ':caminho_foto' => $caminho
+                ]);
+            }
+            
+            // Se tudo deu certo, confirma a transação
+            $conn->commit();
 
             // --- INÍCIO DA LÓGICA PRG (Post-Redirect-Get) ---
             //
@@ -175,9 +204,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             exit();
             
         } catch (PDOException $e) {
+            $conn->rollBack();
+
+            foreach ($fotos_salvas_paths as $path) {
+                if (file_exists($path)) @unlink($path);
+            }
             $mensagem_status = "Ocorreu uma falha no banco de dados. Tente novamente.";
             $tipo_mensagem = 'danger';
-            error_log("Erro no cadastro de pet: " . $e->getMessage());
+            echo "Erro no cadastro de pet: " . $e->getMessage();
         }
     }
 }
@@ -218,6 +252,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         .file-input-label span {
             color: #555;
             font-size: 0.95rem;
+        }
+        
+        /* Preview das imagens */
+        #fotos-preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .foto-preview {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #eee;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
     </style>
 </head>
@@ -343,17 +393,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <option value="nao" <?php echo ($status_castracao == 'nao') ? 'selected' : ''; ?>>Não</option>
                     </select>
                 </div>
-        <!-- desativado temporariamente 
-            <div>
-                <label for="foto" class="input-style w-full file-input-label">
-                    <i class="fas fa-upload"></i>
-                    <span id="file-name-span">Escolher foto do pet... (Obrigatório)</span>
-                </label>
-                <input type="file" name="foto" id="foto" class="hidden" required accept="image/png, image/jpeg">
-            </div>
-        </div>
-        -->
-        <div>
                 <button type="button" id="openModalBtn" class="input-style w-full">
                     <span id="tagsPlaceholder">Selecionar Características...</span>
                     <span class="tags-preview" id="tagsPreview">
@@ -362,6 +401,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </button>
                 <!-- Este container vai guardar os inputs hidden criados pelo JS -->
                 <div id="hidden-tags-container"></div>
+        </div>
+        
+            <div>
+                <label for="fotos" class="input-style w-full file-input-label">
+                    <i class="fas fa-upload"></i>
+                    <span id="file-name-span">Escolher fotos (Até 5)</span>
+                </label>
+                <!-- *** MUDANÇA: name="fotos[]", multiple, id="fotos" *** -->
+                <input type="file" name="fotos[]" id="fotos" class="hidden" required multiple accept="image/png, image/jpeg">
+                
+                <!-- Container para o preview das imagens -->
+                <div id="fotos-preview-container"></div>
             </div>
 
             <!-- Linha 6: Comportamento -->
@@ -486,18 +537,76 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <script src="assets/js/pages/autenticacao/autenticacao.js" type="module"></script>
 
 <script>
-    // Este script não precisa ser 'module'
     document.addEventListener("DOMContentLoaded", function () {
-        const fileInput = document.getElementById('foto');
+        const fileInput = document.getElementById('fotos'); // Mudei para 'fotos'
         const fileNameSpan = document.getElementById('file-name-span');
+        const previewContainer = document.getElementById('fotos-preview-container');
+        const form = document.getElementById('form-cadastro-pet');
 
         if (fileInput) {
             fileInput.addEventListener('change', function() {
-                if (fileInput.files.length > 0) {
-                    // Pega o nome do arquivo e mostra no span
-                    fileNameSpan.textContent = fileInput.files[0].name;
+                // Limpa o preview anterior
+                previewContainer.innerHTML = '';
+                
+                const files = fileInput.files;
+                
+                if (files.length > 0) {
+                    if (files.length > 5) {
+                        fileNameSpan.textContent = 'Limite de 5 fotos excedido! (Máx: 5)';
+                        fileInput.value = ""; // Limpa os arquivos selecionados
+                        previewContainer.innerHTML = ''; // Limpa o preview
+                        
+                        // Mostra um toast de erro (requer a função global showToast)
+                        if (typeof showToast === 'function') {
+                            showToast('Você só pode selecionar no máximo 5 fotos.', 'danger');
+                        } else {
+                            console.warn('Função showToast não definida.');
+                        }
+                        
+                        return;
+                    }
+                    
+                    fileNameSpan.textContent = `${files.length} foto(s) selecionada(s)`;
+                    
+                    // Cria o preview
+                    Array.from(files).forEach(file => {
+                        // Validação extra de tipo de arquivo
+                        if (!['image/jpeg', 'image/png'].includes(file.type)) {
+                            return; // Pula arquivos não-imagem
+                        }
+                        
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.classList.add('foto-preview');
+                            previewContainer.appendChild(img);
+                        }
+                        reader.readAsDataURL(file);
+                    });
+                    
                 } else {
-                    fileNameSpan.textContent = 'Escolher foto do pet... (Obrigatório)';
+                    fileNameSpan.textContent = 'Escolher fotos (Até 5)';
+                }
+            });
+        }
+        
+        // Adiciona validação no submit do formulário
+        if(form) {
+            form.addEventListener('submit', function(e) {
+                if (fileInput.files.length > 5) {
+                    e.preventDefault(); // Impede o envio do formulário
+                    fileNameSpan.textContent = 'Limite de 5 fotos excedido! (Máx: 5)';
+                    if (typeof showToast === 'function') {
+                        showToast('Corrija os erros antes de enviar. Máximo de 5 fotos.', 'danger');
+                    }
+                }
+                if (fileInput.files.length === 0) {
+                     e.preventDefault(); // Impede o envio do formulário
+                     fileNameSpan.textContent = 'Pelo menos uma foto é obrigatória.';
+                     if (typeof showToast === 'function') {
+                        showToast('Pelo menos uma foto do pet é obrigatória.', 'danger');
+                    }
                 }
             });
         }

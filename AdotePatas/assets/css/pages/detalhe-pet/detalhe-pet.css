@@ -323,6 +323,40 @@
   color: var(--cor-vermelho) !important;
 }
 
+/* Estilos para a nova galeria */
+        .detalhe-foto-principal img {
+            width: 100%;
+            height: 450px; /* Altura fixa para a imagem principal */
+            object-fit: cover; /* Garante que a imagem cubra a área */
+            border-radius: 12px;
+        }
+        .detalhe-thumbnails {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .detalhe-thumbnails img {
+            width: 100%;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
+            border: 2px solid transparent;
+        }
+        .detalhe-thumbnails img:hover {
+            opacity: 1;
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .detalhe-thumbnails img.active {
+            opacity: 1;
+            border: 2px solid var(--cor-vermelho);
+            box-shadow: 0 0 10px rgba(200, 50, 50, 0.5);
+        }
+
 /* ==========================================================================
    RESPONSIVIDADE DO HEADER/OFFCANVAS (de sobre.css)
    ========================================================================== */

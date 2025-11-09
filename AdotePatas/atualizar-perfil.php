@@ -83,7 +83,7 @@ if (empty($documento)) {
 
 // Se não há erros de campos obrigatórios, valida o formato
 if (empty($erros)) {
-    if ($user_tipo == 'adotante') {
+    if ($user_tipo == 'usuario') {
         if (strpos($nome, ' ') === false) {
             $erros[] = "Por favor, digite seu nome completo.";
         }
@@ -96,13 +96,13 @@ if (empty($erros)) {
     }
     
     // Valida documento (CPF ou CNPJ)
-    if ($user_tipo == 'adotante') {
+    if ($user_tipo == 'usuario') {
         if (strlen($documento) !== 11) {
             $erros[] = "CPF deve conter 11 dígitos.";
         } elseif (!validarCPF($documento)) {
             $erros[] = "O CPF informado é inválido.";
         }
-    } elseif ($user_tipo == 'protetor') {
+    } elseif ($user_tipo == 'ong') {
         if (strlen($documento) !== 14) {
             $erros[] = "CNPJ deve conter 14 dígitos.";
         } elseif (!validarCNPJ($documento)) {
@@ -114,7 +114,7 @@ if (empty($erros)) {
 // 4. Verificação de Duplicidade
 if (empty($erros)) {
     try {
-        if ($user_tipo == 'adotante') {
+        if ($user_tipo == 'usuario') {
             // Verifica email
             $sql = "SELECT id_usuario FROM usuario WHERE email = :email AND id_usuario != :id LIMIT 1";
             $stmt = $conn->prepare($sql);
@@ -130,7 +130,7 @@ if (empty($erros)) {
             if ($stmt->fetch()) {
                 $erros[] = "Este CPF já está sendo usado por outra conta.";
             }
-        } elseif ($user_tipo == 'protetor') {
+        } elseif ($user_tipo == 'ong') {
             // Verifica email
             $sql = "SELECT id_ong FROM ong WHERE email = :email AND id_ong != :id LIMIT 1";
             $stmt = $conn->prepare($sql);
@@ -162,7 +162,7 @@ if (!empty($erros)) {
 
 // --- 6. ATUALIZAÇÃO NO BANCO DE DADOS ---
 try {
-    if ($user_tipo == 'adotante') {
+    if ($user_tipo == 'usuario') {
         $sql = "UPDATE usuario SET nome = :nome, email = :email, cpf = :cpf WHERE id_usuario = :id";
         $stmt = $conn->prepare($sql);
         // Garanta que os parâmetros estão corretos e correspondem aos placeholders
@@ -172,7 +172,7 @@ try {
         $stmt->bindParam(':id', $user_id, PDO::PARAM_INT);
         $stmt->execute(); // Removido o array daqui, já que usamos bindParam
 
-    } elseif ($user_tipo == 'protetor') {
+    } elseif ($user_tipo == 'ong') {
         $sql = "UPDATE ong SET nome = :nome, email = :email, cnpj = :cnpj WHERE id_ong = :id";
         $stmt = $conn->prepare($sql);
          // Garanta que os parâmetros estão corretos e correspondem aos placeholders

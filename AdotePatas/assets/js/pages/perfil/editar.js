@@ -84,14 +84,14 @@ const validarNome = () => {
 
     if (!nomeVal) return "O nome é obrigatório.";
 
-    // Se for protetor, não exige nome completo
-    if (tipoUsuario === 'protetor') {
-        console.log("Usuário é protetor — validação de nome completa ignorada.");
+    // Se for ong, não exige nome completo
+    if (tipoUsuario === 'ong') {
+        console.log("Usuário é ong — validação de nome completa ignorada.");
         return "";
     }
 
-    // Se for adotante, exige nome completo
-    if (tipoUsuario === 'adotante') {
+    // Se for usuario, exige nome completo
+    if (tipoUsuario === 'usuario') {
         const partes = nomeVal.split(/\s+/).filter(part => part.length > 0);
         if (partes.length < 2) return "Por favor, digite seu nome completo (nome e sobrenome).";
     }
@@ -169,9 +169,9 @@ const validarNome = () => {
         if (inputmaskInstance) inputmaskInstance.remove();
         if (!inputDocumento) return;
         try { // Adiciona try-catch para Inputmask
-            if (userTipo === 'adotante') {
+            if (userTipo === 'usuario') {
                 inputmaskInstance = Inputmask("999.999.999-99");
-            } else if (userTipo === 'protetor') {
+            } else if (userTipo === 'ong') {
                 inputmaskInstance = Inputmask("99.999.999/9999-99");
             }
             if (inputmaskInstance) inputmaskInstance.mask(inputDocumento);
@@ -312,7 +312,7 @@ if (houveErro) {
     const tipoUsuarioAtual = tipoUsuarioInput ? tipoUsuarioInput.value.trim().toLowerCase() : '';
 
     if (!inputDocumento) return '';
-    return tipoUsuarioAtual === 'adotante' ? validarCPF() : validarCNPJ();
+    return tipoUsuarioAtual === 'usuario' ? validarCPF() : validarCNPJ();
 };
 
     // Aplica máscara inicial se necessário

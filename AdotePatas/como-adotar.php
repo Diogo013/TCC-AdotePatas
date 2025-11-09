@@ -25,9 +25,9 @@ if ($logado) {
         $primeiro_nome = $partes[0] ?? '';
     } elseif (isset($conn)) { // Tenta buscar no DB se a sessão 'nome' não existir
         try {
-            if ($user_tipo == 'adotante') {
+            if ($user_tipo == 'usuario') {
                 $sql = "SELECT nome FROM usuario WHERE id_usuario = :id LIMIT 1";
-            } elseif ($user_tipo == 'protetor') {
+            } elseif ($user_tipo == 'ong') {
                 $sql = "SELECT nome FROM ong WHERE id_ong = :id LIMIT 1";
             } else {
                 $sql = null;

@@ -14,14 +14,12 @@ if ($_SERVER["REQUEST_METHOD"] != "POST") {
     exit;
 }
 
-// 4. Coletar IDs e dados da sessão
+// 4. Coletar IDs e dados
 $user_id = $_SESSION['user_id'];
 $user_tipo = $_SESSION['user_tipo'];
 $id_pet = $_POST['id_pet'] ?? null;
-$foto_atual = $_POST['foto_atual'] ?? '';
 
-// 5. Coletar e validar dados do formulário
-// (Exatamente como em cadastrar-pet.php)
+// Dados do formulário
 $nome = trim($_POST['nome'] ?? '');
 $especie = trim($_POST['especie'] ?? '');
 $sexo = trim($_POST['sexo'] ?? '');
@@ -35,19 +33,19 @@ $status_disponibilidade = trim($_POST['status_disponibilidade'] ?? 'disponivel')
 $comportamento = trim($_POST['comportamento'] ?? '');
 $caracteristicas = $_POST['caracteristicas'] ?? [];
 
-$erros = [];
+// Dados das fotos
+$fotos_para_excluir = $_POST['fotos_para_excluir'] ?? []; // Array de IDs de fotos
+$fotos_novas = $_FILES['fotos_novas'] ?? null; // Array de novos arquivos
 
-// Validações
+$erros = [];
+$MAX_FOTOS_GLOBAL = 5;
+
+// 5. Validações Básicas
 if (empty($id_pet)) $erros[] = "ID do pet perdido.";
 if (empty($nome)) $erros[] = "O campo 'Nome' é obrigatório.";
-if (empty($especie)) $erros[] = "O campo 'Espécie' é obrigatório.";
-if (empty($sexo)) $erros[] = "O campo 'Gênero' é obrigatório.";
-if (count($caracteristicas) > 5) {
-        $erros[] = "Você só pode selecionar até 5 características.";
-}
-// ... (Adicione todas as outras validações de ENUM, etc., do cadastrar-pet.php) ...
+if (count($caracteristicas) > 5) $erros[] = "Você só pode selecionar até 5 características.";
+// ... (Adicione outras validações de ENUMs aqui se necessário) ...
 
-// Se houver erros de validação, redireciona de volta para a edição
 if (!empty($erros)) {
     $_SESSION['mensagem_status'] = $erros[0];
     $_SESSION['tipo_mensagem'] = 'danger';
@@ -55,58 +53,102 @@ if (!empty($erros)) {
     exit;
 }
 
+// Arrays para gerenciar arquivos
+$novos_caminhos_salvos = [];
+$caminhos_para_excluir_fisico = [];
+
+// 6. Iniciar Transação
+$conn->beginTransaction();
+
 try {
-    // 6. VERIFICAÇÃO DE PROPRIEDADE (Dupla checagem)
-    $sql_check = "SELECT id_usuario_fk, id_ong_fk, foto FROM pet WHERE id_pet = :id_pet";
+    // 7. VERIFICAÇÃO DE PROPRIEDADE
+    $sql_check = "SELECT id_usuario_fk, id_ong_fk FROM pet WHERE id_pet = :id_pet";
     $stmt_check = $conn->prepare($sql_check);
     $stmt_check->execute([':id_pet' => $id_pet]);
     $pet = $stmt_check->fetch(PDO::FETCH_ASSOC);
 
-    if (!$pet) {
-        throw new Exception("Pet não encontrado.");
-    }
+    if (!$pet) throw new Exception("Pet não encontrado.");
 
     $tem_permissao = false;
-    if ($user_tipo == 'adotante' && $pet['id_usuario_fk'] == $user_id) $tem_permissao = true;
-    if ($user_tipo == 'protetor' && $pet['id_ong_fk'] == $user_id) $tem_permissao = true;
+    if ($user_tipo == 'usuario' && $pet['id_usuario_fk'] == $user_id) $tem_permissao = true;
+    if ($user_tipo == 'ong' && $pet['id_ong_fk'] == $user_id) $tem_permissao = true;
 
-    if (!$tem_permissao) {
-        throw new Exception("Você não tem permissão para atualizar este pet.");
-    }
+    if (!$tem_permissao) throw new Exception("Você não tem permissão para atualizar este pet.");
 
-    // 7. LÓGICA DE UPLOAD DE NOVA FOTO
-    $caminho_foto_db = $foto_atual; // Começa com a foto antiga
+    // 8. PROCESSAR EXCLUSÕES DE FOTOS
+    if (!empty($fotos_para_excluir)) {
+        $sql_get_path = "SELECT caminho_foto FROM pet_fotos WHERE id_foto = :id_foto AND id_pet_fk = :id_pet_fk";
+        $stmt_get_path = $conn->prepare($sql_get_path);
+        
+        $sql_delete = "DELETE FROM pet_fotos WHERE id_foto = :id_foto AND id_pet_fk = :id_pet_fk";
+        $stmt_delete = $conn->prepare($sql_delete);
 
-    if (isset($_FILES['foto']) && $_FILES['foto']['error'] == UPLOAD_ERR_OK) {
-        // Se uma NOVA foto foi enviada, processa ela
-        $upload_dir = 'uploads/pets/';
-        $file_info = $_FILES['foto'];
-        $file_ext_check = strtolower(pathinfo($file_info['name'], PATHINFO_EXTENSION));
-        $extensoes_permitidas = ['jpg', 'jpeg', 'png'];
-
-        if (in_array($file_ext_check, $extensoes_permitidas) && $file_info['size'] <= 5 * 1024 * 1024) {
-            
-            // Apaga a foto antiga (se ela existir)
-            if (!empty($foto_atual) && file_exists($foto_atual)) {
-                @unlink($foto_atual);
+        foreach ($fotos_para_excluir as $id_foto) {
+            // Pega o caminho para apagar o arquivo físico
+            $stmt_get_path->execute([':id_foto' => $id_foto, ':id_pet_fk' => $id_pet]);
+            $caminho = $stmt_get_path->fetchColumn();
+            if ($caminho) {
+                $caminhos_para_excluir_fisico[] = $caminho;
             }
-
-            // Salva a nova foto
-            $novo_nome_arquivo = uniqid('', true) . '.' . $file_ext_check;
-            $caminho_completo = $upload_dir . $novo_nome_arquivo;
             
-            if (move_uploaded_file($file_info['tmp_name'], $caminho_completo)) {
-                $caminho_foto_db = $caminho_completo; // Atualiza o caminho para o DB
-            } else {
-                throw new Exception("Falha ao mover o novo arquivo de foto.");
-            }
-        } else {
-            throw new Exception("Formato de imagem inválido ou foto muito grande.");
+            // Deleta o registro do banco
+            $stmt_delete->execute([':id_foto' => $id_foto, ':id_pet_fk' => $id_pet]);
         }
     }
-    $caracteristicas_json = json_encode($caracteristicas, JSON_UNESCAPED_UNICODE);
 
-    // 8. ATUALIZAR O BANCO DE DADOS
+    // 9. CONTAR FOTOS ATUAIS (APÓS EXCLUSÕES)
+    $sql_count = "SELECT COUNT(*) FROM pet_fotos WHERE id_pet_fk = :id_pet_fk";
+    $stmt_count = $conn->prepare($sql_count);
+    $stmt_count->execute([':id_pet_fk' => $id_pet]);
+    $total_fotos_atuais = $stmt_count->fetchColumn();
+
+    // 10. PROCESSAR NOVAS FOTOS
+    if ($fotos_novas && !empty(array_filter($fotos_novas['name']))) {
+        $total_novas_fotos = count($fotos_novas['name']);
+        
+        if (($total_fotos_atuais + $total_novas_fotos) > $MAX_FOTOS_GLOBAL) {
+            throw new Exception("Limite de $MAX_FOTOS_GLOBAL fotos excedido. Você tem $total_fotos_atuais e tentou adicionar $total_novas_fotos.");
+        }
+        
+        if ($total_fotos_atuais == 0 && $total_novas_fotos == 0) {
+             throw new Exception("O pet deve ter pelo menos 1 foto.");
+        }
+
+        $upload_dir = 'uploads/pets/';
+        if (!is_dir($upload_dir)) mkdir($upload_dir, 0755, true);
+        $extensoes_permitidas = ['jpg', 'jpeg', 'png'];
+
+        for ($i = 0; $i < $total_novas_fotos; $i++) {
+            if ($fotos_novas['error'][$i] == UPLOAD_ERR_OK) {
+                $file_name = $fotos_novas['name'][$i];
+                $file_tmp = $fotos_novas['tmp_name'][$i];
+                $file_size = $fotos_novas['size'][$i];
+                $file_ext_check = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+
+                if (!in_array($file_ext_check, $extensoes_permitidas)) throw new Exception("Foto '$file_name': Formato inválido.");
+                if ($file_size > 5 * 1024 * 1024) throw new Exception("Foto '$file_name': Imagem muito grande (Máx: 5MB).");
+
+                $novo_nome_arquivo = uniqid('', true) . '.' . $file_ext_check;
+                $caminho_completo = $upload_dir . $novo_nome_arquivo;
+
+                if (move_uploaded_file($file_tmp, $caminho_completo)) {
+                    $novos_caminhos_salvos[] = $caminho_completo; // Adiciona para Inserir no DB
+                } else {
+                    throw new Exception("Falha ao salvar a imagem '$file_name'.");
+                }
+            }
+        }
+    }
+    
+    // 10.1 Verificação final: não pode ficar sem fotos
+    if ($total_fotos_atuais == 0 && empty($novos_caminhos_salvos)) {
+        throw new Exception("O pet deve ter pelo menos 1 foto. Você excluiu todas e não adicionou nenhuma nova.");
+    }
+
+    // 11. ATUALIZAR DADOS DO PET (Texto)
+    $caracteristicas_json = json_encode($caracteristicas, JSON_UNESCAPED_UNICODE);
+    
+    // *** SQL SEM A COLUNA 'foto' ***
     $sql_update = "UPDATE pet SET 
                         nome = :nome, 
                         especie = :especie, 
@@ -119,7 +161,6 @@ try {
                         status_castracao = :status_castracao, 
                         status_disponibilidade = :status_disponibilidade, 
                         comportamento = :comportamento, 
-                        foto = :foto,
                         caracteristicas = :caracteristicas
                     WHERE id_pet = :id_pet";
     
@@ -136,19 +177,51 @@ try {
         ':status_castracao' => $status_castracao,
         ':status_disponibilidade' => $status_disponibilidade,
         ':comportamento' => $comportamento,
-        ':foto' => $caminho_foto_db,
         ':caracteristicas' => $caracteristicas_json,
         ':id_pet' => $id_pet
     ]);
 
-    // 9. Redireciona de volta com sucesso
+    // 12. INSERIR NOVAS FOTOS NO BANCO
+    if (!empty($novos_caminhos_salvos)) {
+        $sql_foto_insert = "INSERT INTO pet_fotos (id_pet_fk, caminho_foto) VALUES (:id_pet_fk, :caminho_foto)";
+        $stmt_foto_insert = $conn->prepare($sql_foto_insert);
+        
+        foreach ($novos_caminhos_salvos as $caminho) {
+            $stmt_foto_insert->execute([
+                ':id_pet_fk' => $id_pet,
+                ':caminho_foto' => $caminho
+            ]);
+        }
+    }
+
+    // 13. COMMIT!
+    $conn->commit();
+
+    // 14. Se deu tudo certo (commit), apaga os arquivos físicos marcados
+    foreach ($caminhos_para_excluir_fisico as $caminho) {
+        if (file_exists($caminho)) {
+            @unlink($caminho);
+        }
+    }
+
+    // 15. Redireciona de volta com sucesso
     $_SESSION['mensagem_status'] = "Pet atualizado com sucesso!";
     $_SESSION['tipo_mensagem'] = 'success';
     header('Location: perfil.php?page=meus-pets');
     exit;
 
 } catch (Exception $e) {
-    // 10. Se der qualquer erro, redireciona de volta para a edição
+    // 16. Se deu erro, ROLLBACK
+    $conn->rollBack();
+    
+    // Apaga qualquer arquivo novo que tenha sido salvo no servidor
+    foreach ($novos_caminhos_salvos as $caminho) {
+        if (file_exists($caminho)) {
+            @unlink($caminho);
+        }
+    }
+
+    // Redireciona de volta para a edição com o erro
     $_SESSION['mensagem_status'] = $e->getMessage();
     $_SESSION['tipo_mensagem'] = 'danger';
     header('Location: editar-pet.php?id=' . $id_pet);

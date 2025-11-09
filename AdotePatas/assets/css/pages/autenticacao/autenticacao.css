@@ -415,7 +415,6 @@ img {
 .toast.show .toast-progress-bar {
   animation: shrink 5s linear forwards;
 }
-
 /* --- Animações --- */
 @keyframes slideIn {
   from {

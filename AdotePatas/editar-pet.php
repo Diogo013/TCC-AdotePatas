@@ -14,6 +14,7 @@ $user_tipo = $_SESSION['user_tipo'];
 $id_pet_para_editar = $_GET['id'] ?? null;
 $pet = null;
 $erro = '';
+$pet_fotos = [];
 
 if (empty($id_pet_para_editar)) {
     // Se não tiver ID, volta para 'meus-pets' com erro
@@ -36,15 +37,20 @@ try {
 
     // VERIFICAÇÃO DE PROPRIEDADE
     $tem_permissao = false;
-    if ($user_tipo == 'adotante' && $pet['id_usuario_fk'] == $user_id) {
+    if ($user_tipo == 'usuario' && $pet['id_usuario_fk'] == $user_id) {
         $tem_permissao = true;
-    } elseif ($user_tipo == 'protetor' && $pet['id_ong_fk'] == $user_id) {
+    } elseif ($user_tipo == 'ong' && $pet['id_ong_fk'] == $user_id) {
         $tem_permissao = true;
     }
 
     if (!$tem_permissao) {
         throw new Exception("Você não tem permissão para editar este pet.");
     }
+
+    $sql_fotos = "SELECT id_foto, caminho_foto FROM pet_fotos WHERE id_pet_fk = :id_pet ORDER BY id_foto ASC";
+    $stmt_fotos = $conn->prepare($sql_fotos);
+    $stmt_fotos->execute([':id_pet' => $id_pet_para_editar]);
+    $pet_fotos = $stmt_fotos->fetchAll(PDO::FETCH_ASSOC);
 
     $pet_caracteristicas = json_decode($pet['caracteristicas'] ?? '[]', true);
 
@@ -80,15 +86,92 @@ unset($_SESSION['tipo_mensagem']);
 
     <!-- Estilo customizado para o input[file] -->
     <style>
-        .file-input-label {
-            cursor: pointer; display: flex; align-items: center; gap: 10px;
-            border: 2px dashed var(--cor-vermelho-claro); background-color: #fff8f8;
-            transition: all 0.3s ease;
-        }
+        .file-input-label { cursor: pointer; display: flex; align-items: center; gap: 10px; border: 2px dashed var(--cor-vermelho-claro); background-color: #fff8f8; transition: all 0.3s ease; }
         .file-input-label:hover { background-color: #fff0f0; border-color: var(--cor-vermelho); }
         .file-input-label i { color: var(--cor-vermelho); }
         .file-input-label span { color: #555; font-size: 0.95rem; }
-        .current-photo { max-width: 100px; max-height: 100px; border-radius: 8px; margin-top: 10px; }
+        
+        /* Galeria de fotos atuais */
+        .fotos-atuais-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .foto-atual-item {
+            position: relative;
+            width: 100%;
+            padding-top: 100%; /* Mantém a proporção 1:1 */
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .foto-atual-item img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        /* Checkbox de exclusão (escondido) */
+        .foto-atual-item input[type="checkbox"] {
+            display: none;
+        }
+        /* Botão de exclusão (Label estilizado) */
+        .delete-foto-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 28px;
+            height: 28px;
+            background-color: rgba(255, 255, 255, 0.9);
+            color: var(--cor-vermelho);
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            line-height: 1;
+        }
+        .delete-foto-btn:hover {
+            background-color: var(--cor-vermelho);
+            color: white;
+            transform: scale(1.1);
+        }
+        /* Estilo quando a foto está marcada para exclusão */
+        .foto-atual-item input[type="checkbox"]:checked + img {
+            opacity: 0.4;
+            filter: grayscale(1);
+        }
+        .foto-atual-item input[type="checkbox"]:checked ~ .delete-foto-btn {
+            background-color: var(--cor-vermelho);
+            color: white;
+            transform: rotate(45deg);
+        }
+        .delete-foto-btn::before {
+            content: '\00D7'; /* Símbolo de multiplicação (X) */
+        }
+        
+        /* Preview de novas fotos */
+        #fotos-preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .foto-preview {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #eee;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4">
@@ -144,7 +227,6 @@ unset($_SESSION['tipo_mensagem']);
             
             <!-- IDs escondidos -->
             <input type="hidden" name="id_pet" value="<?php echo $pet['id_pet']; ?>">
-            <input type="hidden" name="foto_atual" value="<?php echo htmlspecialchars($pet['foto']); ?>">
 
             <!-- Linha 1: Nome e Idade -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -231,19 +313,47 @@ unset($_SESSION['tipo_mensagem']);
                 </div>
             </div>
             
-            <!-- Linha 6: Foto desabilitada temporariamente
+            <!-- *** SEÇÃO DE FOTOS ATUALIZADA *** -->
             <div>
-                <label for="foto" class="input-style w-full file-input-label">
-                    <i class="fas fa-upload"></i>
-                    <span id="file-name-span">Trocar foto (opcional)</span>
-                </label>
-                <input type="file" name="foto" id="foto" class="hidden" accept="image/png, image/jpeg">
-                <div>
-                    <span class="text-sm text-gray-600">Foto atual:</span>
-                    <img src="<?php// echo htmlspecialchars($pet['foto']); ?>" alt="Foto atual" class="current-photo" onerror="this.style.display='none'">
-                </div>
+                <label class="font-semibold text-gray-700">Gerenciar Fotos</label>
+                <?php if (empty($pet_fotos)): ?>
+                    <p class="text-sm text-gray-500">Nenhuma foto cadastrada. Adicione fotos abaixo.</p>
+                <?php else: ?>
+                    <p class="text-sm text-gray-500">Marque as fotos que deseja <span class="font-bold text-red-600">excluir</span>:</p>
+                    <div class="fotos-atuais-grid">
+                        <?php foreach ($pet_fotos as $foto): ?>
+                            <div class="foto-atual-item">
+                                <!-- O Checkbox escondido -->
+                                <input type="checkbox" name="fotos_para_excluir[]" 
+                                       id="foto_<?php echo $foto['id_foto']; ?>" 
+                                       value="<?php echo $foto['id_foto']; ?>"
+                                       onchange="validarLimiteFotos()">
+                                <!-- A Imagem -->
+                                <img src="<?php echo htmlspecialchars($foto['caminho_foto']); ?>" alt="Foto atual do pet"
+                                     onerror="this.src='images/perfil/teste.jpg';">
+                                <!-- O Botão de Excluir (Label) -->
+                                <label class="delete-foto-btn" 
+                                       for="foto_<?php echo $foto['id_foto']; ?>" 
+                                       title="Marcar para excluir"></label>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
             </div>
-            -->
+
+            <!-- *** SEÇÃO PARA ADICIONAR NOVAS FOTOS *** -->
+            <div>
+                <label for="fotos_novas" class="input-style w-full file-input-label">
+                    <i class="fas fa-plus"></i>
+                    <span id="file-name-span">Adicionar novas fotos (Máx: 5 no total)</span>
+                </label>
+                <input type="file" name="fotos_novas[]" id="fotos_novas" class="hidden" multiple accept="image/png, image/jpeg">
+                
+                <!-- Container para o preview das novas imagens -->
+                <div id="fotos-preview-container"></div>
+                <small id="limite-fotos-helper" class="text-sm text-gray-600 mt-1"></small>
+            </div>
+
             <div>
                 <button type="button" id="openModalBtn" class="input-style w-full">
                     <span id="tagsPlaceholder">Selecionar Características...</span>
@@ -372,21 +482,93 @@ unset($_SESSION['tipo_mensagem']);
 <!-- O autenticacao.js vai cuidar de mostrar o toast de sucesso ou erro -->
 <script src="assets/js/pages/autenticacao/autenticacao.js" type="module"></script>
 
-<!-- Script local para o input[file] -->
+<!-- *** SCRIPT ATUALIZADO (Preview e Validação de Limite) *** -->
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const fileInput = document.getElementById('foto');
-        const fileNameSpan = document.getElementById('file-name-span');
+    // Passa o total de fotos do PHP para o JS
+    const totalFotosAtuais = <?php echo count($pet_fotos); ?>;
+    const MAX_FOTOS_GLOBAL = 5;
 
+    const fileInput = document.getElementById('fotos_novas');
+    const fileNameSpan = document.getElementById('file-name-span');
+    const previewContainer = document.getElementById('fotos-preview-container');
+    const form = document.getElementById('form-edit-pet');
+    const submitBtn = document.getElementById('submit-btn');
+    const limiteHelper = document.getElementById('limite-fotos-helper');
+
+    function validarLimiteFotos() {
+        const fotosMarcadasParaExcluir = document.querySelectorAll('input[name="fotos_para_excluir[]"]:checked').length;
+        const fotosNovas = fileInput.files.length;
+        
+        const fotosAtuaisRestantes = totalFotosAtuais - fotosMarcadasParaExcluir;
+        const totalFinal = fotosAtuaisRestantes + fotosNovas;
+
+        if (totalFinal > MAX_FOTOS_GLOBAL) {
+            limiteHelper.textContent = `Erro: Limite de ${MAX_FOTOS_GLOBAL} fotos excedido! (Total: ${totalFinal})`;
+            limiteHelper.style.color = 'var(--cor-vermelho)';
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.7';
+            return false;
+        } else if (totalFinal === 0) {
+             limiteHelper.textContent = `Erro: O pet deve ter pelo menos 1 foto.`;
+             limiteHelper.style.color = 'var(--cor-vermelho)';
+             submitBtn.disabled = true;
+             submitBtn.style.opacity = '0.7';
+             return false;
+        } else {
+            const espacoRestante = MAX_FOTOS_GLOBAL - fotosAtuaisRestantes;
+            limiteHelper.textContent = `Você pode adicionar mais ${espacoRestante} foto(s). (Total será ${totalFinal}/${MAX_FOTOS_GLOBAL})`;
+            limiteHelper.style.color = '#555';
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
+            return true;
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
         if (fileInput) {
             fileInput.addEventListener('change', function() {
-                if (fileInput.files.length > 0) {
-                    fileNameSpan.textContent = fileInput.files[0].name;
+                previewContainer.innerHTML = ''; // Limpa preview
+                const files = fileInput.files;
+                
+                if (files.length > 0) {
+                    fileNameSpan.textContent = `${files.length} nova(s) foto(s) selecionada(s)`;
+                    
+                    // Cria o preview
+                    Array.from(files).forEach(file => {
+                        if (['image/jpeg', 'image/png'].includes(file.type)) {
+                            const reader = new FileReader();
+                            reader.onload = function(e) {
+                                const img = document.createElement('img');
+                                img.src = e.target.result;
+                                img.classList.add('foto-preview');
+                                previewContainer.appendChild(img);
+                            }
+                            reader.readAsDataURL(file);
+                        }
+                    });
                 } else {
-                    fileNameSpan.textContent = 'Trocar foto (opcional)';
+                    fileNameSpan.textContent = 'Adicionar novas fotos (Máx: 5 no total)';
+                }
+                // Valida o limite
+                validarLimiteFotos();
+            });
+        }
+        
+        if(form) {
+            form.addEventListener('submit', function(e) {
+                if (!validarLimiteFotos()) {
+                    e.preventDefault(); // Impede o envio
+                    if (typeof showToast === 'function') {
+                        showToast('Corrija os erros no formulário (limite de fotos).', 'danger');
+                    } else {
+                        console.error('Erro no limite de fotos.');
+                    }
                 }
             });
         }
+        
+        // Valida uma vez ao carregar a página
+        validarLimiteFotos();
     });
 </script>
 

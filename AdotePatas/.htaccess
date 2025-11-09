@@ -5,6 +5,8 @@ RewriteEngine On
 Options -Indexes
 
 # --- AUTO-DETECÇÃO DE AMBIENTE ---
+# Por padrão, assume a raiz
+RewriteBase /
 
 RewriteCond %{HTTP_HOST} ^localhost$ [NC]
 RewriteBase /TCC-AdotePatas/AdotePatas/

@@ -1,7 +1,11 @@
 <?php
 session_start();
 include_once 'conexao.php'; // 1. Inclui a conexão
-$base_path = '/TCC-AdotePatas/AdotePatas/';
+if ($_SERVER['SERVER_NAME'] == 'localhost') {
+    $base_path = '/TCC-AdotePatas/AdotePatas/';
+} else {
+    $base_path = '/'; // Para a Hostinger (adotepatas.com)
+}
 $pagina = "pets-adocao"; // Definindo a página atual para a lógica 'active' do menu
 
 // 2. Segurança: Garante que o usuário está logado
@@ -70,9 +74,21 @@ $pets = [];
 $erro = '';
 try {
     // Buscamos apenas pets que estão 'disponiveis'
-    $sql = "SELECT id_pet, nome, foto, sexo
-            FROM pet
-            WHERE status_disponibilidade = 'disponivel'";
+    $sql = "SELECT 
+                p.id_pet, p.nome, p.sexo,
+                pf.caminho_foto AS foto
+            FROM 
+                pet AS p
+            LEFT JOIN (
+                -- Subquery para achar a primeira foto
+                SELECT id_pet_fk, MIN(id_foto) as min_id_foto
+                FROM pet_fotos
+                GROUP BY id_pet_fk
+            ) pf_min ON p.id_pet = pf_min.id_pet_fk
+            LEFT JOIN 
+                pet_fotos AS pf ON pf.id_foto = pf_min.min_id_foto
+            WHERE 
+                p.status_disponibilidade = 'disponivel'";
 
     $stmt = $conn->prepare($sql);
     $stmt->execute();
