@@ -73,7 +73,6 @@ unset($_SESSION['tipo_mensagem']);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Pet - Adote Patas</title>
-    <!-- Links de CSS (Idênticos ao cadastrar-pet.php) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -81,11 +80,11 @@ unset($_SESSION['tipo_mensagem']);
     <link rel="stylesheet" href="assets/css/pages/autenticacao/autenticacao.css">
     <link rel="stylesheet" href="assets/css/pages/cadastro-pet/caracteristica.css">
     <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
 
-    <!-- Estilo customizado para o input[file] -->
     <style>
+        /* Estilo para o Input File */
         .file-input-label { cursor: pointer; display: flex; align-items: center; gap: 10px; border: 2px dashed var(--cor-vermelho-claro); background-color: #fff8f8; transition: all 0.3s ease; }
         .file-input-label:hover { background-color: #fff0f0; border-color: var(--cor-vermelho); }
         .file-input-label i { color: var(--cor-vermelho); }
@@ -172,11 +171,126 @@ unset($_SESSION['tipo_mensagem']);
             border-radius: 8px;
             border: 2px solid #eee;
         }
+
+        /* Oculta os spinners (setinhas) em navegadores WebKit 
+          (Chrome, Safari, Edge, Opera) 
+        */
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none; /* Remove o estilo padrão do navegador */
+            margin: 0; /* Remove qualquer margem que possa ter ficado */
+        }
+
+        /* Oculta os spinners no Firefox 
+        */
+        input[type=number] {
+            -moz-appearance: textfield; /* Faz o Firefox tratar o input como um campo de texto */
+        }
+
+        /* Estilos para o Select Customizado */
+        .select-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            padding: 0;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+
+        .custom-select-wrapper {
+            position: relative;
+            width: 100%;
+            font-family: 'Poppins', sans-serif; 
+        }
+
+        .custom-select-trigger {
+            width: 100%;
+            padding: 1.15rem;
+            background-color: rgba(180, 100, 89, 0.55);
+            border: 1px solid transparent;
+            border-radius: 12px;
+            color: var(--cor-branca); /* Cor do texto dos seus inputs */
+            font-size: 1rem;
+            font-weight: 500;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: border-color 0.2s ease, background-color 0.2s ease;
+            -webkit-appearance: none; 
+            -moz-appearance: none; 
+            appearance: none; 
+        }
+
+        .custom-select-trigger:focus,
+        .custom-select-trigger:hover {
+            border-color:  rgba(255, 255, 255, 0.6);
+            outline: none; 
+        }
+
+        .custom-select-arrow {
+            width: 10px;
+            height: 10px;
+            border-right: 2px solid var(--cor-vermelho);
+            border-bottom: 2px solid var(--cor-vermelho);
+            transform: rotate(45deg);
+            transition: transform 0.3s ease;
+            pointer-events: none; 
+        }
+
+        .custom-select-trigger[aria-expanded="true"] .custom-select-arrow {
+            transform: rotate(225deg);
+            margin-top: 5px; 
+        }
+
+        .custom-select-options {
+            position: absolute;
+            top: calc(100% + 4px); 
+            left: 0;
+            right: 0;
+            z-index: 10;
+            background-color: var(--cor-rosa-claro);
+            border-radius: 12px;
+            border: 0.5px solid var(--cor-rosa-escuro); 
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 8px;
+            list-style: none;
+            margin: 0;
+            overflow-y: auto;
+            max-height: 200px; 
+            display: none; 
+            -webkit-overflow-scrolling: touch; 
+        }
+
+        .custom-option {
+            padding: 10px 12px;
+            color: var(--cor-vermelho); 
+            font-weight: 500;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .custom-option:hover,
+        .custom-option:focus {
+            background-color: var(--cor-rosa-escuro);
+            opacity: 0.4;
+            color: var(--cor-branca);
+            outline: none;
+        }
+
+        .custom-option.selected {
+            background-color: var(--cor-rosa-escuro); 
+            color: var(--cor-branca);
+            font-weight: 700;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4">
 
-<!-- Toast Notification -->
 <div id="toast-notification" class="toast p-0" style="display: none;">
     <div id="toast-icon" class="toast-icon"></div>
     <div class="toast-content">
@@ -185,18 +299,15 @@ unset($_SESSION['tipo_mensagem']);
     <div class="toast-progress-bar"></div>
 </div>
 
-<!-- Botão Voltar -->
 <a href="perfil.php?page=meus-pets" class="btn-voltar" title="Voltar para Meus Pets">
     <i class="fa-solid fa-arrow-left"></i>
     <span>Voltar</span>
 </a>
 
-<!-- Fundo -->
 <img src="images/cadastro-login/pata.png" alt="Desenho de Pata" class="pata-fundo">
 
 <div class="w-full max-w-2xl mx-auto">
     
-    <!-- Cabeçalho -->
     <div class="w-full flex items-center justify-between mb-6 relative">
         <div>
             <a href="./" title="Voltar para a página inicial">
@@ -210,10 +321,8 @@ unset($_SESSION['tipo_mensagem']);
         <div class="h-16 w-16 invisible"></div>
     </div>
 
-    <!-- Card Principal -->
     <div class="container-card w-full p-6 sm:p-10 rounded-3xl shadow-xl">
         
-        <!-- Div para carregar dados do PHP para o JS (para o Toast) -->
         <?php if (!empty($mensagem_status)): ?>
             <div id="php-data" 
                  data-message="<?php echo htmlspecialchars($mensagem_status); ?>" 
@@ -222,98 +331,192 @@ unset($_SESSION['tipo_mensagem']);
             </div>
         <?php endif; ?>
 
-        <!-- Formulário de Edição -->
         <form action="atualizar-pet.php" method="post" enctype="multipart/form-data" id="form-edit-pet" class="space-y-6">
             
-            <!-- IDs escondidos -->
             <input type="hidden" name="id_pet" value="<?php echo $pet['id_pet']; ?>">
 
-            <!-- Linha 1: Nome e Idade -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label for="nome" class="sr-only">Nome do Pet</label>
+                    <label for="nome">Nome do Pet</label>
                     <input type="text" name="nome" id="nome" placeholder="Nome do Pet" required class="input-style w-full"
                            value="<?php echo htmlspecialchars($pet['nome']); ?>">
                 </div>
                 <div>
-                    <label for="idade" class="sr-only">Idade (anos)</label>
+                    <label for="idade">Idade (anos)</label>
                     <input type="number" name="idade" id="idade" placeholder="Idade (anos)" required min="0" class="input-style w-full"
                            value="<?php echo htmlspecialchars($pet['idade']); ?>">
                 </div>
             </div>
 
-            <!-- Linha 2: Espécie e Gênero -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label for="especie" class="sr-only">Espécie</label>
-                    <select name="especie" id="especie" required class="input-style w-full">
+                    <label id="select-label-especie">Espécie</label>
+                    <select name="especie" id="especie-real" class="select-hidden" aria-hidden="true" tabindex="-1">
                         <option value="cachorro" <?php echo ($pet['especie'] == 'cachorro') ? 'selected' : ''; ?>>Cachorro</option>
                         <option value="gato" <?php echo ($pet['especie'] == 'gato') ? 'selected' : ''; ?>>Gato</option>
-                        <option value="outro" <?php echo ($pet['especie'] == 'outro') ? 'selected' : ''; ?>>Outro</option>
                     </select>
+
+                    <div class="custom-select-wrapper" data-target-select="especie-real">
+                        <button type="button" class="custom-select-trigger input-style w-full" 
+                                aria-haspopup="listbox" 
+                                aria-expanded="false" 
+                                aria-labelledby="select-label-especie">
+                            <span class="custom-select-value">
+                                <?php 
+                                    // Exibe o texto da opção selecionada inicialmente
+                                    echo htmlspecialchars(ucfirst($pet['especie'])); 
+                                ?>
+                            </span>
+                            <span class="custom-select-arrow"></span>
+                        </button>
+                        
+                        <ul class="custom-select-options" role="listbox" aria-labelledby="select-label-especie">
+                            <li class="custom-option" data-value="cachorro" role="option" tabindex="0">Cachorro</li>
+                            <li class="custom-option" data-value="gato" role="option" tabindex="0">Gato</li>
+                            <li class="custom-option" data-value="outro" role="option" tabindex="0">Outro</li>
+                        </ul>
+                    </div>
                 </div>
                 <div>
-                    <label for="sexo" class="sr-only">Sexo</label>
-                    <select name="sexo" id="sexo" required class="input-style w-full">
+                    <label id="select-label-sexo">Sexo</label>
+                    <select name="sexo" id="sexo-real" class="select-hidden" aria-hidden="true" tabindex="-1">
                         <option value="macho" <?php echo ($pet['sexo'] == 'macho') ? 'selected' : ''; ?>>Macho</option>
                         <option value="femea" <?php echo ($pet['sexo'] == 'femea') ? 'selected' : ''; ?>>Fêmea</option>
                     </select>
+
+                    <div class="custom-select-wrapper" data-target-select="sexo-real">
+                        <button type="button" class="custom-select-trigger input-style w-full" 
+                                aria-haspopup="listbox" 
+                                aria-expanded="false" 
+                                aria-labelledby="select-label-sexo">
+                            <span class="custom-select-value">
+                                <?php echo htmlspecialchars(ucfirst($pet['sexo'])); ?>
+                            </span>
+                            <span class="custom-select-arrow"></span>
+                        </button>
+                        <ul class="custom-select-options" role="listbox" aria-labelledby="select-label-sexo">
+                            <li class="custom-option" data-value="macho" role="option" tabindex="0">Macho</li>
+                            <li class="custom-option" data-value="femea" role="option" tabindex="0">Fêmea</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
 
-            <!-- Linha 3: Porte e Raça -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label for="porte" class="sr-only">Porte</label>
-                    <select name="porte" id="porte" required class="input-style w-full">
+                    <label id="select-label-porte">Porte</label>
+                    <select name="porte" id="porte-real" class="select-hidden" aria-hidden="true" tabindex="-1">
                         <option value="pequeno" <?php echo ($pet['porte'] == 'pequeno') ? 'selected' : ''; ?>>Pequeno</option>
                         <option value="medio" <?php echo ($pet['porte'] == 'medio') ? 'selected' : ''; ?>>Médio</option>
                         <option value="grande" <?php echo ($pet['porte'] == 'grande') ? 'selected' : ''; ?>>Grande</option>
                     </select>
+
+                    <div class="custom-select-wrapper" data-target-select="porte-real">
+                        <button type="button" class="custom-select-trigger input-style w-full" 
+                                aria-haspopup="listbox" 
+                                aria-expanded="false" 
+                                aria-labelledby="select-label-porte">
+                            <span class="custom-select-value">
+                                <?php echo htmlspecialchars(ucfirst($pet['porte'])); ?>
+                            </span>
+                            <span class="custom-select-arrow"></span>
+                        </button>
+                        <ul class="custom-select-options" role="listbox" aria-labelledby="select-label-porte">
+                            <li class="custom-option" data-value="pequeno" role="option" tabindex="0">Pequeno</li>
+                            <li class="custom-option" data-value="medio" role="option" tabindex="0">Médio</li>
+                            <li class="custom-option" data-value="grande" role="option" tabindex="0">Grande</li>
+                        </ul>
+                    </div>
                 </div>
                 <div>
-                    <label for="raca" class="sr-only">Raça (Ex: SRD)</label>
+                    <label for="raca">Raça (Ex: SRD)</label>
                     <input type="text" name="raca" id="raca" placeholder="Raça (Ex: SRD)" class="input-style w-full"
                            value="<?php echo htmlspecialchars($pet['raca']); ?>">
                 </div>
             </div>
 
-            <!-- Linha 4: Cor e Vacinado -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label for="cor" class="sr-only">Cor</label>
+                    <label for="cor">Cor</label>
                     <input type="text" name="cor" id="cor" placeholder="Cor (Ex: Caramelo)" class="input-style w-full"
                            value="<?php echo htmlspecialchars($pet['cor']); ?>">
                 </div>
                 <div>
-                    <label for="status_vacinacao" class="sr-only">Vacinado?</label>
-                    <select name="status_vacinacao" id="status_vacinacao" required class="input-style w-full">
+                    <label id="select-label-vacinacao">Vacinado?</label>
+                    <select name="status_vacinacao" id="status_vacinacao-real" class="select-hidden" aria-hidden="true" tabindex="-1">
                         <option value="sim" <?php echo ($pet['status_vacinacao'] == 'sim') ? 'selected' : ''; ?>>Sim</option>
                         <option value="nao" <?php echo ($pet['status_vacinacao'] == 'nao') ? 'selected' : ''; ?>>Não</option>
                     </select>
+
+                    <div class="custom-select-wrapper" data-target-select="status_vacinacao-real">
+                        <button type="button" class="custom-select-trigger input-style w-full" 
+                                aria-haspopup="listbox" 
+                                aria-expanded="false" 
+                                aria-labelledby="select-label-vacinacao">
+                            <span class="custom-select-value">
+                                <?php echo htmlspecialchars(ucfirst($pet['status_vacinacao'])); ?>
+                            </span>
+                            <span class="custom-select-arrow"></span>
+                        </button>
+                        <ul class="custom-select-options" role="listbox" aria-labelledby="select-label-vacinacao">
+                            <li class="custom-option" data-value="sim" role="option" tabindex="0">Sim</li>
+                            <li class="custom-option" data-value="nao" role="option" tabindex="0">Não</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
             
-            <!-- Linha 5: Castrado e Status Disponibilidade -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label for="status_castracao" class="sr-only">Castrado?</label>
-                    <select name="status_castracao" id="status_castracao" required class="input-style w-full">
+                    <label id="select-label-castracao">Castrado?</label>
+                    <select name="status_castracao" id="status_castracao-real" class="select-hidden" aria-hidden="true" tabindex="-1">
                         <option value="sim" <?php echo ($pet['status_castracao'] == 'sim') ? 'selected' : ''; ?>>Sim</option>
                         <option value="nao" <?php echo ($pet['status_castracao'] == 'nao') ? 'selected' : ''; ?>>Não</option>
                     </select>
+
+                    <div class="custom-select-wrapper" data-target-select="status_castracao-real">
+                        <button type="button" class="custom-select-trigger input-style w-full" 
+                                aria-haspopup="listbox" 
+                                aria-expanded="false" 
+                                aria-labelledby="select-label-castracao">
+                            <span class="custom-select-value">
+                                <?php echo htmlspecialchars(ucfirst($pet['status_castracao'])); ?>
+                            </span>
+                            <span class="custom-select-arrow"></span>
+                        </button>
+                        <ul class="custom-select-options" role="listbox" aria-labelledby="select-label-castracao">
+                            <li class="custom-option" data-value="sim" role="option" tabindex="0">Sim</li>
+                            <li class="custom-option" data-value="nao" role="option" tabindex="0">Não</li>
+                        </ul>
+                    </div>
                 </div>
                 <div>
-                    <label for="status_disponibilidade" class="sr-only">Status</label>
-                    <select name="status_disponibilidade" id="status_disponibilidade" required class="input-style w-full">
+                    <label id="select-label-disponibilidade">Status</label>
+                    <select name="status_disponibilidade" id="status_disponibilidade-real" class="select-hidden" aria-hidden="true" tabindex="-1">
                         <option value="disponivel" <?php echo ($pet['status_disponibilidade'] == 'disponivel') ? 'selected' : ''; ?>>Disponível</option>
                         <option value="adotado" <?php echo ($pet['status_disponibilidade'] == 'adotado') ? 'selected' : ''; ?>>Adotado</option>
                         <option value="indisponivel" <?php echo ($pet['status_disponibilidade'] == 'indisponivel') ? 'selected' : ''; ?>>Indisponível</option>
                     </select>
+
+                    <div class="custom-select-wrapper" data-target-select="status_disponibilidade-real">
+                        <button type="button" class="custom-select-trigger input-style w-full" 
+                                aria-haspopup="listbox" 
+                                aria-expanded="false" 
+                                aria-labelledby="select-label-disponibilidade">
+                            <span class="custom-select-value">
+                                <?php echo htmlspecialchars(ucfirst($pet['status_disponibilidade'])); ?>
+                            </span>
+                            <span class="custom-select-arrow"></span>
+                        </button>
+                        <ul class="custom-select-options" role="listbox" aria-labelledby="select-label-disponibilidade">
+                            <li class="custom-option" data-value="disponivel" role="option" tabindex="0">Disponível</li>
+                            <li class="custom-option" data-value="adotado" role="option" tabindex="0">Adotado</li>
+                            <li class="custom-option" data-value="indisponivel" role="option" tabindex="0">Indisponível</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
             
-            <!-- *** SEÇÃO DE FOTOS ATUALIZADA *** -->
             <div>
                 <label class="font-semibold text-gray-700">Gerenciar Fotos</label>
                 <?php if (empty($pet_fotos)): ?>
@@ -323,25 +526,21 @@ unset($_SESSION['tipo_mensagem']);
                     <div class="fotos-atuais-grid">
                         <?php foreach ($pet_fotos as $foto): ?>
                             <div class="foto-atual-item">
-                                <!-- O Checkbox escondido -->
                                 <input type="checkbox" name="fotos_para_excluir[]" 
-                                       id="foto_<?php echo $foto['id_foto']; ?>" 
-                                       value="<?php echo $foto['id_foto']; ?>"
-                                       onchange="validarLimiteFotos()">
-                                <!-- A Imagem -->
+                                        id="foto_<?php echo $foto['id_foto']; ?>" 
+                                        value="<?php echo $foto['id_foto']; ?>"
+                                        onchange="validarLimiteFotos()">
                                 <img src="<?php echo htmlspecialchars($foto['caminho_foto']); ?>" alt="Foto atual do pet"
-                                     onerror="this.src='images/perfil/teste.jpg';">
-                                <!-- O Botão de Excluir (Label) -->
+                                            onerror="this.src='images/perfil/teste.jpg';">
                                 <label class="delete-foto-btn" 
-                                       for="foto_<?php echo $foto['id_foto']; ?>" 
-                                       title="Marcar para excluir"></label>
+                                        for="foto_<?php echo $foto['id_foto']; ?>" 
+                                        title="Marcar para excluir"></label>
                             </div>
                         <?php endforeach; ?>
                     </div>
                 <?php endif; ?>
             </div>
 
-            <!-- *** SEÇÃO PARA ADICIONAR NOVAS FOTOS *** -->
             <div>
                 <label for="fotos_novas" class="input-style w-full file-input-label">
                     <i class="fas fa-plus"></i>
@@ -349,7 +548,6 @@ unset($_SESSION['tipo_mensagem']);
                 </label>
                 <input type="file" name="fotos_novas[]" id="fotos_novas" class="hidden" multiple accept="image/png, image/jpeg">
                 
-                <!-- Container para o preview das novas imagens -->
                 <div id="fotos-preview-container"></div>
                 <small id="limite-fotos-helper" class="text-sm text-gray-600 mt-1"></small>
             </div>
@@ -358,31 +556,25 @@ unset($_SESSION['tipo_mensagem']);
                 <button type="button" id="openModalBtn" class="input-style w-full">
                     <span id="tagsPlaceholder">Selecionar Características...</span>
                     <span class="tags-preview" id="tagsPreview">
-                        <!-- JS vai preencher isso no load -->
-                    </span>
+                        </span>
                 </button>
                 <div id="hidden-tags-container">
-                    <!-- JS vai preencher isso no load -->
-                </div>
+                    </div>
             </div>
 
-            <!-- Linha 7: Comportamento -->
             <div>
-                <label for="comportamento" class="sr-only">Comportamento (Ex: Dócil, adora crianças...)</label>
-                <textarea name="comportamento" id="comportamento" rows="4" placeholder="Conte um pouco sobre o pet..." class="input-style w-full"><?php echo htmlspecialchars($pet['comportamento']); ?></textarea>
+                <label class="sr-only" for="comportamento">Comportamento (Ex: Dócil, adora crianças...)</label>
+                <input type="text" name="comportamento" value="<?php echo htmlspecialchars($pet['comportamento']); ?>" id="comportamento" rows="4" placeholder="Conte um pouco sobre o pet..." class="input-style w-full"></input>
             </div>
 
-            <!-- Linha 8: Botão de Envio -->
-<div class="flex justify-center w-55 mx-auto">
-    <button type="submit" class="adopt-btn">
-        
-        <div class="heart-background" aria-hidden="true">
-            <i class="bi bi-heart-fill"></i>
-        </div>
-        
-        <span>Salvar Alterações</span>
-    </button>
-</div>
+            <div class="flex justify-center w-55 mx-auto">
+                <button type="submit" class="adopt-btn" id="submit-btn"> <div class="heart-background" aria-hidden="true">
+                        <i class="bi bi-heart-fill"></i>
+                    </div>
+                    
+                    <span>Salvar Alterações</span>
+                </button>
+            </div>
 
 
         </form>
@@ -392,7 +584,6 @@ unset($_SESSION['tipo_mensagem']);
 <div id="charModal" class="char-modal">
     <div class="char-modal-content">
         
-        <!-- Cabeçalho -->
         <div class="char-modal-header">
             <div>
                 <h2>Selecionar Características</h2>
@@ -401,9 +592,7 @@ unset($_SESSION['tipo_mensagem']);
             <button type="button" class="char-modal-close" id="closeModalBtn">&times;</button>
         </div>
 
-        <!-- Corpo com as Tags -->
         <div class="char-modal-body">
-            <!-- Temperamento -->
             <h3>Temperamento</h3>
             <div class="char-tags-container">
                 <span class="char-tag" data-color="laranja" data-value="Dócil"><i class="fa-solid fa-face-smile"></i> Dócil <i class="fas fa-check"></i></span>
@@ -417,7 +606,6 @@ unset($_SESSION['tipo_mensagem']);
                 <span class="char-tag" data-color="laranja" data-value="Medroso"><i class="fa-solid fa-ghost"></i> Medroso <i class="fas fa-check"></i></span>
             </div>
             
-            <!-- 2. Nível de Energia -->
             <h3>Nível de Energia</h3>
             <div class="char-tags-container">
                 <span class="char-tag" data-color="verde" data-value="Baixa Energia"><i class="fa-solid fa-battery-quarter"></i> Baixa Energia <i class="fas fa-check"></i></span>
@@ -426,7 +614,6 @@ unset($_SESSION['tipo_mensagem']);
                 <span class="char-tag" data-color="roxo" data-value="Hiperativo"><i class="fa-solid fa-bolt"></i> Hiperativo <i class="fas fa-check"></i></span>
             </div>
             
-            <!-- 3. Sociabilidade -->
             <h3>Sociabilidade</h3>
             <div class="char-tags-container">
                 <span class="char-tag" data-color="rosa" data-value="Com Crianças"><i class="fa-solid fa-child"></i> Com Crianças <i class="fas fa-check"></i></span>
@@ -437,7 +624,6 @@ unset($_SESSION['tipo_mensagem']);
                 <span class="char-tag" data-color="verde" data-value="Com Idosos"><i class="fa-solid fa-person-cane"></i> Com Idosos <i class="fas fa-check"></i></span>
             </div>
             
-            <!-- 5. Cuidados Especiais -->
             <h3>Cuidados Especiais</h3>
             <div class="char-tags-container">
                 <span class="char-tag" data-color="roxo" data-value="Medicação"><i class="fa-solid fa-pills"></i> Medicação <i class="fas fa-check"></i></span>
@@ -450,7 +636,6 @@ unset($_SESSION['tipo_mensagem']);
                 <span class="char-tag" data-color="verde" data-value="Traumático"><i class="fa-solid fa-heart-crack"></i> Traumático <i class="fas fa-check"></i></span>
             </div>
 
-            <!-- 6. Treinamento e Hábitos -->
             <h3>Treinamento e Hábitos</h3>
             <div class="char-tags-container">
                 <span class="char-tag" data-color="verde" data-value="Adestrado"><i class="fa-solid fa-graduation-cap"></i> Adestrado <i class="fas fa-check"></i></span>
@@ -458,7 +643,6 @@ unset($_SESSION['tipo_mensagem']);
                 <span class="char-tag" data-color="roxo" data-value="Não Adestrado"><i class="fa-solid fa-xmark"></i> Não Adestrado <i class="fas fa-check"></i></span>
             </div>
 
-            <!-- 7. Ambiente Ideal -->
             <h3>Ambiente Ideal</h3>
             <div class="char-tags-container">
                 <span class="char-tag" data-color="roxo" data-value="Apartamento"><i class="fa-solid fa-building"></i> Apartamento <i class="fas fa-check"></i></span>
@@ -468,7 +652,6 @@ unset($_SESSION['tipo_mensagem']);
             </div>
         </div>
 
-        <!-- Rodapé -->
         <div class="char-modal-footer">
             <button type="button" class="btn btn-cancelar" id="cancelModalBtn">Cancelar</button>
             <button type="button" class="btn btn-salvar" id="saveModalBtn">Salvar Seleção (0/5)</button>
@@ -476,13 +659,10 @@ unset($_SESSION['tipo_mensagem']);
     </div>
 </div>
 
-<!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js"></script>
-<!-- O autenticacao.js vai cuidar de mostrar o toast de sucesso ou erro -->
 <script src="assets/js/pages/autenticacao/autenticacao.js" type="module"></script>
 
-<!-- *** SCRIPT ATUALIZADO (Preview e Validação de Limite) *** -->
 <script>
     // Passa o total de fotos do PHP para o JS
     const totalFotosAtuais = <?php echo count($pet_fotos); ?>;
@@ -509,11 +689,11 @@ unset($_SESSION['tipo_mensagem']);
             submitBtn.style.opacity = '0.7';
             return false;
         } else if (totalFinal === 0) {
-             limiteHelper.textContent = `Erro: O pet deve ter pelo menos 1 foto.`;
-             limiteHelper.style.color = 'var(--cor-vermelho)';
-             submitBtn.disabled = true;
-             submitBtn.style.opacity = '0.7';
-             return false;
+            limiteHelper.textContent = `Erro: O pet deve ter pelo menos 1 foto.`;
+            limiteHelper.style.color = 'var(--cor-vermelho)';
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.7';
+            return false;
         } else {
             const espacoRestante = MAX_FOTOS_GLOBAL - fotosAtuaisRestantes;
             limiteHelper.textContent = `Você pode adicionar mais ${espacoRestante} foto(s). (Total será ${totalFinal}/${MAX_FOTOS_GLOBAL})`;
@@ -569,7 +749,170 @@ unset($_SESSION['tipo_mensagem']);
         
         // Valida uma vez ao carregar a página
         validarLimiteFotos();
+
+        // Adiciona listeners para os checkboxes existentes
+        document.querySelectorAll('input[name="fotos_para_excluir[]"]').forEach(checkbox => {
+            checkbox.addEventListener('change', validarLimiteFotos);
+        });
     });
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.custom-select-wrapper').forEach(setupCustomSelect);
+});
+
+function setupCustomSelect(wrapper) {
+    const trigger = wrapper.querySelector('.custom-select-trigger');
+    const optionsList = wrapper.querySelector('.custom-select-options');
+    const options = wrapper.querySelectorAll('.custom-option');
+    const valueSpan = trigger.querySelector('.custom-select-value');
+    
+    // Pega o <select> real escondido usando o data-target-select
+    const targetSelectId = wrapper.dataset.targetSelect;
+    const realSelect = document.getElementById(targetSelectId);
+
+    // Encontra a opção selecionada no select real e a marca no customizado
+    if (realSelect) {
+        const initialSelectedValue = realSelect.value;
+        options.forEach(option => {
+            if (option.dataset.value === initialSelectedValue) {
+                option.classList.add('selected');
+                valueSpan.textContent = option.textContent; // Garante que o texto inicial esteja correto
+            }
+        });
+    }
+
+    // 1. Abrir/Fechar o menu
+    trigger.addEventListener('click', () => {
+        const isExpanded = trigger.getAttribute('aria-expanded') === 'true';
+        // Fecha outros selects abertos
+        document.querySelectorAll('.custom-select-trigger[aria-expanded="true"]').forEach(otherTrigger => {
+            if (otherTrigger !== trigger) {
+                otherTrigger.setAttribute('aria-expanded', 'false');
+                otherTrigger.nextElementSibling.style.display = 'none';
+            }
+        });
+
+        trigger.setAttribute('aria-expanded', !isExpanded);
+        optionsList.style.display = isExpanded ? 'none' : 'block';
+    });
+
+    // 2. Selecionar uma opção
+    options.forEach(option => {
+        option.addEventListener('click', () => {
+            // Remove a classe 'selected' de todos
+            options.forEach(o => o.classList.remove('selected'));
+            
+            // Adiciona 'selected' na clicada
+            option.classList.add('selected');
+            
+            // Atualiza o valor visual no "trigger"
+            valueSpan.textContent = option.textContent;
+            
+            // ATUALIZA O VALOR NO <select> ESCONDIDO (MUITO IMPORTANTE!)
+            if (realSelect) {
+                realSelect.value = option.dataset.value;
+                // Dispara um evento 'change' no select real, útil para outros listeners
+                const event = new Event('change');
+                realSelect.dispatchEvent(event);
+            }
+            
+            // Fecha o menu
+            trigger.click(); // Simula um clique para fechar
+        });
+
+        // Adiciona funcionalidade de foco para acessibilidade
+        option.addEventListener('focus', () => {
+            options.forEach(o => o.classList.remove('focused'));
+            option.classList.add('focused');
+        });
+        option.addEventListener('blur', () => {
+            option.classList.remove('focused');
+        });
+    });
+
+    // 3. Fechar ao clicar fora
+    document.addEventListener('click', (e) => {
+        if (!wrapper.contains(e.target)) {
+            trigger.setAttribute('aria-expanded', 'false');
+            optionsList.style.display = 'none';
+        }
+    });
+
+    // 4. Navegação por teclado (Acessibilidade)
+    let focusedIndex = -1;
+
+    trigger.addEventListener('keydown', (e) => {
+        const isExpanded = trigger.getAttribute('aria-expanded') === 'true';
+
+        switch (e.key) {
+            case 'ArrowDown':
+                e.preventDefault();
+                if (!isExpanded) {
+                    trigger.click(); // Abre se estiver fechado
+                    focusedIndex = 0;
+                } else {
+                    focusedIndex = (focusedIndex + 1) % options.length;
+                }
+                if (options[focusedIndex]) options[focusedIndex].focus();
+                break;
+            case 'ArrowUp':
+                e.preventDefault();
+                if (!isExpanded) {
+                    trigger.click(); // Abre se estiver fechado
+                    focusedIndex = options.length - 1;
+                } else {
+                    focusedIndex = (focusedIndex - 1 + options.length) % options.length;
+                }
+                if (options[focusedIndex]) options[focusedIndex].focus();
+                break;
+            case 'Enter':
+            case ' ': // Tecla Espaço
+                e.preventDefault();
+                if (isExpanded && focusedIndex !== -1 && options[focusedIndex]) {
+                    options[focusedIndex].click(); // Seleciona a opção focada
+                } else if (!isExpanded) {
+                    trigger.click(); // Abre se estiver fechado
+                }
+                break;
+            case 'Escape':
+                e.preventDefault();
+                if (isExpanded) {
+                    trigger.click(); // Fecha
+                    trigger.focus(); // Retorna o foco ao trigger
+                }
+                break;
+        }
+    });
+
+    options.forEach((option, index) => {
+        option.addEventListener('keydown', (e) => {
+            switch (e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    focusedIndex = (index + 1) % options.length;
+                    if (options[focusedIndex]) options[focusedIndex].focus();
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    focusedIndex = (index - 1 + options.length) % options.length;
+                    if (options[focusedIndex]) options[focusedIndex].focus();
+                    break;
+                case 'Enter':
+                case ' ':
+                    e.preventDefault();
+                    option.click();
+                    break;
+                case 'Escape':
+                    e.preventDefault();
+                    trigger.click(); // Fecha
+                    trigger.focus(); // Retorna o foco ao trigger
+                    break;
+            }
+        });
+    });
+}
 </script>
 
 <script type="module">

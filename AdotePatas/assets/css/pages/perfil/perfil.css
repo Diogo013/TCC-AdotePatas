@@ -568,14 +568,8 @@
       font-size: 1rem;
   }
 
-  .action-buttons .btn-outline-primary:hover {
-      background-color: var(--cor-primary);
-      color: #fff;
-  }
-
   .action-buttons .btn-outline-danger:hover {
-      background-color: var(--cor-danger);
-      color: #fff;
+      background-color: var(--cor-vermelho);
   }
 
 

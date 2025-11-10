@@ -46,17 +46,17 @@ img {
   -webkit-text-fill-color: var(--cor-branca);
 }
 
-.input-style {
-  color: white;
-  font-weight: 500;
-  padding: 1.15rem;
-  /* ALTERADO: de 'border: none;' para uma borda transparente para reservar espaço */
-  border: solid 2px transparent;
-  border-radius: 0.75rem;
-  background-color: rgba(180, 100, 89, 0.58);
-  /* ADICIONADO: A transição para suavizar a mudança da cor da borda */
-  transition: border-color 0.3s ease-in-out;
-}
+  .input-style {
+    color: white;
+    font-weight: 500;
+    padding: 1.15rem;
+    /* ALTERADO: de 'border: none;' para uma borda transparente para reservar espaço */
+    border: solid 2px transparent;
+    border-radius: 0.75rem;
+    background-color: rgba(180, 100, 89, 0.58);
+    /* ADICIONADO: A transição para suavizar a mudança da cor da borda */
+    transition: border-color 0.3s ease-in-out;
+  }
 
 .input-style::placeholder {
   color: rgba(255, 255, 255, 0.8);

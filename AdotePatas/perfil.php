@@ -307,44 +307,46 @@ if ($pagina == 'pets-curtidos') {
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4" id="petsGrid">
             <?php foreach ($pets as $pet): ?>
             <div class="col">
-                <div class="pet-card">
-                    <div class="pet-card-img">
-                        <img src="<?php echo htmlspecialchars($pet['foto'] ?? 'images/global/placeholder-pet.png'); ?>" 
-                             alt="Foto de <?php echo htmlspecialchars($pet['nome']); ?>"
-                             onerror="this.src='images/perfil/teste.jpg';"> </div>
-
-                    <div class="pet-card-body">
-                        <div class="d-flex align-items-center mb-2">
-                            <h2 class="pet-name me-2 mb-0"><?php echo htmlspecialchars($pet['nome']); ?></h2>
-                            <?php if (!empty($pet['sexo'])): ?>
-                                <?php if ($pet['sexo'] == 'femea'): ?>
-                                    <i class="fa-solid fa-venus pet-gender-female" aria-label="Fêmea" title="Fêmea"></i>
-                                <?php else: // 'macho' ?>
-                                    <i class="fa-solid fa-mars pet-gender-male" aria-label="Macho" title="Macho"></i>
-                                <?php endif; ?>
+                <a style="text-decoration: none; color: var(--cor-cinza-texto)" href="pet-detalhe/<?php echo ($pet['id_pet']) ?>">
+                    <div class="pet-card">
+                        <div class="pet-card-img">
+                            <img src="<?php echo htmlspecialchars($pet['foto'] ?? 'images/global/placeholder-pet.png'); ?>" 
+                            alt="Foto de <?php echo htmlspecialchars($pet['nome']); ?>"
+                            onerror="this.src='images/perfil/teste.jpg';"> </div>
+                            
+                            <div class="pet-card-body flex-wrap p-0">
+                                <div class="d-flex align-items-center mb-2">
+                                    <h2 class="pet-name me-2 mb-0"><?php echo htmlspecialchars($pet['nome']); ?></h2>
+                                    <?php if (!empty($pet['sexo'])): ?>
+                                        <?php if ($pet['sexo'] == 'femea'): ?>
+                                            <i class="fa-solid fa-venus pet-gender-female"style="color: var(--cor-femea-simbolo)" aria-label="Fêmea" title="Fêmea"></i>
+                                            <?php else: // 'macho' ?>
+                                                <i class="fa-solid fa-mars pet-gender-male" style="color: var(--cor-macho-simbolo)" aria-label="Macho" title="Macho"></i>
+                                                <?php endif; ?>
+                                                <?php endif; ?>
+                                            </div>
+                                            <p class="pet-info text-muted small"><?php echo htmlspecialchars($pet['raca'] ?? 'Raça Desconhecida'); ?> - <?php echo htmlspecialchars($pet['idade'] ?? 'Idade Desconhecida'); ?></p>
+                                        </div>
+                                        
+                                        <div class="pet-card-actions d-flex justify-content-between align-items-center p-3 border-top">
+                                            <span class="badge bg-<?php echo ($pet['status_disponibilidade'] == 'disponivel') ? 'success' : 'secondary'; ?> status-badge">
+                                                <?php echo ucfirst($pet['status_disponibilidade']); ?>
+                                            </span>
+                                            <div class="action-buttons">
+                                                <a href="editar-pet.php?id=<?php echo $pet['id_pet']; ?>" class="btn btn-sm btn-outline-primary me-2" title="Editar Pet">
+                                                    <i class="fa-solid fa-pencil"></i>
+                                                </a>
+                                                <a href="excluir-pet.php?id=<?php echo $pet['id_pet']; ?>" class="btn btn-sm btn-outline-danger btn-excluir-pet" title="Excluir Pet">
+                                                    <i class="fa-solid fa-trash"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                                </div>
+                                <?php endforeach; ?>
+                            </div>
                             <?php endif; ?>
-                        </div>
-                        <p class="pet-info text-muted small"><?php echo htmlspecialchars($pet['raca'] ?? 'Raça Desconhecida'); ?> - <?php echo htmlspecialchars($pet['idade'] ?? 'Idade Desconhecida'); ?></p>
-                    </div>
-
-                    <div class="pet-card-actions d-flex justify-content-between align-items-center p-3 border-top">
-                        <span class="badge bg-<?php echo ($pet['status_disponibilidade'] == 'disponivel') ? 'success' : 'secondary'; ?> status-badge">
-                            <?php echo ucfirst($pet['status_disponibilidade']); ?>
-                        </span>
-                        <div class="action-buttons">
-                            <a href="editar-pet.php?id=<?php echo $pet['id_pet']; ?>" class="btn btn-sm btn-outline-primary me-2" title="Editar Pet">
-                                <i class="fa-solid fa-pencil"></i>
-                            </a>
-                            <a href="excluir-pet.php?id=<?php echo $pet['id_pet']; ?>" class="btn btn-sm btn-outline-danger btn-excluir-pet" title="Excluir Pet">
-                                <i class="fa-solid fa-trash"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <?php endforeach; ?>
-        </div>
-    <?php endif; ?>
 
 </main>
                 <?php

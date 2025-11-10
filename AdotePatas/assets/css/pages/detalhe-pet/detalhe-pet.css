@@ -438,15 +438,6 @@ body.offcanvas-open {
    ========================================================================== */
 
 
-
-/* :root (Pode ser do seu CSS global, mas para garantir) */
-:root {
-    /* --cor-vermelho: #d9006c; */ /* Comentado - Já deve existir no global.css */
-    /* --cor-vermelho-claro: #fdeee4; */ /* Comentado - Já deve existir no global.css */
-    /* --cor-texto: #555; */ /* Comentado - Já deve existir no global.css */
-    --cor-verde: #00a884;
-}
-
 body.pet-detalhe-body {
     background-color: #f8f9fa;
     color: var(--cor-texto);
@@ -558,9 +549,9 @@ body.pet-detalhe-body {
 }
 .info-tags-container span.tag-vacinado,
 .info-tags-container span.tag-castrado {
-    background-color: var(--cor-verde);
+    background-color: var(--cor-verde-pastel);
     color: #fff;
-    border-color: var(--cor-verde);
+    border-color: var(--cor-verde-pastel);
 }
 
 /* Botão Adotar */

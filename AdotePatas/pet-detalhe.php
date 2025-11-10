@@ -197,7 +197,7 @@ try {
         <div class="detalhe-main-content">
             
             <div class="detalhe-fotos">
-                <div class="detalhe-foto-principal shadow-sm">
+                <div class="detalhe-foto-principal shadow-sm" style="border-radius: 20px">
                     <img id="foto-principal-img" 
                          src="<?php echo $foto_principal; ?>" 
                          alt="Foto principal de <?php echo htmlspecialchars($pet['nome']); ?>"
