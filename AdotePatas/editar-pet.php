@@ -582,12 +582,15 @@ unset($_SESSION['tipo_mensagem']);
             </div>
 
             <div>
-                <label for="fotos_novas" class="input-style w-full file-input-label">
+                <label for="fotos_novas_input" class="input-style w-full file-input-label">
                     <i class="fas fa-plus"></i>
                     <span id="file-name-span">Adicionar novas fotos (Máx: 5 no total)</span>
                 </label>
-                <input type="file" name="fotos_novas[]" id="fotos_novas" class="hidden" multiple accept="image/png, image/jpeg">
                 
+                <input type="file" id="fotos_novas_input" class="hidden" multiple accept="image/png, image/jpeg, image/webp">
+                
+                <input type="file" name="fotos_novas[]" id="fotos_novas_final" class="hidden" multiple>
+
                 <div id="fotos-preview-container"></div>
                 <small id="limite-fotos-helper" class="text-sm text-gray-600 mt-1"></small>
             </div>
@@ -701,100 +704,6 @@ unset($_SESSION['tipo_mensagem']);
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js"></script>
 <script src="assets/js/pages/autenticacao/autenticacao.js" type="module"></script>
-
-<script>
-    // Passa o total de fotos do PHP para o JS
-    const totalFotosAtuais = <?php echo count($pet_fotos); ?>;
-    const MAX_FOTOS_GLOBAL = 5;
-
-    const fileInput = document.getElementById('fotos_novas');
-    const fileNameSpan = document.getElementById('file-name-span');
-    const previewContainer = document.getElementById('fotos-preview-container');
-    const form = document.getElementById('form-edit-pet');
-    const submitBtn = document.getElementById('submit-btn');
-    const limiteHelper = document.getElementById('limite-fotos-helper');
-
-    function validarLimiteFotos() {
-        const fotosMarcadasParaExcluir = document.querySelectorAll('input[name="fotos_para_excluir[]"]:checked').length;
-        const fotosNovas = fileInput.files.length;
-        
-        const fotosAtuaisRestantes = totalFotosAtuais - fotosMarcadasParaExcluir;
-        const totalFinal = fotosAtuaisRestantes + fotosNovas;
-
-        if (totalFinal > MAX_FOTOS_GLOBAL) {
-            limiteHelper.textContent = `Erro: Limite de ${MAX_FOTOS_GLOBAL} fotos excedido! (Total: ${totalFinal})`;
-            limiteHelper.style.color = 'var(--cor-vermelho)';
-            submitBtn.disabled = true;
-            submitBtn.style.opacity = '0.7';
-            return false;
-        } else if (totalFinal === 0) {
-            limiteHelper.textContent = `Erro: O pet deve ter pelo menos 1 foto.`;
-            limiteHelper.style.color = 'var(--cor-vermelho)';
-            submitBtn.disabled = true;
-            submitBtn.style.opacity = '0.7';
-            return false;
-        } else {
-            const espacoRestante = MAX_FOTOS_GLOBAL - fotosAtuaisRestantes;
-            limiteHelper.textContent = `Você pode adicionar mais ${espacoRestante} foto(s). (Total será ${totalFinal}/${MAX_FOTOS_GLOBAL})`;
-            limiteHelper.style.color = '#555';
-            submitBtn.disabled = false;
-            submitBtn.style.opacity = '1';
-            return true;
-        }
-    }
-
-    document.addEventListener("DOMContentLoaded", function () {
-        if (fileInput) {
-            fileInput.addEventListener('change', function() {
-                previewContainer.innerHTML = ''; // Limpa preview
-                const files = fileInput.files;
-                
-                if (files.length > 0) {
-                    fileNameSpan.textContent = `${files.length} nova(s) foto(s) selecionada(s)`;
-                    
-                    // Cria o preview
-                    Array.from(files).forEach(file => {
-                        if (['image/jpeg', 'image/png'].includes(file.type)) {
-                            const reader = new FileReader();
-                            reader.onload = function(e) {
-                                const img = document.createElement('img');
-                                img.src = e.target.result;
-                                img.classList.add('foto-preview');
-                                previewContainer.appendChild(img);
-                            }
-                            reader.readAsDataURL(file);
-                        }
-                    });
-                } else {
-                    fileNameSpan.textContent = 'Adicionar novas fotos (Máx: 5 no total)';
-                }
-                // Valida o limite
-                validarLimiteFotos();
-            });
-        }
-        
-        if(form) {
-            form.addEventListener('submit', function(e) {
-                if (!validarLimiteFotos()) {
-                    e.preventDefault(); // Impede o envio
-                    if (typeof showToast === 'function') {
-                        showToast('Corrija os erros no formulário (limite de fotos).', 'danger');
-                    } else {
-                        console.error('Erro no limite de fotos.');
-                    }
-                }
-            });
-        }
-        
-        // Valida uma vez ao carregar a página
-        validarLimiteFotos();
-
-        // Adiciona listeners para os checkboxes existentes
-        document.querySelectorAll('input[name="fotos_para_excluir[]"]').forEach(checkbox => {
-            checkbox.addEventListener('change', validarLimiteFotos);
-        });
-    });
-</script>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -952,6 +861,186 @@ function setupCustomSelect(wrapper) {
         });
     });
 }
+
+// Passa o total de fotos do PHP para o JS
+
+
+    const totalFotosAtuais = <?php echo count($pet_fotos); ?>;
+    const MAX_FOTOS_GLOBAL = 5;
+
+    const fileInput = document.getElementById('fotos_novas_input'); // O input visível
+    const finalInput = document.getElementById('fotos_novas_final'); // O input escondido
+    const fileNameSpan = document.getElementById('file-name-span');
+    const previewContainer = document.getElementById('fotos-preview-container');
+    const form = document.getElementById('form-edit-pet');
+    const submitBtn = document.getElementById('submit-btn');
+    const limiteHelper = document.getElementById('limite-fotos-helper');
+
+    // (Cole isso ANTES da função validarLimiteFotos)
+
+const WEBP_QUALITY = 0.8; // Qualidade do WebP (0 a 1.0)
+
+// Função para converter um arquivo de imagem para WebP
+function convertToWebP(file) {
+    return new Promise((resolve, reject) => {
+        if (file.type === 'image/webp') {
+            resolve(file); // Já é WebP, não faz nada
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                canvas.toBlob(function(blob) {
+                    const webpFileName = file.name.split('.').slice(0, -1).join('.') + '.webp';
+                    const webpFile = new File([blob], webpFileName, { type: 'image/webp' });
+                    resolve(webpFile);
+                }, 'image/webp', WEBP_QUALITY);
+            };
+            img.onerror = reject;
+            img.src = event.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+// Função para atualizar o input "final" (escondido) com os arquivos convertidos
+function updateFinalInput(files, finalInput) {
+    const dataTransfer = new DataTransfer();
+    files.forEach(file => {
+        dataTransfer.items.add(file);
+    });
+    finalInput.files = dataTransfer.files;
+}
+
+    function validarLimiteFotos() {
+        const fotosMarcadasParaExcluir = document.querySelectorAll('input[name="fotos_para_excluir[]"]:checked').length;
+        const fotosNovas = finalInput.files.length;
+        
+        const fotosAtuaisRestantes = totalFotosAtuais - fotosMarcadasParaExcluir;
+        const totalFinal = fotosAtuaisRestantes + fotosNovas;
+
+        if (totalFinal > MAX_FOTOS_GLOBAL) {
+            limiteHelper.textContent = `Erro: Limite de ${MAX_FOTOS_GLOBAL} fotos excedido! (Total: ${totalFinal})`;
+            limiteHelper.style.color = 'var(--cor-vermelho)';
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.7';
+            return false;
+        } else if (totalFinal === 0) {
+            limiteHelper.textContent = `Erro: O pet deve ter pelo menos 1 foto.`;
+            limiteHelper.style.color = 'var(--cor-vermelho)';
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.7';
+            return false;
+        } else {
+            const espacoRestante = MAX_FOTOS_GLOBAL - fotosAtuaisRestantes;
+            limiteHelper.textContent = `Você pode adicionar mais ${espacoRestante} foto(s). (Total será ${totalFinal}/${MAX_FOTOS_GLOBAL})`;
+            limiteHelper.style.color = '#555';
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
+            return true;
+        }
+    }
+        document.addEventListener("DOMContentLoaded", function () {
+
+    // Listener do input VISÍVEL
+    if (fileInput) {
+        fileInput.addEventListener('change', async function() {
+            previewContainer.innerHTML = ''; // Limpa preview
+            fileNameSpan.textContent = 'Processando...';
+
+            let originalFiles = Array.from(fileInput.files);
+            let convertedFiles = [];
+
+            if (originalFiles.length === 0) {
+                fileNameSpan.textContent = 'Adicionar novas fotos (Máx: 5 no total)';
+                updateFinalInput([], finalInput); // Limpa o input final
+                validarLimiteFotos(); // Revalida
+                return;
+            }
+
+            // Validação preliminar de quantidade (antes de converter)
+            const fotosMarcadasParaExcluir = document.querySelectorAll('input[name="fotos_para_excluir[]"]:checked').length;
+            const fotosAtuaisRestantes = totalFotosAtuais - fotosMarcadasParaExcluir;
+            const totalPreliminar = fotosAtuaisRestantes + originalFiles.length;
+
+            if (totalPreliminar > MAX_FOTOS_GLOBAL) {
+                 fileNameSpan.textContent = `Erro: Limite de ${MAX_FOTOS_GLOBAL} fotos excedido!`;
+                 fileInput.value = ""; // Limpa a seleção do input visível
+                 updateFinalInput([], finalInput); // Limpa o input final
+                 validarLimiteFotos();
+                 if (typeof showToast === 'function') showToast('Limite de 5 fotos excedido.', 'danger');
+                 return;
+            }
+
+            try {
+                const conversionPromises = originalFiles.map(file => {
+                    // Mostra preview da imagem original (rápido)
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.classList.add('foto-preview');
+                        previewContainer.appendChild(img);
+                    };
+                    reader.readAsDataURL(file);
+
+                    // Retorna a promessa de conversão
+                    return convertToWebP(file);
+                });
+
+                // Espera todas as imagens serem convertidas
+                convertedFiles = await Promise.all(conversionPromises);
+
+                // ATUALIZA O INPUT ESCONDIDO
+                updateFinalInput(convertedFiles, finalInput);
+                fileNameSpan.textContent = `${convertedFiles.length} nova(s) foto(s) pronta(s).`;
+
+            } catch (error) {
+                console.error("Erro ao converter imagens:", error);
+                fileNameSpan.textContent = 'Erro na conversão. Tente novamente.';
+                updateFinalInput([], finalInput);
+            }
+
+            // Valida o limite DEPOIS de tudo pronto
+            validarLimiteFotos();
+        });
+    }
+
+    if(form) {
+        form.addEventListener('submit', function(e) {
+            if (!validarLimiteFotos()) { // A própria função já usa o 'finalInput'
+                e.preventDefault(); 
+                if (typeof showToast === 'function') {
+                    showToast('Corrija os erros no formulário (limite de fotos).', 'danger');
+                } else {
+                    console.error('Erro no limite de fotos.');
+                }
+            }
+        });
+    }
+
+    // Valida uma vez ao carregar a página
+    validarLimiteFotos();
+
+    // Adiciona listeners para os checkboxes existentes
+    document.querySelectorAll('input[name="fotos_para_excluir[]"]').forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+            // Ao marcar/desmarcar, o 'fileInput' (visível) não muda,
+            // mas o 'finalInput' (escondido) SIM.
+            // O usuário pode ter que selecionar os arquivos de novo se o limite mudar.
+
+            // A melhor abordagem é só validar e mostrar a mensagem
+            validarLimiteFotos(); 
+        });
+    });
+    });
 </script>
 
 <script type="module">

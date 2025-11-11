@@ -116,21 +116,31 @@ try {
 
         $upload_dir = 'uploads/pets/';
         if (!is_dir($upload_dir)) mkdir($upload_dir, 0755, true);
-        $extensoes_permitidas = ['jpg', 'jpeg', 'png'];
+        
+        // Agora SÓ permitimos/esperamos .webp!
+        $extensoes_permitidas = ['webp']; 
 
         for ($i = 0; $i < $total_novas_fotos; $i++) {
             if ($fotos_novas['error'][$i] == UPLOAD_ERR_OK) {
                 $file_name = $fotos_novas['name'][$i];
                 $file_tmp = $fotos_novas['tmp_name'][$i];
                 $file_size = $fotos_novas['size'][$i];
+                
+                // O JS já nos manda o nome com .webp, mas checamos por segurança
                 $file_ext_check = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
 
-                if (!in_array($file_ext_check, $extensoes_permitidas)) throw new Exception("Foto '$file_name': Formato inválido.");
-                if ($file_size > 5 * 1024 * 1024) throw new Exception("Foto '$file_name': Imagem muito grande (Máx: 5MB).");
+                if (!in_array($file_ext_check, $extensoes_permitidas)) {
+                    throw new Exception("Foto '$file_name': Formato inválido (apenas .webp permitido).");
+                }
+                if ($file_size > 5 * 1024 * 1024) {
+                    throw new Exception("Foto '$file_name': Imagem muito grande (Máx: 5MB).");
+                }
 
-                $novo_nome_arquivo = uniqid('', true) . '.' . $file_ext_check;
+                // Forçamos um novo nome único com a extensão .webp
+                $novo_nome_arquivo = uniqid('', true) . '.webp';
                 $caminho_completo = $upload_dir . $novo_nome_arquivo;
 
+                // Apenas movemos o arquivo que já veio convertido
                 if (move_uploaded_file($file_tmp, $caminho_completo)) {
                     $novos_caminhos_salvos[] = $caminho_completo; // Adiciona para Inserir no DB
                 } else {
