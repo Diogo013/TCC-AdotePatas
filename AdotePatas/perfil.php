@@ -314,7 +314,7 @@ if ($pagina == 'pets-curtidos') {
                             alt="Foto de <?php echo htmlspecialchars($pet['nome']); ?>"
                             onerror="this.src='images/perfil/teste.jpg';"> </div>
                             
-                            <div class="pet-card-body flex-wrap p-0">
+                            <div class="pet-card-body flex-wrap p-2">
                                 <div class="d-flex align-items-center mb-2">
                                     <h2 class="pet-name me-2 mb-0"><?php echo htmlspecialchars($pet['nome']); ?></h2>
                                     <?php if (!empty($pet['sexo'])): ?>
@@ -325,7 +325,6 @@ if ($pagina == 'pets-curtidos') {
                                                 <?php endif; ?>
                                                 <?php endif; ?>
                                             </div>
-                                            <p class="pet-info text-muted small"><?php echo htmlspecialchars($pet['raca'] ?? 'Raça Desconhecida'); ?> - <?php echo htmlspecialchars($pet['idade'] ?? 'Idade Desconhecida'); ?></p>
                                         </div>
                                         
                                         <div class="pet-card-actions d-flex justify-content-between align-items-center p-3 border-top">
@@ -389,7 +388,7 @@ if ($pagina == 'pets-curtidos') {
                                                 </div>
                                             </a>
                                             <div class="pet-card-body">
-                                                <h2 class="pet-name">
+                                                <h2 class="pet-name" style="color: var(--cor-cinza-texto);">
                                                     <a href="pet-detalhe.php?id=<?php echo $pet['id_pet']; ?>" class="pet-card-link-nome">
                                                         <?php echo htmlspecialchars($pet['nome']); ?>
                                                     </a>
@@ -397,9 +396,11 @@ if ($pagina == 'pets-curtidos') {
                                                 
                                                 <?php if (!empty($pet['sexo'])): ?>
                                                     <?php if ($pet['sexo'] == 'femea'): ?>
-                                                        <i class="fa-solid fa-venus pet-gender-female" title="Fêmea"></i>
+                                                <i class="fa-solid fa-venus pet-gender-female"style="color: var(--cor-femea-simbolo)" aria-label="Fêmea" title="Fêmea"></i>
+
                                                     <?php else: ?>
-                                                        <i class="fa-solid fa-mars pet-gender-male" title="Macho"></i>
+                                                <i class="fa-solid fa-mars pet-gender-male" style="color: var(--cor-macho-simbolo)" aria-label="Macho" title="Macho"></i>
+
                                                     <?php endif; ?>
                                                 <?php endif; ?>
                                                 

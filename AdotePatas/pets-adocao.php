@@ -268,7 +268,14 @@ try {
                                 </div>
                             </div>
                         </div>
+                        <div class="text-center mt-3">
+        <button type="button" class="btn btn-secondary" id="limparFiltrosBtn">
+            <i class="fa-solid fa-rotate-left me-2"></i>Limpar Filtros
+        </button>
+    </div>
                     </div>
+
+
                 </div>
 
                 <?php if (!empty($erro)): ?>
@@ -366,148 +373,264 @@ try {
 </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // --- Script do botão "Ver Mais/Menos" ---
-            const loadMoreBtnContainer = document.getElementById('loadMoreBtnContainer');
-            const loadMoreBtn = document.getElementById('loadMorePetsBtn');
-            const loadMoreText = document.getElementById('loadMoreText');
-            const loadMoreSpinner = document.getElementById('loadingSpinner');
-            // Seleciona APENAS os cards que foram marcados como ocultos inicialmente
-            const hiddenPets = document.querySelectorAll('#petsGrid .pet-hidden');
-            let petsAreVisible = false;
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // --- Declaração de variáveis dentro do DOMContentLoaded ---
+        const loadMoreBtnContainer = document.getElementById('loadMoreBtnContainer');
+        const loadMoreBtn = document.getElementById('loadMorePetsBtn');
+        const loadMoreText = document.getElementById('loadMoreText');
+        const loadMoreSpinner = document.getElementById('loadingSpinner');
+        const petsGrid = document.getElementById('petsGrid');
+        const filterCheckboxes = document.querySelectorAll('.form-check-input');
+        const searchInput = document.querySelector('.search-input');
+        const limparFiltrosBtn = document.getElementById('limparFiltrosBtn');
+        
+        let filtroTimeout;
+        let petsAreVisible = false;
 
-            // Mostra o botão APENAS se houver pets ocultos para mostrar/esconder
-            if (hiddenPets && hiddenPets.length > 0 && loadMoreBtnContainer) {
-                loadMoreBtnContainer.style.display = 'inline-block'; // Mostra o container
-            } else if (loadMoreBtnContainer) {
-                 loadMoreBtnContainer.style.display = 'none'; // Garante que está escondido se não houver pets ocultos
-            }
+        // --- Script do botão "Ver Mais/Menos" ---
+        const hiddenPets = document.querySelectorAll('#petsGrid .pet-hidden');
 
-            if (loadMoreBtn) {
-                loadMoreBtn.addEventListener('click', function() {
-                    if(loadMoreBtnContainer) loadMoreBtnContainer.style.display = 'none';
-                    loadMoreBtn.disabled = true;
-                    if(loadMoreSpinner) loadMoreSpinner.classList.remove('d-none');
+        // Mostra o botão APENAS se houver pets ocultos para mostrar/esconder
+        if (hiddenPets && hiddenPets.length > 0 && loadMoreBtnContainer) {
+            loadMoreBtnContainer.style.display = 'inline-block';
+        } else if (loadMoreBtnContainer) {
+            loadMoreBtnContainer.style.display = 'none';
+        }
 
-                    setTimeout(() => {
-                        if(loadMoreSpinner) loadMoreSpinner.classList.add('d-none');
-                        petsAreVisible = !petsAreVisible;
-                        hiddenPets.forEach(pet => {
-                            pet.classList.toggle('d-none', !petsAreVisible);
-                        });
-                        if(loadMoreText) {
-                            loadMoreText.innerText = petsAreVisible ? "Ver Menos Patinhas" : "Ver Mais Patinhas";
-                        }
-                        if(loadMoreBtnContainer) loadMoreBtnContainer.style.display = 'inline-block';
-                        loadMoreBtn.disabled = false;
-                    }, 500);
-                });
-            }
+        if (loadMoreBtn) {
+            loadMoreBtn.addEventListener('click', function() {
+                if(loadMoreBtnContainer) loadMoreBtnContainer.style.display = 'none';
+                loadMoreBtn.disabled = true;
+                if(loadMoreSpinner) loadMoreSpinner.classList.remove('d-none');
 
-            // --- Script do Favoritar ---
-            const petsGrid = document.getElementById('petsGrid');
-
-            function showToast(message, type = 'success') {
-                const toast = document.getElementById('toast-notification');
-                const toastIcon = document.getElementById('toast-icon');
-                const toastMessage = document.getElementById('toast-message');
-                if (!toast || !toastIcon || !toastMessage) return;
-
-                // Texto
-                toastMessage.textContent = message;
-
-                // Limpa modificadores anteriores e classes de estado
-                toast.classList.remove('adp-toast--success', 'adp-toast--danger', 'adp-toast--warning', 'show', 'hide');
-                toastIcon.className = 'adp-toast-icon';
-
-                // Aplica modificador correto usado pelo CSS (ex.: adp-toast--success)
-                toast.classList.add('adp-toast--' + type);
-
-                // Ícone conforme tipo
-                if (type === 'success') toastIcon.classList.add('fas', 'fa-check');
-                else if (type === 'danger') toastIcon.classList.add('fas', 'fa-times');
-                else if (type === 'warning') toastIcon.classList.add('fas', 'fa-exclamation-triangle');
-
-                // Torna visível e ativa a animação definida em CSS
-                toast.style.display = 'flex';
-                // Força reflow antes de iniciar animações na barra de progresso
-                const progressBar = toast.querySelector('.adp-toast-progress-bar');
-                if (progressBar) {
-                    progressBar.style.animation = 'none';
-                    void progressBar.offsetWidth;
-                    // Usa a keyframe 'shrink' definida no CSS, por 3s
-                    progressBar.style.animation = 'shrink 3s linear forwards';
-                }
-
-                // Adiciona classe 'show' para acionar slideIn e visibilidade via CSS
-                toast.classList.add('show');
-
-                // Esconde após 3s (ouça a animação se quiser alterar)
                 setTimeout(() => {
-                    toast.classList.remove('show');
-                    toast.classList.add('hide');
-                    // pequena espera para a animação de saída, então remove display
-                    setTimeout(() => {
-                        toast.style.display = 'none';
-                        // limpa classes para próximo uso
-                        toast.classList.remove('hide', 'adp-toast--' + type);
-                        toastIcon.className = 'adp-toast-icon';
-                        if (progressBar) progressBar.style.animation = 'none';
-                    }, 500);
-                }, 3000);
-            }
-
-            if (petsGrid) {
-                petsGrid.addEventListener('click', function(event) {
-                    const heartIcon = event.target.closest('.pet-like');
-                    if (heartIcon) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        const petId = heartIcon.dataset.petId;
-                        toggleFavorite(petId, heartIcon);
-                    }
-                });
-            }
-
-            async function toggleFavorite(petId, iconElement) {
-                try {
-                    const response = await fetch('favoritar-pet.php', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify({ id_pet: petId })
+                    if(loadMoreSpinner) loadMoreSpinner.classList.add('d-none');
+                    petsAreVisible = !petsAreVisible;
+                    hiddenPets.forEach(pet => {
+                        pet.classList.toggle('d-none', !petsAreVisible);
                     });
-                    const result = await response.json();
+                    if(loadMoreText) {
+                        loadMoreText.innerText = petsAreVisible ? "Ver Menos Patinhas" : "Ver Mais Patinhas";
+                    }
+                    if(loadMoreBtnContainer) loadMoreBtnContainer.style.display = 'inline-block';
+                    loadMoreBtn.disabled = false;
+                }, 500);
+            });
+        }
 
-                    if (response.ok && result.success) {
-                        if (result.action === 'favorited') {
-                            iconElement.classList.remove('fa-regular');
-                            iconElement.classList.add('fa-solid', 'favorited');
-                            showToast(result.message, 'success');
-                        } else if (result.action === 'unfavorited') {
-                            iconElement.classList.remove('fa-solid', 'favorited');
-                            iconElement.classList.add('fa-regular');
-                            showToast(result.message, 'warning');
+        // --- Script do Favoritar ---
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast-notification');
+            const toastIcon = document.getElementById('toast-icon');
+            const toastMessage = document.getElementById('toast-message');
+            if (!toast || !toastIcon || !toastMessage) return;
+
+            toastMessage.textContent = message;
+            toast.classList.remove('adp-toast--success', 'adp-toast--danger', 'adp-toast--warning', 'show', 'hide');
+            toastIcon.className = 'adp-toast-icon';
+            toast.classList.add('adp-toast--' + type);
+
+            if (type === 'success') toastIcon.classList.add('fas', 'fa-check');
+            else if (type === 'danger') toastIcon.classList.add('fas', 'fa-times');
+            else if (type === 'warning') toastIcon.classList.add('fas', 'fa-exclamation-triangle');
+
+            toast.style.display = 'flex';
+            const progressBar = toast.querySelector('.adp-toast-progress-bar');
+            if (progressBar) {
+                progressBar.style.animation = 'none';
+                void progressBar.offsetWidth;
+                progressBar.style.animation = 'shrink 3s linear forwards';
+            }
+
+            toast.classList.add('show');
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+                toast.classList.add('hide');
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                    toast.classList.remove('hide', 'adp-toast--' + type);
+                    toastIcon.className = 'adp-toast-icon';
+                    if (progressBar) progressBar.style.animation = 'none';
+                }, 500);
+            }, 3000);
+        }
+
+        if (petsGrid) {
+            petsGrid.addEventListener('click', function(event) {
+                const heartIcon = event.target.closest('.pet-like');
+                if (heartIcon) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const petId = heartIcon.dataset.petId;
+                    toggleFavorite(petId, heartIcon);
+                }
+            });
+        }
+
+        async function toggleFavorite(petId, iconElement) {
+            try {
+                const response = await fetch('favoritar-pet.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ id_pet: petId })
+                });
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    if (result.action === 'favorited') {
+                        iconElement.classList.remove('fa-regular');
+                        iconElement.classList.add('fa-solid', 'favorited');
+                        showToast(result.message, 'success');
+                    } else if (result.action === 'unfavorited') {
+                        iconElement.classList.remove('fa-solid', 'favorited');
+                        iconElement.classList.add('fa-regular');
+                        showToast(result.message, 'warning');
+                    }
+                } else {
+                    if (response.status === 403) {
+                        showToast(result.message, 'danger');
+                        setTimeout(() => { window.location.href = 'login'; }, 1500);
+                    } else {
+                        showToast(result.message || 'Erro ao favoritar.', 'danger');
+                    }
+                }
+            } catch (error) {
+                console.error('Erro no fetch:', error);
+                showToast('Erro de conexão. Tente novamente.', 'danger');
+            }
+        }
+
+        // --- Script dos Filtros AJAX ---
+        // Adiciona evento a todos os checkboxes
+        filterCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', aplicarFiltros);
+        });
+
+        // Adiciona funcionalidade de pesquisa em tempo real
+        if (searchInput) {
+            searchInput.addEventListener('input', aplicarFiltrosComSearch);
+        }
+
+        // Botão Limpar Filtros
+        if (limparFiltrosBtn) {
+            limparFiltrosBtn.addEventListener('click', function() {
+                // Desmarca todos os checkboxes
+                document.querySelectorAll('.form-check-input:checked').forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+                
+                // Limpa a pesquisa
+                if (searchInput) {
+                    searchInput.value = '';
+                }
+                
+                // Aplica os filtros (vazios)
+                aplicarFiltros();
+            });
+        }
+
+        async function aplicarFiltros() {
+            // Limpa timeout anterior para evitar múltiplas requisições
+            clearTimeout(filtroTimeout);
+            
+            // Mostra loading
+            if (petsGrid) {
+                petsGrid.innerHTML = '<div class="col-12 text-center" style="margin: 5rem auto;"><div class="spinner-border" style="color: var(--cor-vermelho); margin: 0 auto;" role="status"><span class="visually-hidden">Carregando...</span></div></div>';
+            }
+            
+            // Esconde o botão "Ver mais" durante o filtro
+            if (loadMoreBtnContainer) {
+                loadMoreBtnContainer.style.display = 'none';
+            }
+
+            // Delay para agrupar múltiplos clicks rápidos
+            filtroTimeout = setTimeout(async () => {
+                // Coletar todos os filtros selecionados
+                const filtrosSelecionados = [];
+                document.querySelectorAll('.form-check-input:checked').forEach(checkbox => {
+                    filtrosSelecionados.push(checkbox.value);
+                });
+
+                const termoPesquisa = searchInput ? searchInput.value.trim() : '';
+
+                try {
+                    const formData = new FormData();
+                    formData.append('filtros', JSON.stringify(filtrosSelecionados));
+                    formData.append('pesquisa', termoPesquisa);
+
+                    const response = await fetch('filtrar-pets.php', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        const html = await response.text();
+                        if (petsGrid) {
+                            petsGrid.innerHTML = html;
+                            
+                            // Verifica se há pets após o filtro
+                            const petsEncontrados = petsGrid.querySelectorAll('.col').length > 0;
+                            
+                            if (!petsEncontrados) {
+                                petsGrid.innerHTML = `
+
+                                <div class="container text-center">
+  <div class="row"  style='margin-left: -2rem;'>
+    <div class="col">
+    <lottie-player src="animações/gato-deitado.json" background="transparent" speed="1" style="width: 400px; height: 400px; margin: 0 auto;" loop autoplay></lottie-player>
+
+    </div>
+    <div class="col">
+   <h4 style="margin-top: -2rem; font-weight: 700; width: 500px;margin-left: -2rem;">Nenhum Pet Encontrado</h4>
+    </div>
+    <div class="col">
+<p style="color: var(--cor-cinza-texto); width: 500px; margin-left: -2rem;">Não encontramos pets com os filtros selecionados.<br>Tente ajustar os filtros.</p>
+    </div>
+  </div>
+</div>
+                                `;
+                            }
+                            
+                            // Mantém o botão "Ver mais" escondido durante filtros
+                            if (loadMoreBtnContainer && (filtrosSelecionados.length > 0 || termoPesquisa.length > 0)) {
+                                loadMoreBtnContainer.style.display = 'none';
+                            } else if (loadMoreBtnContainer) {
+                                // Mostra o botão apenas quando não há filtros ativos
+                                const hiddenPetsAfterFilter = document.querySelectorAll('#petsGrid .pet-hidden');
+                                if (hiddenPetsAfterFilter.length > 0) {
+                                    loadMoreBtnContainer.style.display = 'inline-block';
+                                }
+                            }
                         }
                     } else {
-                        if (response.status === 403) {
-                            showToast(result.message, 'danger');
-                            setTimeout(() => { window.location.href = 'login'; }, 1500);
-                        } else {
-                            showToast(result.message || 'Erro ao favoritar.', 'danger');
-                        }
+                        throw new Error('Erro na resposta do servidor');
                     }
                 } catch (error) {
-                    console.error('Erro no fetch:', error);
-                    showToast('Erro de conexão. Tente novamente.', 'danger');
+                    console.error('Erro ao aplicar filtros:', error);
+                    if (petsGrid) {
+                        petsGrid.innerHTML = '<div class="col-12 text-center"><p>Erro ao carregar pets. Tente novamente.</p></div>';
+                    }
                 }
-            }
-        });
-    </script>
+            }, 300);
+        }
+
+        function aplicarFiltrosComSearch() {
+            clearTimeout(filtroTimeout);
+            filtroTimeout = setTimeout(() => {
+                aplicarFiltros();
+            }, 500);
+        }
+    });
+</script>
 <script src="assets/js/pages/index/offcanvas-fix.js"></script>
+
+
+
 
 <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
   <div class="offcanvas-header border-bottom">

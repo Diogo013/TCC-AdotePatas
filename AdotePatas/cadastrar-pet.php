@@ -410,6 +410,47 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         input[type=number] {
             -moz-appearance: textfield; 
         }
+
+        /* Estilos para as tags de características no input */
+.tags-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.char-tag-input {
+    background-color: #ffffff;
+    padding: 0.3rem 0.7rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--cor-texto);
+    border: 1px solid #eee;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+
+/* Ajuste para o botão de características */
+#openModalBtn {
+    min-height: 60px;
+    display: flex;
+    align-items: flex-start;
+    padding: 1.15rem;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.tags-placeholder {
+    color: var(--cor-branca) !important;
+}
+
+#openModalBtn:has(.char-tag-input) {
+    color: inherit;
+}
+
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4">
@@ -629,14 +670,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </div>
                 </div>
                 
-                <div>
-                    <label for="openModalBtn">Características</label>
-                    <button type="button" id="openModalBtn" class="input-style w-full">
-                        <span id="tagsPlaceholder" style="<?php echo !empty($caracteristicas) ? 'display: none;' : 'display: block;'; ?>">Selecionar Características...</span>
-                        <span class="tags-preview" id="tagsPreview">
-                            </span>
-                    </button>
-                </div>
+<div>
+    <label for="openModalBtn">Características</label>
+    <button type="button" id="openModalBtn" class="input-style w-full text-left">
+        <span id="tagsPlaceholder" class="tags-placeholder" style="<?php echo !empty($caracteristicas) ? 'display: none;' : 'display: block;'; ?>">Selecionar Características...</span>
+        <span class="tags-preview" id="tagsPreview"></span>
+    </button>
+</div>
+
                 <div id="hidden-tags-container"></div>
             </div>
     
@@ -1059,30 +1100,42 @@ function setupCustomSelect(wrapper) {
     }
     
     // --- Função para salvar e atualizar a UI ---
-    function saveAndApplyTags() {
-        // 1. Limpa os inputs escondidos e o preview de ícones
-        hiddenTagsContainer.innerHTML = '';
-        tagsPreview.innerHTML = '';
-        
-        let hasSelection = selectedTags.length > 0;
+function saveAndApplyTags() {
+    // 1. Limpa os inputs escondidos e o preview de tags
+    hiddenTagsContainer.innerHTML = '';
+    tagsPreview.innerHTML = '';
+    
+    let hasSelection = selectedTags.length > 0;
 
-        selectedTags.forEach(tag => {
-            // 2a. Cria os novos inputs escondidos
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'caracteristicas[]';
-            input.value = tag.value;
-            hiddenTagsContainer.appendChild(input);
-            
-            // 2b. Adiciona o ícone ao preview no botão
-            tagsPreview.innerHTML += tag.iconHTML;
-        });
+    selectedTags.forEach(tag => {
+        // 2a. Cria os novos inputs escondidos
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'caracteristicas[]';
+        input.value = tag.value;
+        hiddenTagsContainer.appendChild(input);
         
-        // 3. Mostra/Esconde o placeholder
-        if (tagsPlaceholder) {
-            tagsPlaceholder.style.display = hasSelection ? 'none' : 'block';
+        // 2b. Adiciona a TAG ESTILIZADA ao preview no botão
+        const tagElement = document.createElement('span');
+        tagElement.className = 'char-tag-input';
+        
+        // Adiciona o ícone e o texto
+        tagElement.innerHTML = tag.iconHTML + ' ' + tag.value;
+        
+        tagsPreview.appendChild(tagElement);
+    });
+    
+    // 3. Mostra/Esconde o placeholder
+    if (tagsPlaceholder) {
+        tagsPlaceholder.style.display = hasSelection ? 'none' : 'block';
+        // Adiciona classe para styling do placeholder
+        if (hasSelection) {
+            tagsPlaceholder.classList.remove('tags-placeholder');
+        } else {
+            tagsPlaceholder.classList.add('tags-placeholder');
         }
     }
+}
     
     // --- Função para pré-popular no load da página ---
     function prefillCharacteristics() {
