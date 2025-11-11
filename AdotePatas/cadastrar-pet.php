@@ -91,7 +91,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $erros[] = "Você só pode selecionar até 5 características.";
     }
 
-    // 3. Validação e Upload das Fotos (*** LÓGICA MÚLTIPLA ***)
+    // 3. Validação e Upload das Fotos (*** LÓGICA MÚLTIPLA - WEBP JÁ VEM DO JS ***)
     
     // Verifica se alguma foto foi enviada
     if (isset($_FILES['fotos']) && !empty(array_filter($_FILES['fotos']['name']))) {
@@ -104,8 +104,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if (!is_dir($upload_dir)) {
                 mkdir($upload_dir, 0755, true); 
             }
-            
-            $extensoes_permitidas = ['jpg', 'jpeg', 'png'];
+            if (!is_writable($upload_dir)) {
+                 $erros[] = "Erro de servidor: O diretório '$upload_dir' não tem permissão de escrita.";
+            }
+
+            // Agora só permitimos/esperamos .webp
+            $extensoes_permitidas = ['webp'];
 
             for ($i = 0; $i < $total_files; $i++) {
                 $file_name = $_FILES['fotos']['name'][$i];
@@ -116,17 +120,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 if ($file_error == UPLOAD_ERR_OK) {
                     $file_ext_check = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
 
-                    if (!in_array($file_ext_check, $extensoes_permitidas)) {
-                        $erros[] = "Foto '$file_name': Formato inválido. (Apenas JPG, JPEG, PNG)";
+                    if ($file_ext_check != 'webp') {
+                        $erros[] = "Foto '$file_name': Formato inválido. (Esperado .webp)";
                     }
                     if ($file_size > 5 * 1024 * 1024) { // 5 MB
                         $erros[] = "Foto '$file_name': Imagem muito grande (Máx: 5MB).";
                     }
 
                     if (empty($erros)) {
-                        $novo_nome_arquivo = uniqid('', true) . '.' . $file_ext_check;
+                        // O nome do arquivo já vem como .webp, mas vamos gerar um uniqid
+                        // para garantir que não haja conflitos
+                        $novo_nome_arquivo = uniqid('', true) . '.webp';
                         $caminho_completo = $upload_dir . $novo_nome_arquivo;
 
+                        // APENAS movemos o arquivo. Nenhuma conversão!
                         if (move_uploaded_file($file_tmp, $caminho_completo)) {
                             $fotos_salvas_paths[] = $caminho_completo; // Adiciona ao array
                         } else {
@@ -682,12 +689,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
     
             <div>
-                <label for="fotos" class="input-style w-full file-input-label">
+                <label for="fotos-input" class="input-style w-full file-input-label">
                     <i class="fas fa-upload"></i>
                     <span id="file-name-span">Escolher fotos (Até 5)</span>
                 </label>
-                <input type="file" name="fotos[]" id="fotos" class="hidden" required multiple accept="image/png, image/jpeg">
-                
+
+                <input type="file" id="fotos-input" class="hidden" multiple accept="image/png, image/jpeg, image/webp">
+
+                <input type="file" name="fotos[]" id="fotos-final" class="hidden" multiple>
+
                 <div id="fotos-preview-container"></div>
             </div>
 
@@ -795,82 +805,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <script src="assets/js/pages/autenticacao/autenticacao.js" type="module"></script>
 
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const fileInput = document.getElementById('fotos'); // Mudei para 'fotos'
-        const fileNameSpan = document.getElementById('file-name-span');
-        const previewContainer = document.getElementById('fotos-preview-container');
-        const form = document.getElementById('form-cadastro-pet');
-
-        if (fileInput) {
-            fileInput.addEventListener('change', function() {
-                // Limpa o preview anterior
-                previewContainer.innerHTML = '';
-                
-                const files = fileInput.files;
-                
-                if (files.length > 0) {
-                    if (files.length > 5) {
-                        fileNameSpan.textContent = 'Limite de 5 fotos excedido! (Máx: 5)';
-                        fileInput.value = ""; // Limpa os arquivos selecionados
-                        previewContainer.innerHTML = ''; // Limpa o preview
-                        
-                        // Mostra um toast de erro (requer a função global showToast)
-                        if (typeof showToast === 'function') {
-                            showToast('Você só pode selecionar no máximo 5 fotos.', 'danger');
-                        } else {
-                            console.warn('Função showToast não definida.');
-                        }
-                        
-                        return;
-                    }
-                    
-                    fileNameSpan.textContent = `${files.length} foto(s) selecionada(s)`;
-                    
-                    // Cria o preview
-                    Array.from(files).forEach(file => {
-                        // Validação extra de tipo de arquivo
-                        if (!['image/jpeg', 'image/png'].includes(file.type)) {
-                            return; // Pula arquivos não-imagem
-                        }
-                        
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            const img = document.createElement('img');
-                            img.src = e.target.result;
-                            img.classList.add('foto-preview');
-                            previewContainer.appendChild(img);
-                        }
-                        reader.readAsDataURL(file);
-                    });
-                    
-                } else {
-                    fileNameSpan.textContent = 'Escolher fotos (Até 5)';
-                }
-            });
-        }
-        
-        // Adiciona validação no submit do formulário
-        if(form) {
-            form.addEventListener('submit', function(e) {
-                if (fileInput.files.length > 5) {
-                    e.preventDefault(); // Impede o envio do formulário
-                    fileNameSpan.textContent = 'Limite de 5 fotos excedido! (Máx: 5)';
-                    if (typeof showToast === 'function') {
-                        showToast('Corrija os erros antes de enviar. Máximo de 5 fotos.', 'danger');
-                    }
-                }
-                if (fileInput.files.length === 0) {
-                     e.preventDefault(); // Impede o envio do formulário
-                     fileNameSpan.textContent = 'Pelo menos uma foto é obrigatória.';
-                     if (typeof showToast === 'function') {
-                         showToast('Pelo menos uma foto do pet é obrigatória.', 'danger');
-                    }
-                }
-            });
-        }
-    });
-</script>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -1036,6 +970,126 @@ function setupCustomSelect(wrapper) {
         });
     });
 }
+    const fileInput = document.getElementById('fotos-input');      // O input que o usuário vê
+    const finalInput = document.getElementById('fotos-final');    // O input que o PHP recebe
+    const form = document.getElementById('form-cadastro-pet');
+    const fileNameSpan = document.getElementById('file-name-span');
+    const previewContainer = document.getElementById('fotos-preview-container');
+    const MAX_FILES = 5;
+    const WEBP_QUALITY = 0.8; // Qualidade do WebP (0 a 1.0)
+
+    // Função para converter um arquivo de imagem para WebP
+    function convertToWebP(file) {
+        return new Promise((resolve, reject) => {
+            // Se já for WebP, só retorna
+            if (file.type === 'image/webp') {
+                resolve(file);
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+
+                    // Converte o canvas para um Blob WebP
+                    canvas.toBlob(function(blob) {
+                        // Cria um novo nome de arquivo
+                        const webpFileName = file.name.split('.').slice(0, -1).join('.') + '.webp';
+                        // Cria um novo objeto File
+                        const webpFile = new File([blob], webpFileName, { type: 'image/webp' });
+                        resolve(webpFile);
+                    }, 'image/webp', WEBP_QUALITY);
+                };
+                img.onerror = reject;
+                img.src = event.target.result;
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // Função para atualizar o DataTransfer (o "container" de arquivos do input)
+    function updateFinalInput(files) {
+        const dataTransfer = new DataTransfer();
+        files.forEach(file => {
+            dataTransfer.items.add(file);
+        });
+        finalInput.files = dataTransfer.files;
+    }
+
+    // Quando o usuário seleciona os arquivos...
+    fileInput.addEventListener('change', async function() {
+        previewContainer.innerHTML = ''; // Limpa preview
+        fileNameSpan.textContent = 'Processando...';
+
+        let originalFiles = Array.from(fileInput.files);
+        let convertedFiles = []; // Array para os arquivos convertidos
+
+        if (originalFiles.length === 0) {
+            fileNameSpan.textContent = 'Escolher fotos (Até 5)';
+            updateFinalInput([]);
+            return;
+        }
+
+        if (originalFiles.length > MAX_FILES) {
+            fileNameSpan.textContent = `Limite de ${MAX_FILES} fotos excedido!`;
+            fileInput.value = ""; // Limpa a seleção
+            updateFinalInput([]);
+            // showToast(...)
+            return;
+        }
+
+        try {
+            // Cria um array de "promessas" de conversão
+            const conversionPromises = originalFiles.map(file => {
+                // Mostra um preview imediato (da imagem original)
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.classList.add('foto-preview');
+                    previewContainer.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+
+                // Retorna a promessa de conversão
+                return convertToWebP(file);
+            });
+
+            // Espera todas as imagens serem convertidas
+            convertedFiles = await Promise.all(conversionPromises);
+            
+            // Atualiza o input final (o que vai pro PHP)
+            updateFinalInput(convertedFiles);
+            fileNameSpan.textContent = `${convertedFiles.length} foto(s) pronta(s) para envio.`;
+
+        } catch (error) {
+            console.error("Erro ao converter imagens:", error);
+            fileNameSpan.textContent = 'Erro na conversão. Tente novamente.';
+            updateFinalInput([]);
+            // showToast('Erro ao processar uma das imagens.', 'danger');
+        }
+    });
+
+    // Validação no envio do formulário
+    form.addEventListener('submit', function(e) {
+        if (finalInput.files.length === 0) {
+            e.preventDefault(); // Impede o envio
+            fileNameSpan.textContent = 'Pelo menos uma foto é obrigatória.';
+            // showToast('Pelo menos uma foto do pet é obrigatória.', 'danger');
+        }
+        if (finalInput.files.length > MAX_FILES) {
+            e.preventDefault(); // Impede o envio
+            fileNameSpan.textContent = 'Limite de 5 fotos excedido!';
+            // showToast('Máximo de 5 fotos.', 'danger');
+        }
+    });
 </script>
 
 <script type="module">

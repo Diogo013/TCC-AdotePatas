@@ -11,3 +11,5 @@ Thumbs.db
 
 # Arquivos de configuração
 conexao.php
+
+uploads/
