@@ -7,7 +7,6 @@
 body {
     font-family: "Poppins", sans-serif;
     line-height: 1.5;
-    background-color: var(--cor-laranja-claro-pastel);
 }
 
 /* Título principal da seção */
@@ -37,15 +36,15 @@ main {
                       to bottom, 
                       rgba(255, 255, 255, 0) 0%, /* Totalmente transparente no topo */
                       rgba(255, 255, 255, 0) 70%, /* Permanece transparente por 70% da altura */
-                      rgba(255, 255, 255, 0.8) 90%, /* Começa a ficar branco e opaco */
-                      rgba(255, 255, 255, 1) 100% /* Totalmente branco e opaco na base */
+                      rgba(255, 255, 255, 0.5) 80%, /* Começa a ficar branco e opaco */
+                      rgba(255, 255, 255, 0.7) 90% /* Totalmente branco e opaco na base */
                     ),
                     /* Depois, a imagem de fundo */
                     url("../../../../images/cadastro-login/background.png"); 
   background-size: cover;
   background-position: center bottom; /* Ajustado para focar na parte inferior se a imagem for grande */
   background-repeat: no-repeat;
-  /* z-index: 0; */ /* O z-index geralmente não é necessário aqui, a menos que haja outros elementos */
+   z-index: -100;/* O z-index geralmente não é necessário aqui, a menos que haja outros elementos */
 
   /* Para garantir que a main ocupe toda a altura necessária para o degradê ser visível */
   min-height: calc(100vh - 100px); /* Ajuste 100px para a altura do seu header/footer */

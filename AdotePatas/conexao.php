@@ -28,6 +28,6 @@ try {
     // Mensagem amigável em caso de falha de conexão
     die("<div style='text-align: center; padding: 20px; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 5px;'>
             <strong>Erro Crítico:</strong> Não foi possível conectar ao banco de dados.
-            <br>Verifique as configurações em 'conexao.php'.
+            <br>Verifique as configurações.
           </div>");
 }
