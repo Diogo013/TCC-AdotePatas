@@ -9,4 +9,5 @@
 .DS_Store
 Thumbs.db
 
+# Arquivos de configuração
 conexao.php

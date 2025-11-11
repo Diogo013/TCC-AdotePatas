@@ -53,7 +53,6 @@ try {
 
     // 8. APAGAR OS ARQUIVOS FÍSICOS DO SERVIDOR (SÓ APÓS O COMMIT)
     foreach ($fotos_para_apagar as $caminho) {
-        // *** INÍCIO DA CORREÇÃO ***
         // $caminho é um caminho relativo, ex: 'uploads/pets/foto.jpg'
         // Criamos um caminho absoluto baseado no local deste script (__DIR__)
         // __DIR__ é o diretório do arquivo atual (ex: C:\xampp\htdocs\seu_projeto)
@@ -63,7 +62,6 @@ try {
         if (!empty($caminho) && file_exists($caminho_absoluto)) {
             @unlink($caminho_absoluto);
         }
-        // *** FIM DA CORREÇÃO ***
     }
 
     // 8. Redireciona de volta com sucesso (Padrão PRG)
