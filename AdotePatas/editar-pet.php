@@ -355,7 +355,7 @@ unset($_SESSION['tipo_mensagem']);
             </a>
         </div>
         <div class="absolute inset-x-0 text-center">
-            <h1 id="page-title" class="text-xl md:text-4xl font-bold text-[#666662]">Editar Pet</h1>
+            <h1 class="text-xl md:text-4xl font-bold text-[#666662]">Editar Pet</h1>
             <div class="w-24 h-1 bg-[#666662] mx-auto mt-1 rounded-full"></div>
         </div>
         <div class="h-16 w-16 invisible"></div>

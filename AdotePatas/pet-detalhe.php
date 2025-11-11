@@ -4,6 +4,19 @@ include_once 'conexao.php';
 include_once 'session.php';
 
 
+// 2. Segurança: Verifica se o usuário está logado
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_tipo'])) {
+    // Se não estiver logado, redireciona para a página de login
+    header("Location: ../login");
+    exit;
+}
+// 3. Pega os dados básicos da sessão
+$user_id = $_SESSION['user_id'];
+$user_tipo = $_SESSION['user_tipo'];
+$usuario = null;
+$erro = '';
+
+
 if ($_SERVER['SERVER_NAME'] == 'localhost') {
     $base_path = '/TCC-AdotePatas/AdotePatas/';
 } else {
@@ -185,7 +198,7 @@ try {
         <div class="adp-toast-progress-bar"></div>
     </div>
 
-    <main class="container my-4">
+    <main class="container my-4" style="padding: 0 30px;">
         
         <nav aria-label="breadcrumb" class="detalhe-breadcrumb">
             <ol class="breadcrumb">
@@ -220,21 +233,39 @@ try {
             </div>
 
             <div class="detalhe-info-card shadow-sm">
-                <div class="d-flex justify-content-between align-items-start">
-                    <h1>
-                        <?php echo htmlspecialchars($pet['nome']); ?>
-                        <?php if ($pet['sexo'] == 'femea'): ?>
-                            <i class="fa-solid fa-venus pet-gender-female" style="font-size: 2rem;" title="Fêmea"></i>
-                        <?php else: ?>
-                            <i class="fa-solid fa-mars pet-gender-male" style="font-size: 2rem;" title="Macho"></i>
-                        <?php endif; ?>
-                    </h1>
-                    <i class="pet-like <?php echo $is_favorito ? 'fa-solid fa-heart favorited' : 'fa-regular fa-heart'; ?>" 
-                       data-pet-id="<?php echo $pet['id_pet']; ?>" 
-                       aria-label="Favoritar" 
-                       role="button">
-                    </i>
-                </div>
+               <div class="d-flex justify-content-between align-items-start">
+    <h1>
+        <?php echo htmlspecialchars($pet['nome']); ?>
+        <?php if ($pet['sexo'] == 'femea'): ?>
+            <i class="fa-solid fa-venus pet-gender-female" style="font-size: 2rem;" title="Fêmea"></i>
+        <?php else: ?>
+            <i class="fa-solid fa-mars pet-gender-male" style="font-size: 2rem;" title="Macho"></i>
+        <?php endif; ?>
+    </h1>
+    
+    <div class.="detalhe-action-icons">
+        <i class="pet-like <?php echo $is_favorito ? 'fa-solid fa-heart favorited' : 'fa-regular fa-heart'; ?>" 
+           data-pet-id="<?php echo $pet['id_pet']; ?>" 
+           aria-label="Favoritar" 
+           role="button">
+        </i>
+        
+        <div class="dropdown d-inline-block">
+            <i class="fa-solid fa-share-alt pet-share" aria-label="Compartilhar" role="button" data-bs-toggle="dropdown" aria-expanded="false"></i>
+            <ul class="dropdown-menu dropdown-menu-end  p-0">
+                <li><a class="dropdown-item" id="share-whatsapp" href="#" target="_blank"><i class="fab fa-whatsapp fa-fw me-2"></i> WhatsApp</a></li>
+                <li><a class="dropdown-item" id="share-facebook" href="#" target="_blank"><i class="fab fa-facebook fa-fw me-2"></i> Facebook</a></li>
+                <li><a class="dropdown-item" id="share-twitter" href="#" target="_blank"><i class="fa-brands fa-x-twitter"></i></i> X (Twitter)</a></li>
+                <li><hr class="dropdown-divider" style="margin: 2px 0;"></li>
+                <li><button class="dropdown-item" id="share-copy-link" type="button"><i class="fa-solid fa-copy fa-fw me-2"></i> Copiar Link</button></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+                <div class="tutor-responsavel">
+<h6 style="color: var(--cor-cinza-texto);">Tutor: <?php echo htmlspecialchars($pet['doador_nome']); ?></h6>
+</div>
 
                 <div class="info-tags-container">
                     <span><?php echo htmlspecialchars($pet['idade']); ?> Ano(s)</span>
@@ -248,15 +279,13 @@ try {
                     <span><?php echo htmlspecialchars($pet['raca']); ?></span>
                 </div>
 
-                <div class="d-flex justify-content-center">
-                    <div class="flex justify-center mx-auto"> <a href="<?php echo $base_path; ?>formulario?id_pet=<?php echo $pet['id_pet']; ?>" class="adopt-btn">
+                <div class="d-flex justify-content-center text-center">
+                    <a href="<?php echo $base_path; ?>formulario?id_pet=<?php echo $pet['id_pet']; ?>" class="adopt-btn">
                         <div class="heart-background" aria-hidden="true">
                             <i class="bi bi-heart-fill"></i>
                         </div>
                         <span>Quero Adotar!</span>
                     </a>
-                </div>
-                
 </div>
 
                 <div class="location">
@@ -387,6 +416,46 @@ try {
                 toggleFavorite(petId, heartIcon);
             });
         }
+
+                    // Adicione isso dentro do seu:
+// document.addEventListener('DOMContentLoaded', function() { ... });
+
+    // --- Lógica de Compartilhamento ---
+    
+    // 1. Pega a URL atual e o nome do pet
+    const currentURL = window.location.href;
+    const petName = <?php echo json_encode($pet['nome']); ?>; // Pega o nome do pet com segurança
+    const shareText = "Ajude o(a) " + petName + " a encontrar um lar! Veja o perfil: ";
+    
+    // 2. Links de compartilhamento
+    const whatsappLink = document.getElementById('share-whatsapp');
+    if(whatsappLink) {
+        whatsappLink.href = 'https://api.whatsapp.com/send?text=' + encodeURIComponent(shareText + currentURL);
+    }
+
+    const facebookLink = document.getElementById('share-facebook');
+    if(facebookLink) {
+        facebookLink.href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(currentURL);
+    }
+    
+    const twitterLink = document.getElementById('share-twitter');
+    if(twitterLink) {
+        twitterLink.href = 'https://twitter.com/intent/tweet?url=' + encodeURIComponent(currentURL) + '&text=' + encodeURIComponent(shareText);
+    }
+
+    // 3. Botão de Copiar
+    const copyLinkButton = document.getElementById('share-copy-link');
+    if(copyLinkButton) {
+        copyLinkButton.addEventListener('click', function() {
+            navigator.clipboard.writeText(currentURL).then(function() {
+                // REUTILIZANDO O SEU TOAST!
+                showToast('Link copiado para a área de transferência!', 'success');
+            }, function(err) {
+                console.error('Erro ao copiar link: ', err);
+                showToast('Não foi possível copiar o link.', 'danger');
+            });
+        });
+    }
 
         async function toggleFavorite(petId, iconElement) {
             try {

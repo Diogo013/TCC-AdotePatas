@@ -67,7 +67,54 @@ if ($logado && isset($_SESSION['nome'])) {
 
 $pagina = "";
 
+// BUSCAR PETS DO BANCO DE DADOS (similar ao pets.php)
+$pets = [];
+$favoritos_usuario = [];
+
+try {
+    // Buscar pets disponíveis
+    $sql = "SELECT 
+                p.id_pet, p.nome, p.sexo,
+                pf.caminho_foto AS foto
+            FROM 
+                pet AS p
+            LEFT JOIN (
+                -- Subquery para achar a primeira foto
+                SELECT id_pet_fk, MIN(id_foto) as min_id_foto
+                FROM pet_fotos
+                GROUP BY id_pet_fk
+            ) pf_min ON p.id_pet = pf_min.id_pet_fk
+            LEFT JOIN 
+                pet_fotos AS pf ON pf.id_foto = pf_min.min_id_foto
+            WHERE 
+                p.status_disponibilidade = 'disponivel'
+            ORDER BY p.id_pet DESC
+            LIMIT 3"; // Limitando a 3 pets no index
+
+    $stmt = $conn->prepare($sql);
+    $stmt->execute();
+    $pets = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+} catch (PDOException $e) {
+    $erro = "Erro ao buscar os pets. Tente novamente mais tarde.";
+    error_log("Erro em index.php ao buscar pets: " . $e->getMessage());
+}
+
+// Buscar favoritos se estiver logado
+if ($logado && $user_tipo == 'usuario') {
+    try {
+        $sql_fav = "SELECT id_pet FROM favorito WHERE id_usuario = :id_usuario";
+        $stmt_fav = $conn->prepare($sql_fav);
+        $stmt_fav->execute([':id_usuario' => $user_id]);
+        $favoritos_usuario = $stmt_fav->fetchAll(PDO::FETCH_COLUMN, 0);
+        $favoritos_usuario = array_map('intval', $favoritos_usuario);
+    } catch (PDOException $e) {
+        error_log("Erro ao buscar favoritos no index: " . $e->getMessage());
+    }
+}
+
 ?>
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -188,10 +235,7 @@ $pagina = "";
     </div>
   </main>
 
-
-
   <section class="image-background">
-
 
     <section class="cards-section">
       <div class="container text-center">
@@ -232,7 +276,6 @@ $pagina = "";
       </div>
     </section>
 
-
     <section class="pets-section">
       <div class="container">
         <div class="row mb-4">
@@ -240,48 +283,48 @@ $pagina = "";
             <h1 class="titulo-adocao">Animais para Adoção</h1>
           </div>
         </div>
-        <div class="row justify-content-between">
-
-          <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-            <div class="pet-card">
-              <div class="pet-card-img">
-                <img src="images/index/baunilha.webp" alt="Foto da gata Baunilha">
+        
+        <?php if (!empty($pets)): ?>
+          <div class="row justify-content-between">
+            <?php foreach ($pets as $pet): ?>
+              <?php
+                // Verifica se este pet está favoritado
+                $is_favorito = in_array($pet['id_pet'], $favoritos_usuario);
+                // Define um caminho padrão para a foto se não houver uma específica
+                $foto_path = !empty($pet['foto']) ? $pet['foto'] : 'images/placeholder-pet.png';
+                $alt_text = "Foto de " . htmlspecialchars($pet['nome']);
+              ?>
+              <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                <a href="pet-detalhe/<?php echo $pet['id_pet']; ?>" class="pet-card-link" style="text-decoration: none; color: inherit;">
+                  <div class="pet-card">
+                    <div class="pet-card-img">
+                      <img src="<?php echo htmlspecialchars($foto_path); ?>" alt="<?php echo $alt_text; ?>">
+                    </div>
+                    <div class="pet-card-body">
+                      <h2 class="pet-name"><?php echo htmlspecialchars($pet['nome']); ?></h2>
+                      <?php if (!empty($pet['sexo'])): ?>
+                        <?php if ($pet['sexo'] == 'femea'): ?>
+                          <i class="fa-solid fa-venus pet-gender-female" aria-label="Fêmea" title="Fêmea"></i>
+                        <?php else: // 'macho' ?>
+                          <i class="fa-solid fa-mars pet-gender-male" aria-label="Macho" title="Macho"></i>
+                        <?php endif; ?>
+                      <?php endif; ?>
+                      <i class="pet-like <?php echo $is_favorito ? 'fa-solid fa-heart favorited' : 'fa-regular fa-heart'; ?>"
+                         data-pet-id="<?php echo $pet['id_pet']; ?>"
+                         aria-label="Favoritar"
+                         role="button">
+                      </i>
+                    </div>
+                  </div>
+                </a>
               </div>
-              <div class="pet-card-body">
-                <h2 class="pet-name">Baunilha</h2>
-                <i class="fa-solid fa-venus pet-gender-female"></i>
-                <i class="fa-regular fa-heart pet-like" data-pet-id="baunilha"></i>
-              </div>
-            </div>
+            <?php endforeach; ?>
           </div>
-
-          <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-            <div class="pet-card">
-              <div class="pet-card-img">
-                <img src="images/index/caramelo.webp" alt="Foto do cachorro caramelo">
-              </div>
-              <div class="pet-card-body">
-                <h2 class="pet-name">Caramelo</h2>
-                <i class="fa-solid fa-mars pet-gender-male"></i>
-                <i class="fa-regular fa-heart pet-like" data-pet-id="caramelo"></i>
-              </div>
-            </div>
+        <?php else: ?>
+          <div class="text-center">
+            <p>Nenhum pet disponível para adoção no momento.</p>
           </div>
-
-          <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-            <div class="pet-card">
-              <div class="pet-card-img">
-                <img src="images/index/cookie.webp" alt="Foto da gata cookie">
-              </div>
-              <div class="pet-card-body">
-                <h2 class="pet-name">Cookie</h2>
-                <i class="fa-solid fa-venus pet-gender-female"></i>
-                <i class="fa-regular fa-heart pet-like" data-pet-id="cookie"></i>
-              </div>
-            </div>
-          </div>
-
-        </div>
+        <?php endif; ?>
 
         <center>
 <div class="btn-container"> <a href="<?php echo $acesso ?>" class="adopt-btn" id="adoptBtn" style="text-decoration: none">
@@ -307,7 +350,6 @@ $pagina = "";
 
     <section class="image-background-2">
 
-      
       <section class="about container mt-5 gap-3" style="margin-bottom: 3rem;">
         <h1 class="titulo-about" style="margin-bottom: 1rem">Como nós surgimos?</h1>
         
@@ -355,19 +397,15 @@ $pagina = "";
               
             </div>
             
-            
-            
-            
           </div>
         </div>
       </section>
     </section>
       
-      
-      <svg width="0" height="0" style="position: absolute;">
-        <defs>
-          <clipPath id="footerConcavity" clipPathUnits="objectBoundingBox">
-            <path d="M0,0 Q 0.5,0.35 1,0 L1,1 L0,1 Z" />
+  <svg width="0" height="0" style="position: absolute;">
+    <defs>
+      <clipPath id="footerConcavity" clipPathUnits="objectBoundingBox">
+        <path d="M0,0 Q 0.5,0.35 1,0 L1,1 L0,1 Z" />
       </clipPath>
       <clipPath id="footerConcavityShallow" clipPathUnits="objectBoundingBox">
         <path d="M0,0 Q 0.5,0.15 1,0 L1,1 L0,1 Z" />
@@ -430,35 +468,134 @@ $pagina = "";
     integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
     crossorigin="anonymous"></script>
 <script src="https://unpkg.com/scrollreveal"></script>
-    <script src="assets/js/pages/index/patinhas.js"></script>
-  <script src="assets/js/pages/index/pet-likes.js"></script>
-  <script src="assets/js/pages/index/card-deck.js"></script>
-  <script src="assets/js/pages/index/loading.js"></script>
-  <script src="assets/js/pages/index/offcanvas-fix.js"></script>
+    <script src="assets/js/pages/index/patinhas.js"></script>
+  <script src="assets/js/pages/index/card-deck.js"></script>
+  <script src="assets/js/pages/index/loading.js"></script>
+  <script src="assets/js/pages/index/offcanvas-fix.js"></script>
 
-  <script src="assets/js/pages/index/scroll-reveal-init.js"></script>  <script>
+  <script src="assets/js/pages/index/scroll-reveal-init.js"></script>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast-notification" class="adp-toast p-0" style="display: none;">
+    <div id="toast-icon" class="adp-toast-icon" style="font-size: 1.6rem"></div>
+    <div class="adp-toast-content">
+        <p id="toast-message" class="adp-toast-message text-center">Pet Favoritado</p>
+    </div>
+    <div class="adp-toast-progress-bar"></div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Função para mostrar toast
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast-notification');
+            const toastIcon = document.getElementById('toast-icon');
+            const toastMessage = document.getElementById('toast-message');
+            if (!toast || !toastIcon || !toastMessage) return;
+
+            toastMessage.textContent = message;
+            toast.classList.remove('adp-toast--success', 'adp-toast--danger', 'adp-toast--warning', 'show', 'hide');
+            toastIcon.className = 'adp-toast-icon';
+            toast.classList.add('adp-toast--' + type);
+
+            if (type === 'success') toastIcon.classList.add('fas', 'fa-check');
+            else if (type === 'danger') toastIcon.classList.add('fas', 'fa-times');
+            else if (type === 'warning') toastIcon.classList.add('fas', 'fa-exclamation-triangle');
+
+            toast.style.display = 'flex';
+            const progressBar = toast.querySelector('.adp-toast-progress-bar');
+            if (progressBar) {
+                progressBar.style.animation = 'none';
+                void progressBar.offsetWidth;
+                progressBar.style.animation = 'shrink 3s linear forwards';
+            }
+
+            toast.classList.add('show');
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+                toast.classList.add('hide');
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                    toast.classList.remove('hide', 'adp-toast--' + type);
+                    toastIcon.className = 'adp-toast-icon';
+                    if (progressBar) progressBar.style.animation = 'none';
+                }, 500);
+            }, 3000);
+        }
+
+        // Função para favoritar/desfavoritar pet
+        async function toggleFavorite(petId, iconElement) {
+            try {
+                const response = await fetch('favoritar-pet.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ id_pet: petId })
+                });
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    if (result.action === 'favorited') {
+                        iconElement.classList.remove('fa-regular');
+                        iconElement.classList.add('fa-solid', 'favorited');
+                        showToast(result.message, 'success');
+                    } else if (result.action === 'unfavorited') {
+                        iconElement.classList.remove('fa-solid', 'favorited');
+                        iconElement.classList.add('fa-regular');
+                        showToast(result.message, 'warning');
+                    }
+                } else {
+                    if (response.status === 403) {
+                        showToast(result.message, 'danger');
+                        setTimeout(() => { window.location.href = 'login'; }, 1500);
+                    } else {
+                        showToast(result.message || 'Erro ao favoritar.', 'danger');
+                    }
+                }
+            } catch (error) {
+                console.error('Erro no fetch:', error);
+                showToast('Erro de conexão. Tente novamente.', 'danger');
+            }
+        }
+
+        // Adicionar event listener para os corações
+        document.querySelectorAll('.pet-like').forEach(heartIcon => {
+            heartIcon.addEventListener('click', function(event) {
+                event.preventDefault();
+                event.stopPropagation();
+                const petId = this.dataset.petId;
+                toggleFavorite(petId, this);
+            });
+        });
+    });
+  </script>
+
+  <script>
     // Seleciona o elemento que você quer modificar
-const elemento = document.querySelector('#cachorro'); // troque pelo seletor desejado
-const direitos = document.querySelector('#direitos');
+    const elemento = document.querySelector('#cachorro'); // troque pelo seletor desejado
+    const direitos = document.querySelector('#direitos');
 
-// Função que verifica a largura da tela
-function verificarLarguraTela() {
-  if (window.innerWidth < 992) {
-    elemento.classList.remove('d-none'); // remove o d-none em telas menores que 992px
-  } else {
-    elemento.classList.add('d-none'); // adiciona novamente quando for maior (opcional)
-  }
+    // Função que verifica a largura da tela
+    function verificarLarguraTela() {
+      if (window.innerWidth < 992) {
+        elemento.classList.remove('d-none'); // remove o d-none em telas menores que 992px
+      } else {
+        elemento.classList.add('d-none'); // adiciona novamente quando for maior (opcional)
+      }
 
-    if (window.innerWidth < 500) {
-    direitos.classList.add('d-none'); // adiciona o d-none em telas menores que 500px
-  }
-}
+      if (window.innerWidth < 500) {
+        direitos.classList.add('d-none'); // adiciona o d-none em telas menores que 500px
+      }
+    }
 
-// Executa ao carregar a página
-verificarLarguraTela();
+    // Executa ao carregar a página
+    verificarLarguraTela();
 
-// Executa toda vez que a janela for redimensionada
-window.addEventListener('resize', verificarLarguraTela);
+    // Executa toda vez que a janela for redimensionada
+    window.addEventListener('resize', verificarLarguraTela);
   </script>
 
 <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
@@ -511,8 +648,8 @@ window.addEventListener('resize', verificarLarguraTela);
             </a>
 
             <a class="nav-link" href="chat.php">
-                                <i class="fa-regular fa-comments fa-fw me-3"></i> Chats
-                            </a>
+                <i class="fa-regular fa-comments fa-fw me-3"></i> Chats
+            </a>
             
             <hr class="my-2">
             
@@ -557,10 +694,9 @@ window.addEventListener('resize', verificarLarguraTela);
   </div>
 </div>
 
-
     <script src="https://vlibras.gov.br/app/vlibras-plugin.js"></script>
 <script>
-  new window.VLibras.Widget('https://vlibras.gov.br/app');
+  new window.VLibras.Widget('https://vlibras.gov.br/app');
 </script>
 </body>
 
