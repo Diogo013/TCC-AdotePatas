@@ -4,7 +4,6 @@
    ESTILOS GLOBAIS DA PÁGINA
    ========================================================================== */
 body {
-  background-color: var(--cor-laranja-claro) !important;
   overflow-x: hidden;
   padding: 0;
 }
@@ -33,6 +32,7 @@ body {
   margin-bottom: 0 !important;
   position: relative;
   z-index: 1030;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 }
 
 .navbar-logo {
@@ -376,4 +376,342 @@ main, section, footer {
   .navlink::after {
     transition: none;
   }
+}
+
+.hero-ajuda h1{
+    font-family: "Poppins", sans-serif;
+    font-weight: bold;
+    font-style: normal;
+    color: var(--cor-cinza-texto);
+    font-size: 3rem;
+    margin-top: 3rem;
+}
+
+/* ==========================================================================
+   ESTILOS DO ACCORDION DE PERGUNTAS FREQUENTES
+   ========================================================================== */
+
+.perguntas-acordion {
+  background-color: var(--cor-branca);
+  min-height: 60vh;
+}
+
+.perguntas-acordion h2 {
+  color: var(--cor-cinza-texto);
+  font-weight: bold;
+  font-size: 2.5rem;
+}
+
+.accordion-item {
+  border: 2px solid var(--cor-laranja-claro);
+  border-radius: 12px !important;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.accordion-item:hover {
+  border-color: var(--cor-rosa-escuro);
+  box-shadow: 0 4px 12px rgba(232, 122, 122, 0.15);
+}
+
+.accordion-button {
+  background-color: var(--cor-branca);
+  color: var(--cor-cinza-texto);
+  font-weight: 600;
+  font-size: 1.1rem;
+  padding: 1.25rem 1.5rem;
+  transition: all 0.3s ease;
+  box-shadow: none !important;
+}
+
+.accordion-button:not(.collapsed) {
+  background-color: var(--cor-laranja-claro);
+  color: var(--cor-rosa-escuro);
+}
+
+.accordion-button:focus {
+  border-color: var(--cor-rosa-escuro);
+  box-shadow: 0 0 0 0.25rem rgba(232, 122, 122, 0.25);
+}
+
+.accordion-button::after {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23e87a7a'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+  transform: rotate(-90deg);
+  transition: transform 0.3s ease;
+}
+
+.accordion-button:not(.collapsed)::after {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23e87a7a'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+  transform: rotate(0deg);
+}
+
+.faq-question-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  background-color: var(--cor-rosa-escuro);
+  color: var(--cor-branca);
+  border-radius: 50%;
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.accordion-button:not(.collapsed) .faq-question-number {
+  background-color: var(--cor-vermelho);
+}
+
+.accordion-body {
+  padding: 1.5rem;
+  background-color: var(--cor-branca);
+  color: var(--cor-cinza-texto);
+  line-height: 1.6;
+}
+
+.accordion-body p {
+  margin-bottom: 1rem;
+}
+
+.accordion-body ul,
+.accordion-body ol {
+  margin-bottom: 1rem;
+  padding-left: 1.5rem;
+}
+
+.accordion-body li {
+  margin-bottom: 0.5rem;
+}
+
+.accordion-body strong {
+  color: var(--cor-rosa-escuro);
+}
+
+.perguntas-acordion .btn-primary {
+  background-color: var(--cor-vermelho);
+  border-color: var(--cor-vermelho);
+  padding: 0.75rem 2rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.perguntas-acordion .btn-primary:hover {
+  background-color: var(--cor-rosa-escuro);
+  border-color: var(--cor-rosa-escuro);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(232, 122, 122, 0.3);
+}
+
+/* Responsividade para o accordion */
+@media (max-width: 768px) {
+  .perguntas-acordion h2 {
+    font-size: 2rem;
+  }
+  
+  .accordion-button {
+    font-size: 1rem;
+    padding: 1rem 1.25rem;
+  }
+  
+  .faq-question-number {
+    width: 25px;
+    height: 25px;
+    font-size: 0.8rem;
+  }
+}
+
+.btn-container {
+  position: relative;
+  display: inline-block;
+}
+
+.adopt-btn {
+  position: relative; /* Essencial para o posicionamento dos filhos */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 3rem; /* Padding para dar tamanho, mais flexível que width/height */
+  background-color: #b92b2b; /* Um vermelho mais próximo da imagem */
+  color: #f0e9e9;
+  border-radius: 16px;
+  font-family: "Poppins", sans-serif;
+  font-weight: 700;
+  font-size: clamp(1rem, 2vw, 2rem); /* Fonte grande e responsiva */
+  text-transform: none; /* Remove o uppercase */
+  cursor: pointer;
+  overflow: hidden; /* Garante que nada vaze das bordas arredondadas */
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+  /* Sombra principal do botão para dar o efeito de flutuação */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.19);
+  border: none;
+}
+
+/* O texto do botão com efeito 3D */
+.adopt-btn span {
+  position: relative;
+  z-index: 2; /* O texto fica ACIMA do coração */
+  /* Sombra do texto para dar profundidade e destacá-lo */
+  text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* O coração com efeito de baixo-relevo (inset) */
+.heart-background {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1; /* Fica entre o fundo do botão e o texto */
+  font-size: 3rem; /* Menor */
+  line-height: 1;
+  color: #a82626; /* Cor base do coração, um pouco mais escura que o botão */
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3),
+    -1px -1px 2px rgba(255, 255, 255, 0.05);
+}
+
+/* Efeitos de Interação */
+.adopt-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25), 0 10px 25px rgba(0, 0, 0, 0.22);
+}
+
+.adopt-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.adopt-btn:focus-visible {
+  outline: 3px solid var(--cor-rosa-pastel), #ffc2c2;
+  outline-offset: 3px;
+}
+
+
+.heart-background {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  margin-top: 5px;
+  font-size: 3rem;
+  line-height: 1;
+  color: #a82626;
+  text-shadow: 1px 2px 2px rgba(255, 255, 255, 0.986),
+    -2px -2px 3px rgba(0, 0, 0, 0.363);
+}
+
+.adopt-btn span {
+  position: relative;
+  z-index: 1;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+
+@media (min-width: 1500px) {
+  .btn-container {
+    margin-top: 6rem;
+  }
+}
+
+@media (max-width: 992px) {
+  .heart-background {
+    margin-top: 3px;
+    font-size: 6rem;
+  }
+}
+@media (max-width: 775px) {
+  .heart-background {
+    margin-top: 3px;
+    font-size: 5.5rem;
+  }
+}
+@media (max-width: 575px) {
+  .heart-background {
+    margin-top: 3px;
+    font-size: 5rem;
+  }
+}
+
+/* ==========================================================================
+   ESTILOS DO FORMULÁRIO DE CONTATO COM TINYMCE
+   ========================================================================== */
+
+.contact-form {
+  background: linear-gradient(135deg, var(--cor-laranja-claro) 0%, #f8f9fa 100%);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.contact-form .form-label {
+  color: var(--cor-cinza-texto);
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.contact-form .form-control {
+  border: 2px solid #dee2e6;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.contact-form .form-control:focus {
+  border-color: var(--cor-rosa-escuro);
+  box-shadow: 0 0 0 0.2rem rgba(232, 122, 122, 0.25);
+}
+
+.contact-form .form-control:read-only {
+  background-color: #f8f9fa;
+  opacity: 0.8;
+}
+
+/* Estilos para o container do TinyMCE */
+.tox-tinymce {
+  border-radius: 8px !important;
+  border: 2px solid #dee2e6 !important;
+  transition: all 0.3s ease !important;
+}
+
+.tox-tinymce:focus-within {
+  border-color: var(--cor-rosa-escuro) !important;
+  box-shadow: 0 0 0 0.2rem rgba(232, 122, 122, 0.25) !important;
+}
+
+/* Ajustes para a toolbar do TinyMCE */
+.tox-toolbar {
+  background: #f8f9fa !important;
+}
+
+/* Responsividade do formulário */
+@media (max-width: 768px) {
+  .contact-form {
+    padding: 1.5rem !important;
+    margin: 1rem 0 !important;
+  }
+  
+  .contact-form h4 {
+    font-size: 1.5rem;
+  }
+}
+
+/* Estados do formulário */
+#formContato .is-invalid {
+  border-color: #dc3545 !important;
+}
+
+#formContato .is-valid {
+  border-color: #198754 !important;
+}
+
+.feedback-message {
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.text-success {
+  color: #198754 !important;
+}
+
+.text-danger {
+  color: #dc3545 !important;
 }

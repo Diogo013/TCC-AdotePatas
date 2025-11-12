@@ -11,6 +11,8 @@ $username = "root"; // Substitua pelo seu usuário
 $password = ""; // Substitua pela sua senha
 $dbname = "adote_patas";
 
+$apiTinyMCE = "h8krho8x5gu4wxlvavexdy4hb45bm5oq457o94fm0k4o6l07";
+
 try {
     // Cria a conexão PDO
     $conn = new PDO("mysql:host=$servername;dbname=$dbname;charset=utf8", $username, $password);

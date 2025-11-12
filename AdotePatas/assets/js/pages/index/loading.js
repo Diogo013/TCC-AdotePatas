@@ -6,6 +6,6 @@ window.onload = function () {
   if (loadingScreen) { 
     setTimeout(() => {
       loadingScreen.classList.add("hidden");
-    }, 2000); 
+    }, 1000); 
   }
 };

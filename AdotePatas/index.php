@@ -160,7 +160,7 @@ if ($logado && $user_tipo == 'usuario') {
                   <a class="nav-link navlink" href="sobre-nos">Sobre Nós</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link navlink" href="#">Ajuda</a>
+                  <a class="nav-link navlink" href="ajuda.php">Ajuda</a>
                 </li>
               </ul>
             </div>
@@ -189,7 +189,7 @@ if ($logado && $user_tipo == 'usuario') {
                   <a class="nav-link navlink" href="sobre-nos">Sobre Nós</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link navlink" href="#">Ajuda</a>
+                  <a class="nav-link navlink" href="ajuda.php">Ajuda</a>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link loginlink" href="login">Entrar</a>
@@ -623,7 +623,7 @@ if ($logado && $user_tipo == 'usuario') {
               <a class="nav-link" href="sobre-nos">
                 <i class="fa-solid fa-info-circle fa-fw me-2"></i> Sobre Nós
               </a>
-              <a class="nav-link" href="#">
+              <a class="nav-link" href="ajuda.php">
                 <i class="fa-solid fa-question-circle fa-fw me-2"></i> Ajuda
               </a>
               <hr class="my-2">
@@ -672,7 +672,7 @@ if ($logado && $user_tipo == 'usuario') {
               <i class="fa-solid fa-info-circle fa-fw me-2"></i> Sobre Nós
             </a>
             
-            <a class="nav-link" href="#">
+            <a class="nav-link" href="ajuda.php">
               <i class="fa-solid fa-question-circle fa-fw me-2"></i> Ajuda
             </a>
             

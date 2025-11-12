@@ -48,8 +48,12 @@ if ($logado) {
     <title>Ajuda - Adote Patas</title>
     <link rel="stylesheet" href="assets/css/pages/ajuda/ajuda.css">
     <link rel="icon" type="image/png" href="images/global/Logo-AdotePatas.png"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    
+    <!-- TinyMCE CSS -->
+    <script src="https://cdn.tiny.cloud/1/<?php echo htmlspecialchars($apiTinyMCE); ?>/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 </head>
 <body>
 
@@ -117,13 +121,219 @@ if ($logado) {
   </nav>
 </header>
 
-<main>
-    <!-- Conteúdo da página de ajuda vai aqui -->
-    <div class="container mt-5">
-        <h1>Página de Ajuda</h1>
-        <p>Conteúdo da página de ajuda será implementado aqui.</p>
+<section class="perguntas-acordion py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-10 col-xl-8">
+        <h2 class="text-center mb-5">Perguntas Frequentes</h2>
+        
+        <!-- Accordion de Perguntas Frequentes -->
+        <div class="accordion" id="accordionFAQ">
+          
+          <!-- Item 1 -->
+          <div class="accordion-item mb-3">
+            <h3 class="accordion-header" id="headingOne">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                <span class="faq-question-number me-3">1</span>
+                Como posso adotar um pet?
+              </button>
+            </h3>
+            <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionFAQ">
+              <div class="accordion-body">
+                <p>Para adotar um pet, siga estes passos:</p>
+                <ol>
+                  <li>Faça o seu <a style="text-decorantion: none; color: var(--cor-vermelho)" href="cadastro">cadastro</a> para acessar o pets disponiveis</li>
+                  <li>Navegue pela nossa galeria de <a style="text-decorantion: none; color: var(--cor-vermelho)" href="pets">pets disponíveis</a> para adoção</li>
+                  <li>Clique no pet que mais gostou para ver mais detalhes</li>
+                  <li>Preencha o formulário de interesse na página do pet</li>
+                  <li>Aguarde o contato da ONG responsável para agendar uma visita</li>
+                  <li>Após a aprovação, você poderá levar seu novo amigo para casa!</li>
+                </ol>
+                <p class="mb-0">Lembre-se que a adoção é um compromisso sério e para toda a vida do animal.</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Item 2 -->
+          <div class="accordion-item mb-3">
+            <h3 class="accordion-header" id="headingTwo">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                <span class="faq-question-number me-3">2</span>
+                Quais são os requisitos para adotar?
+              </button>
+            </h3>
+            <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionFAQ">
+              <div class="accordion-body">
+                <p>Os requisitos básicos para adoção são:</p>
+                <ul>
+                  <li>Ser maior de 18 anos</li>
+                  <li>Apresentar documento de identidade e CPF</li>
+                  <li>Comprovar renda estável</li>
+                  <li>Assinar termo de responsabilidade</li>
+                  <li>Permitir visita prévia ao local onde o animal vai viver</li>
+                  <li>Comprometer-se com os cuidados veterinários necessários</li>
+                </ul>
+                <p class="mb-0">Cada ONG parceira pode ter requisitos adicionais específicos.</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Item 3 -->
+          <div class="accordion-item mb-3">
+            <h3 class="accordion-header" id="headingThree">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                <span class="faq-question-number me-3">3</span>
+                Posso adotar se moro em apartamento?
+              </button>
+            </h3>
+            <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#accordionFAQ">
+              <div class="accordion-body">
+                <p>Sim, é possível adotar morando em apartamento! No entanto, existem algumas considerações importantes:</p>
+                <ul>
+                  <li>Verifique as regras do condomínio sobre a posse de animais</li>
+                  <li>Considere o tamanho e nível de energia do pet em relação ao espaço disponível</li>
+                  <li>Comprometa-se com passeios regulares para cães</li>
+                  <li>Garanta enriquecimento ambiental para gatos e outros pets</li>
+                </ul>
+                <p class="mb-0">Nossas ONGs parceiras podem ajudar a encontrar o pet ideal para seu estilo de vida e espaço.</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Item 4 -->
+          <div class="accordion-item mb-3">
+            <h3 class="accordion-header" id="headingFour">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                <span class="faq-question-number me-3">4</span>
+                Os pets são vacinados e castrados?
+              </button>
+            </h3>
+            <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#accordionFAQ">
+              <div class="accordion-body">
+                <p>Sim! Todos os pets disponíveis para adoção através das ONGs parceiras recebem:</p>
+                <ul>
+                  <li>Vacinação básica (V8/V10 para cães e V3/V4 para gatos)</li>
+                  <li>Vermifugação</li>
+                  <li>Castração (ou compromisso de castração futura para filhotes)</li>
+                  <li>Microchipagem (quando aplicável)</li>
+                </ul>
+                <p class="mb-0">Cada pet vem com seu histórico de saúde documentado que será repassado ao adotante.</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Item 5 -->
+          <div class="accordion-item mb-3">
+            <h3 class="accordion-header" id="headingFive">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
+                <span class="faq-question-number me-3">5</span>
+                Posso devolver o pet se não me adaptar?
+              </button>
+            </h3>
+            <div id="collapseFive" class="accordion-collapse collapse" aria-labelledby="headingFive" data-bs-parent="#accordionFAQ">
+              <div class="accordion-body">
+                <p>Sim, mas com algumas condições importantes:</p>
+                <ul>
+                  <li>Entre em contato com a ONG responsável pela adoção o mais rápido possível</li>
+                  <li>Não abandone o animal em nenhuma circunstância</li>
+                  <li>Mantenha o pet em segurança até que a ONG possa recolhê-lo</li>
+                  <li>Comunique qualquer problema de saúde ou comportamento</li>
+                </ul>
+                <p class="mb-0">A devolução deve ser feita de forma responsável, sempre priorizando o bem-estar do animal. A maioria das ONGs tem políticas específicas sobre devoluções.</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Item 6 -->
+          <div class="accordion-item mb-3">
+            <h3 class="accordion-header" id="headingSix">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSix" aria-expanded="false" aria-controls="collapseSix">
+                <span class="faq-question-number me-3">6</span>
+                Como posso ajudar sem adotar?
+              </button>
+            </h3>
+            <div id="collapseSix" class="accordion-collapse collapse" aria-labelledby="headingSix" data-bs-parent="#accordionFAQ">
+              <div class="accordion-body">
+                <p>Existem várias formas de ajudar os animais sem adotar:</p>
+                <ul>
+                  <li><strong>Apadrinhamento:</strong> Contribua mensalmente com os custos de um pet específico</li>
+                  <li><strong>Doações:</strong> Alimentos, medicamentos, cobertores ou recursos financeiros</li>
+                  <li><strong>Voluntariado:</strong> Ajude nos eventos, transporte ou cuidados com os animais</li>
+                  <li><strong>Lar temporário:</strong> Ofereça um lar temporário para pets em recuperação</li>
+                  <li><strong>Divulgação:</strong> Compartilhe nossos pets nas redes sociais</li>
+                </ul>
+                <p class="mb-0">Entre em contato com as ONGs parceiras para saber sobre suas necessidades específicas.</p>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+        
+        <!-- Seção de contato adicional -->
+        <div class="mt-5 text-center">
+          <h5 class="mb-3">Não encontrou a resposta que procurava?</h5>
+          
+          <button type="button" class="adopt-btn contact-scroll-btn">
+            <div class="heart-background" aria-hidden="true">
+              <i class="bi bi-heart-fill"></i>
+            </div>
+            <span>Entrar em Contato</span>
+          </button>
+        </div>
+
+        <!-- Formulário de Contato -->
+        <div class="contact-form mt-5 p-4 rounded" style="background-color: var(--cor-laranja-claro); border: 2px solid var(--cor-rosa-escuro);">
+          <h4 class="text-center mb-4" style="color: var(--cor-cinza-texto);">Entre em Contato Conosco</h4>
+          
+          <form id="formContato">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="inputNome" class="form-label"><strong>Seu Nome:</strong></label>
+                  <input type="text" class="form-control" id="inputNome" name="nome" 
+                         placeholder="Digite seu nome completo" 
+                         value="<?php echo htmlspecialchars($usuario['nome'] ?? ''); ?>"
+                         <?php echo $logado ? 'readonly' : ''; ?>>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="inputEmail" class="form-label"><strong>Seu Email:</strong></label>
+                  <input type="email" class="form-control" id="inputEmail" name="email" 
+                         placeholder="seu@email.com"
+                         value="<?php echo htmlspecialchars($usuario['email'] ?? ''); ?>"
+                         <?php echo $logado ? 'readonly' : ''; ?>>
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="inputAssunto" class="form-label"><strong>Assunto:</strong></label>
+              <input type="text" class="form-control" id="inputAssunto" name="assunto" 
+                     placeholder="Ex: Problema com login, Dúvida sobre adoção, Sugestão...">
+            </div>
+
+            <div class="mb-3">
+              <label for="meuEditorDeMensagem" class="form-label"><strong>Mensagem:</strong></label>
+              <textarea class="form-control" id="meuEditorDeMensagem" name="mensagem" rows="10"></textarea>
+              <!-- O TinyMCE substituirá este textarea -->
+            </div>
+
+            <div class="text-center mt-4">
+              <button type="submit" class="adopt-btn" style="background-color: var(--cor-vermelho);">
+                <div class="heart-background" aria-hidden="true">
+                  <i class="bi bi-heart-fill"></i>
+                </div>
+                <span>Enviar Mensagem</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+      </div>
     </div>
-</main>
+  </div>
+</section>
 
 <!-- Offcanvas completo e funcional -->
 <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
@@ -219,41 +429,104 @@ if ($logado) {
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y" crossorigin="anonymous"></script>
 
 <script>
-// Corrige problemas do offcanvas - JavaScript inline
+tinymce.init({
+  selector: '#meuEditorDeMensagem',
+  plugins: 'advlist autolink lists link image charmap preview anchor pagebreak code',
+  toolbar: 'undo redo | styles | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image code',
+  toolbar_mode: 'floating',
+  height: 300,
+  menubar: false,
+  branding: false,
+  promotion: false,
+  language: 'pt_BR',
+  content_style: `
+    body { 
+      font-family: 'Poppins', sans-serif; 
+      font-size: 14px; 
+      color: #333; 
+    }
+  `,
+  setup: function (editor) {
+    editor.on('init', function () {
+      console.log('Editor TinyMCE inicializado!');
+    });
+  }
+});
+
 document.addEventListener('DOMContentLoaded', function() {
+  const formContato = document.getElementById('formContato');
+  const contactBtn = document.querySelector('.contact-scroll-btn');
   const offcanvasElement = document.getElementById('offcanvasNavbar');
   const body = document.body;
-  
+
+  if (formContato) {
+    formContato.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const mensagem = tinymce.get('meuEditorDeMensagem').getContent();
+      const assunto = document.getElementById('inputAssunto').value;
+      const nome = document.getElementById('inputNome').value;
+      const email = document.getElementById('inputEmail').value;
+
+      if (!assunto.trim()) {
+        alert('Por favor, preencha o assunto.');
+        return;
+      }
+
+      if (!mensagem.trim() || mensagem === '<p></p>') {
+        alert('Por favor, escreva sua mensagem.');
+        return;
+      }
+
+      const dados = {
+        nome: nome,
+        email: email,
+        assunto: assunto,
+        mensagem: mensagem
+      };
+
+      alert('Mensagem preparada para envio!\n\nAssunto: ' + dados.assunto + '\n\nMensagem enviada com sucesso (simulação).');
+
+      formContato.reset();
+      tinymce.get('meuEditorDeMensagem').setContent('');
+    });
+  }
+
+  if (contactBtn) {
+    contactBtn.addEventListener('click', function() {
+      document.querySelector('.contact-form').scrollIntoView({
+        behavior: 'smooth'
+      });
+    });
+  }
+
   if (offcanvasElement) {
     const offcanvas = new bootstrap.Offcanvas(offcanvasElement, {
       backdrop: true,
       scroll: false
     });
-    
-    // Remove qualquer padding que o Bootstrap possa adicionar
+
     offcanvasElement.addEventListener('show.bs.offcanvas', function() {
       body.classList.add('offcanvas-open');
-      // Remove qualquer padding que possa causar recuos
       document.documentElement.style.overflow = 'hidden';
       body.style.overflow = 'hidden';
     });
-    
+
     offcanvasElement.addEventListener('hidden.bs.offcanvas', function() {
       body.classList.remove('offcanvas-open');
       document.documentElement.style.overflow = '';
       body.style.overflow = '';
     });
-    
-    // Corrige redimensionamento da tela
+
     window.addEventListener('resize', function() {
       if (body.classList.contains('offcanvas-open')) {
-        // Fecha o offcanvas durante o redimensionamento para evitar flickering
         offcanvas.hide();
       }
     });
   }
 });
 </script>
+
 
 </body>
 </html>
