@@ -273,7 +273,7 @@ if ($logado) {
         <div class="mt-5 text-center">
           <h5 class="mb-3">Não encontrou a resposta que procurava?</h5>
           
-          <button type="button" class="adopt-btn contact-scroll-btn">
+          <button type="button" id="buttonEntrarContato" onclick="mostrarEmailContato()" class="adopt-btn contact-scroll-btn">
             <div class="heart-background" aria-hidden="true">
               <i class="bi bi-heart-fill"></i>
             </div>
@@ -282,7 +282,7 @@ if ($logado) {
         </div>
 
         <!-- Formulário de Contato -->
-        <div class="contact-form mt-5 p-4 rounded" style="background-color: var(--cor-laranja-claro); border: 2px solid var(--cor-rosa-escuro);">
+        <div class="contact-form mt-5 p-4 rounded d-none" id="BoxContato" style="background-color: var(--cor-laranja-claro); border: 2px solid var(--cor-rosa-escuro);">
           <h4 class="text-center mb-4" style="color: var(--cor-cinza-texto);">Entre em Contato Conosco</h4>
           
           <form id="formContato">
@@ -525,6 +525,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 });
+
+function mostrarEmailContato() {
+    const btnMostrarEmail = document.querySelector("#buttonEntrarContato");
+    const BoxEmail = document.querySelector("#BoxContato");
+    btnMostrarEmail.classList.add("d-none");
+    BoxEmail.classList.remove("d-none");
+}
 </script>
 
 
