@@ -6,6 +6,7 @@ import { initToastNotification } from './modules/ui/toast.js';
 import { initPasswordToggle, initInputMasks } from './modules/forms/validation.js';
 import { initCadastroUsuarioForm } from './modules/forms/form-cadastro-usuario.js';
 import { initCadastroOngForm } from './modules/forms/form-cadastro-ong.js';
+import { initBuscaCep } from './modules/forms/busca-cep.js';
 
 /**
  * Ponto de entrada principal da aplicação.
@@ -20,4 +21,5 @@ document.addEventListener("DOMContentLoaded", function () {
     initRecoveryModal();
     initCadastroUsuarioForm();
     initCadastroOngForm();
+    initBuscaCep();
 });

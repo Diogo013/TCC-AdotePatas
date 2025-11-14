@@ -249,6 +249,38 @@ if ($pagina == 'pets-curtidos') {
                                         </div>
                                     <?php endif; ?>
 
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-4">
+                                            <label for="inputCep" class="form-label sr-only">CEP</label>
+                                            <input type="text" class="form-control" id="inputCep" name="cep"
+                                                   placeholder="CEP"
+                                                   value="<?php echo htmlspecialchars($usuario['cep'] ?? ''); ?>" disabled data-profile-field>
+                                            <div id="feedbackCep" class="feedback-message"></div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label for="inputNumero" class="form-label sr-only">Número</label>
+                                            <input type="text" class="form-control" id="inputNumero" name="numero"
+                                                   placeholder="Número"
+                                                   value="<?php echo htmlspecialchars($usuario['numero'] ?? ''); ?>" disabled data-profile-field>
+                                            <div id="feedbackNumero" class="feedback-message"></div>
+                                        </div>
+                                        <div class="col-md-5">
+                                            <label for="inputComplemento" class="form-label sr-only">Complemento (Opcional)</label>
+                                            <input type="text" class="form-control" id="inputComplemento" name="complemento"
+                                                   placeholder="Complemento (Opcional)"
+                                                   value="<?php echo htmlspecialchars($usuario['complemento'] ?? ''); ?>" disabled data-profile-field>
+                                        </div>
+                                    </div>
+                                                                        
+                                    <input type="hidden" id="inputLogradouro" name="logradouro" data-profile-field 
+                                           value="<?php echo htmlspecialchars($usuario['logradouro'] ?? ''); ?>">
+                                    <input type="hidden" id="inputBairro" name="bairro" data-profile-field
+                                           value="<?php echo htmlspecialchars($usuario['bairro'] ?? ''); ?>">
+                                    <input type="hidden" id="inputCidade" name="cidade" data-profile-field
+                                           value="<?php echo htmlspecialchars($usuario['cidade'] ?? ''); ?>">
+                                    <input type="hidden" id="inputEstado" name="estado" data-profile-field
+                                           value="<?php echo htmlspecialchars($usuario['estado'] ?? ''); ?>">
+
                                     <hr class="my-4">
 
                                     <button type="button" id="btnEditar" class="btn btn-danger">

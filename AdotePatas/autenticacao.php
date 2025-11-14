@@ -162,14 +162,22 @@ case 'cadastro_usuario':
     $email = trim($_POST['email-cadastro'] ?? '');
     $senha = $_POST['senha-cadastro'] ?? '';
     $confirma_senha = $_POST['confirma-senha-cadastro'] ?? '';
+    $cep = trim($_POST['cep-cadastro'] ?? '');
+    $logradouro = trim($_POST['logradouro-cadastro'] ?? '');
+    $numero = trim($_POST['numero-cadastro'] ?? '');
+    $complemento = trim($_POST['complemento-cadastro'] ?? '');
+    $bairro = trim($_POST['bairro-cadastro'] ?? '');
+    $cidade = trim($_POST['cidade-cadastro'] ?? '');
+    $estado = trim($_POST['estado-cadastro'] ?? '');
     
     $erros = [];
 
     // VALIDAÇÃO EM CASCATA: Se um erro fundamental é encontrado, não continua para o próximo.
     
     // 1. Validação de campos vazios
-    if (empty($nome) || empty($cpf) || empty($email) || empty($senha) || empty($confirma_senha)) {
-        $erros[] = "Todos os campos são obrigatórios.";
+    if (empty($nome) || empty($cpf) || empty($email) || empty($senha) || empty($confirma_senha) ||
+        empty($cep) || empty($logradouro) || empty($numero) || empty($bairro) || empty($cidade) || empty($estado)) {
+        $erros[] = "Todos os campos, exceto 'complemento', são obrigatórios.";
     } else {
         // Se os campos não estão vazios, prossiga com validações de formato e regras
         
@@ -228,15 +236,24 @@ if (!empty($erros)) {
 } else {
     // Se NÃO houver erros, insere no banco e usa o padrão PRG.
     $senha_hashed = password_hash($senha, PASSWORD_DEFAULT);
-    try {
-        $sql = "INSERT INTO usuario (nome, email, senha, cpf) VALUES (:nome, :email, :senha, :cpf)";
-        $stmt = $conn->prepare($sql);
-        $stmt->execute([
-            ':nome' => $nome, 
-            ':email' => $email, 
-            ':senha' => $senha_hashed, 
-            ':cpf' => preg_replace('/[^0-9]/', '', $cpf)
-        ]);
+        try {
+            // --- ATUALIZAR O SQL INSERT ---
+            $sql = "INSERT INTO usuario (nome, email, senha, cpf, cep, logradouro, numero, complemento, bairro, cidade, estado) 
+                    VALUES (:nome, :email, :senha, :cpf, :cep, :logradouro, :numero, :complemento, :bairro, :cidade, :estado)";
+            $stmt = $conn->prepare($sql);
+            $stmt->execute([
+                ':nome' => $nome, 
+                ':email' => $email, 
+                ':senha' => $senha_hashed, 
+                ':cpf' => preg_replace('/[^0-9]/', '', $cpf),
+                ':cep' => $cep,
+                ':logradouro' => $logradouro,
+                ':numero' => $numero,
+                ':complemento' => $complemento,
+                ':bairro' => $bairro,
+                ':cidade' => $cidade,
+                ':estado' => $estado
+            ]);
 
         // --- INÍCIO DA LÓGICA PRG ---
         // 1. Salva a mensagem de sucesso e a aba de destino na sessão.
@@ -267,12 +284,20 @@ case 'cadastro_ong':
     $email_ong = trim($_POST['email_ong'] ?? '');
     $senha_ong = $_POST['senha_ong'] ?? '';
     $confirma_senha_ong = $_POST['confirma_senha_ong'] ?? '';
+    $cep_ong = trim($_POST['cep-ong'] ?? '');
+    $logradouro_ong = trim($_POST['logradouro-ong'] ?? '');
+    $numero_ong = trim($_POST['numero-ong'] ?? '');
+    $complemento_ong = trim($_POST['complemento-ong'] ?? '');
+    $bairro_ong = trim($_POST['bairro-ong'] ?? '');
+    $cidade_ong = trim($_POST['cidade-ong'] ?? '');
+    $estado_ong = trim($_POST['estado-ong'] ?? ''); 
 
     $erros = [];
 
     // 1. Validação de campos vazios
-    if (empty($nome_ong) || empty($cnpj) || empty($email_ong) || empty($senha_ong) || empty($confirma_senha_ong)) {
-        $erros[] = "Todos os campos são obrigatórios.";
+    if (empty($nome_ong) || empty($cnpj) || empty($email_ong) || empty($senha_ong) || empty($confirma_senha_ong) ||
+        empty($cep_ong) || empty($logradouro_ong) || empty($numero_ong) || empty($bairro_ong) || empty($cidade_ong) || empty($estado_ong)) { // <-- ADICIONADO
+        $erros[] = "Todos os campos, exceto 'complemento', são obrigatórios.";
     } else {
         // 2. Validações de formato e regras
         if (!validarCNPJ($cnpj)) {
@@ -319,13 +344,22 @@ case 'cadastro_ong':
         // Tudo certo, prossegue com o cadastro
         $senha_hashed = password_hash($senha_ong, PASSWORD_DEFAULT);
         try {
-            $sql = "INSERT INTO ong (nome, email, senha, cnpj) VALUES (:nome, :email, :senha, :cnpj)";
+            // --- ATUALIZAR O SQL INSERT ---
+            $sql = "INSERT INTO ong (nome, email, senha, cnpj, cep, logradouro, numero, complemento, bairro, cidade, estado) 
+                    VALUES (:nome, :email, :senha, :cnpj, :cep, :logradouro, :numero, :complemento, :bairro, :cidade, :estado)";
             $stmt = $conn->prepare($sql);
             $stmt->execute([
                 ':nome' => $nome_ong,
                 ':email' => $email_ong,
                 ':senha' => $senha_hashed,
-                ':cnpj' => preg_replace('/[^0-9]/', '', $cnpj)
+                ':cnpj' => preg_replace('/[^0-9]/', '', $cnpj),
+                ':cep' => $cep_ong,
+                ':logradouro' => $logradouro_ong,
+                ':numero' => $numero_ong,
+                ':complemento' => $complemento_ong,
+                ':bairro' => $bairro_ong,
+                ':cidade' => $cidade_ong,
+                ':estado' => $estado_ong
             ]);
 
             // Padrão PRG: Salva mensagem na sessão e redireciona
@@ -557,6 +591,54 @@ $animationMessage = $_GET['message'] ?? 'Redirecionando...';
                    value="<?php echo htmlspecialchars($cpf ?? ''); ?>">
             <div id="mensagem-cpf-cadastro" class="mensagem-validacao"></div>
         </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="md:col-span-1">
+                <label for="cep-cadastro" class="sr-only">CEP</label>
+                <input type="text" name="cep-cadastro" id="cep-cadastro" placeholder="CEP" required class="input-style w-full"
+                       value="<?php echo htmlspecialchars($_POST['cep-cadastro'] ?? ''); ?>">
+                <div id="mensagem-cep-cadastro" class="mensagem-validacao"></div>
+            </div>
+            <div class="md:col-span-2">
+                <label for="logradouro-cadastro" class="sr-only">Rua / Logradouro</label>
+                <input type="text" name="logradouro-cadastro" id="logradouro-cadastro" placeholder="Rua / Logradouro" required class="input-style w-full"
+                       value="<?php echo htmlspecialchars($_POST['logradouro-cadastro'] ?? ''); ?>" readonly>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="md:col-span-1">
+                <label for="numero-cadastro" class="sr-only">Número</label>
+                <input type="text" name="numero-cadastro" id="numero-cadastro" placeholder="Número" required class="input-style w-full"
+                       value="<?php echo htmlspecialchars($_POST['numero-cadastro'] ?? ''); ?>">
+            </div>
+            <div class="md:col-span-2">
+                <label for="complemento-cadastro" class="sr-only">Complemento (Opcional)</label>
+                <input type="text" name="complemento-cadastro" id="complemento-cadastro" placeholder="Complemento (Opcional)" class="input-style w-full"
+                       value="<?php echo htmlspecialchars($_POST['complemento-cadastro'] ?? ''); ?>">
+            </div>
+        </div>
+
+        <div>
+            <div>
+                <label for="bairro-cadastro" class="sr-only">Bairro</label>
+                <input type="text" name="bairro-cadastro" id="bairro-cadastro" placeholder="Bairro" required class="input-style w-full"
+                       value="<?php echo htmlspecialchars($_POST['bairro-cadastro'] ?? ''); ?>" readonly>
+            </div>
+        </div>
+        <div>
+            <div class="flex gap-6">
+                <div class="w-3/4">
+                    <label for="cidade-cadastro" class="sr-only">Cidade</label>
+                    <input type="text" name="cidade-cadastro" id="cidade-cadastro" placeholder="Cidade" required class="input-style w-full"
+                    value="<?php echo htmlspecialchars($_POST['cidade-cadastro'] ?? ''); ?>" readonly>
+                </div>
+                <div class="w-1/4">
+                    <label for="estado-cadastro" class="sr-only">UF</label>
+                    <input type="text" name="estado-cadastro" id="estado-cadastro" placeholder="UF" required class="input-style w-full"
+                    value="<?php echo htmlspecialchars($_POST['estado-cadastro'] ?? ''); ?>" readonly>
+                </div>
+            </div>
+        </div>
         <div>
             <label for="email-cadastro" class="sr-only">E-mail</label> <input type="email" name="email-cadastro" id="email-cadastro" placeholder="E-mail" required class="input-style w-full"
                    value="<?php echo htmlspecialchars($email ?? ''); ?>">
@@ -604,6 +686,54 @@ $animationMessage = $_GET['message'] ?? 'Redirecionando...';
             <label for="cnpj" class="sr-only">CNPJ</label> <input type="text" name="cnpj" id="cnpj" placeholder="CNPJ" required class="input-style w-full"
                    value="<?php echo htmlspecialchars($_POST['cnpj'] ?? ''); ?>">
             <div id="mensagem-cnpj" class="mensagem-validacao"></div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="md:col-span-1">
+                <label for="cep-ong" class="sr-only">CEP</label>
+                <input type="text" name="cep-ong" id="cep-ong" placeholder="CEP" required class="input-style w-full"
+                       value="<?php echo htmlspecialchars($_POST['cep-ong'] ?? ''); ?>">
+                <div id="mensagem-cep-ong" class="mensagem-validacao"></div>
+            </div>
+            <div class="md:col-span-2">
+                <label for="logradouro-ong" class="sr-only">Rua / Logradouro</label>
+                <input type="text" name="logradouro-ong" id="logradouro-ong" placeholder="Rua / Logradouro" required class="input-style w-full"
+                       value="<?php echo htmlspecialchars($_POST['logradouro-ong'] ?? ''); ?>" readonly>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="md:col-span-1">
+                <label for="numero-ong" class="sr-only">Número</label>
+                <input type="text" name="numero-ong" id="numero-ong" placeholder="Número" required class="input-style w-full"
+                       value="<?php echo htmlspecialchars($_POST['numero-ong'] ?? ''); ?>">
+            </div>
+            <div class="md:col-span-2">
+                <label for="complemento-ong" class="sr-only">Complemento (Opcional)</label>
+                <input type="text" name="complemento-ong" id="complemento-ong" placeholder="Complemento (Opcional)" class="input-style w-full"
+                       value="<?php echo htmlspecialchars($_POST['complemento-ong'] ?? ''); ?>">
+            </div>
+        </div>
+
+        <div>
+            <div>
+                <label for="bairro-ong" class="sr-only">Bairro</label>
+                <input type="text" name="bairro-ong" id="bairro-ong" placeholder="Bairro" required class="input-style w-full"
+                       value="<?php echo htmlspecialchars($_POST['bairro-ong'] ?? ''); ?>" readonly>
+            </div>
+        </div>
+        <div>
+            <div class="flex gap-6">
+                <div class="w-3/4">
+                    <label for="cidade-ong" class="sr-only">Cidade</label>
+                    <input type="text" name="cidade-ong" id="cidade-ong" placeholder="Cidade" required class="input-style w-full"
+                           value="<?php echo htmlspecialchars($_POST['cidade-ong'] ?? ''); ?>" readonly>
+                </div>
+                <div class="w-1/4">
+                    <label for="estado-ong" class="sr-only">UF</label>
+                    <input type="text" name="estado-ong" id="estado-ong" placeholder="UF" required class="input-style w-full"
+                           value="<?php echo htmlspecialchars($_POST['estado-ong'] ?? ''); ?>" readonly>
+                </div>
+            </div>
         </div>
         <div>
             <label for="email_ong" class="sr-only">E-mail</label> <input type="email" name="email_ong" id="email_ong" placeholder="E-mail" required class="input-style w-full"

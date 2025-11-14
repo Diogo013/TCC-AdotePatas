@@ -26,6 +26,17 @@ $nome = trim($_POST['nome'] ?? '');
 $email = trim($_POST['email'] ?? '');
 $documento = preg_replace('/[^0-9]/', '', trim($_POST['documento'] ?? ''));
 
+// --- CAMPOS DE ENDEREÇO DO FORMULÁRIO ---
+$cep = trim($_POST['cep'] ?? '');
+$numero = trim($_POST['numero'] ?? '');
+$complemento = trim($_POST['complemento'] ?? '');
+
+// --- CAMPOS QUE SERÃO BUSCADOS PELA API ---
+$logradouro = '';
+$bairro = '';
+$cidade = '';
+$estado = '';
+
 // --- Funções de Validação ---
 function validarCPF($cpf) {
     if (empty($cpf) || strlen($cpf) != 11 || preg_match('/(\d)\1{10}/', $cpf)) {
@@ -67,6 +78,38 @@ function validarCNPJ($cnpj) {
     return $cnpj[13] == ($resto < 2 ? 0 : 11 - $resto);
 }
 
+function buscarViaCEP($cep) {
+    $cep_limpo = preg_replace('/[^0-9]/', '', $cep);
+    if (strlen($cep_limpo) !== 8) {
+        return null;
+    }
+
+    $url = "https://viacep.com.br/ws/{$cep_limpo}/json/";
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Desativar em localhost, mas considere ativar em produção
+    curl_setopt($ch, CURLOPT_TIMEOUT, 5); // Timeout de 5 segundos
+    
+    $result_json = curl_exec($ch);
+    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($http_code !== 200 || $result_json === false) {
+        return null; // Falha na API
+    }
+
+    $result_data = json_decode($result_json, true);
+
+    if (isset($result_data['erro']) && $result_data['erro'] === true) {
+        return null; // CEP não encontrado
+    }
+
+    return $result_data;
+}
+
 // --- 3. Execução da Validação Back-end ---
 $erros = [];
 
@@ -79,6 +122,12 @@ if (empty($email)) {
 }
 if (empty($documento)) {
     $erros[] = "O campo documento é obrigatório.";
+}
+if (empty($cep)) {
+    $erros[] = "O campo CEP é obrigatório.";
+}
+if (empty($numero)) {
+    $erros[] = "O campo número é obrigatório.";
 }
 
 // Se não há erros de campos obrigatórios, valida o formato
@@ -107,6 +156,27 @@ if (empty($erros)) {
             $erros[] = "CNPJ deve conter 14 dígitos.";
         } elseif (!validarCNPJ($documento)) {
             $erros[] = "O CNPJ informado é inválido.";
+        }
+    }
+}
+
+
+// BUSCA VIACEP (NOVO)
+if (empty($erros)) {
+    $dados_cep = buscarViaCEP($cep);
+    
+    if ($dados_cep === null) {
+        $erros[] = "CEP inválido ou não encontrado. Verifique o CEP digitado.";
+    } else {
+        // Popula as variáveis com os dados da API
+        $logradouro = $dados_cep['logradouro'] ?? '';
+        $bairro = $dados_cep['bairro'] ?? '';
+        $cidade = $dados_cep['localidade'] ?? '';
+        $estado = $dados_cep['uf'] ?? '';
+
+        // Validação extra: Se a API não retornar um campo essencial (exceto bairro)
+        if (empty($logradouro) || empty($cidade) || empty($estado)) {
+             $erros[] = "CEP incompleto. A API não retornou todos os dados. (Ex: CEP geral da cidade)";
         }
     }
 }
@@ -160,38 +230,49 @@ if (!empty($erros)) {
     exit;
 }
 
-// --- 6. ATUALIZAÇÃO NO BANCO DE DADOS ---
+// 6. ATUALIZAÇÃO NO BANCO (SQL é o mesmo da etapa anterior)
 try {
-    if ($user_tipo == 'usuario') {
-        $sql = "UPDATE usuario SET nome = :nome, email = :email, cpf = :cpf WHERE id_usuario = :id";
-        $stmt = $conn->prepare($sql);
-        // Garanta que os parâmetros estão corretos e correspondem aos placeholders
-        $stmt->bindParam(':nome', $nome, PDO::PARAM_STR);
-        $stmt->bindParam(':email', $email, PDO::PARAM_STR);
-        $stmt->bindParam(':cpf', $documento, PDO::PARAM_STR); // $documento contém o CPF limpo
-        $stmt->bindParam(':id', $user_id, PDO::PARAM_INT);
-        $stmt->execute(); // Removido o array daqui, já que usamos bindParam
+    $params = [
+        ':nome' => $nome,
+        ':email' => $email,
+        ':id' => $user_id,
+        ':cep' => $cep,
+        ':logradouro' => $logradouro,
+        ':numero' => $numero,
+        ':complemento' => $complemento,
+        ':bairro' => $bairro,
+        ':cidade' => $cidade,
+        ':estado' => $estado
+    ];
 
+    if ($user_tipo == 'usuario') {
+        $sql = "UPDATE usuario SET 
+                    nome = :nome, email = :email, cpf = :cpf,
+                    cep = :cep, logradouro = :logradouro, numero = :numero, 
+                    complemento = :complemento, bairro = :bairro, 
+                    cidade = :cidade, estado = :estado
+                WHERE id_usuario = :id";
+        $params[':cpf'] = $documento;
+        
     } elseif ($user_tipo == 'ong') {
-        $sql = "UPDATE ong SET nome = :nome, email = :email, cnpj = :cnpj WHERE id_ong = :id";
-        $stmt = $conn->prepare($sql);
-         // Garanta que os parâmetros estão corretos e correspondem aos placeholders
-        $stmt->bindParam(':nome', $nome, PDO::PARAM_STR);
-        $stmt->bindParam(':email', $email, PDO::PARAM_STR);
-        $stmt->bindParam(':cnpj', $documento, PDO::PARAM_STR); // $documento contém o CNPJ limpo
-        $stmt->bindParam(':id', $user_id, PDO::PARAM_INT);
-        $stmt->execute(); // Removido o array daqui
+        $sql = "UPDATE ong SET 
+                    nome = :nome, email = :email, cnpj = :cnpj,
+                    cep = :cep, logradouro = :logradouro, numero = :numero, 
+                    complemento = :complemento, bairro = :bairro, 
+                    cidade = :cidade, estado = :estado
+                WHERE id_ong = :id";
+        $params[':cnpj'] = $documento;
     }
 
-    // Se chegou aqui sem exceção PDO, a atualização ocorreu (ou não afetou linhas se os dados eram iguais)
+    $stmt = $conn->prepare($sql);
+    $stmt->execute($params);
+
     if ($stmt->rowCount() > 0) {
-         // Atualiza o nome na sessão APENAS se a atualização teve efeito
-         $_SESSION['user_nome'] = $nome;
+         $_SESSION['nome'] = $nome;
          $response['success'] = true;
          $response['message'] = 'Perfil atualizado com sucesso!';
     } else {
-         // Se rowCount for 0, pode ser que os dados eram idênticos ou o ID não foi encontrado (improvável aqui)
-         $response['success'] = true; // Considera sucesso, pois não houve erro
+         $response['success'] = true;
          $response['message'] = 'Nenhuma alteração detectada.';
     }
 

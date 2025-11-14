@@ -71,17 +71,23 @@ if (empty($id_pet)) {
 }
 
 try {
-    $sql = "SELECT 
-                p.*, 
-                COALESCE(o.nome, u.nome) as doador_nome,
-                u.cidade as doador_cidade,
-                u.estado as doador_estado,
-                o.endereco as ong_endereco,
-                o.telefone as doador_telefone
-            FROM pet AS p
-            LEFT JOIN ong AS o ON p.id_ong_fk = o.id_ong
-            LEFT JOIN usuario AS u ON p.id_usuario_fk = u.id_usuario
-            WHERE p.id_pet = :id_pet AND p.status_disponibilidade = 'disponivel'";
+    // SQL Novo (com endereço estruturado)
+$sql = "SELECT 
+            p.*, 
+            COALESCE(o.nome, u.nome) as doador_nome,
+            
+            -- Usa COALESCE para pegar o endereço da fonte correta (ONG ou Usuário)
+            COALESCE(o.logradouro, u.logradouro) as doador_logradouro,
+            COALESCE(o.numero, u.numero) as doador_numero,
+            COALESCE(o.bairro, u.bairro) as doador_bairro,
+            COALESCE(o.cidade, u.cidade) as doador_cidade,
+            COALESCE(o.estado, u.estado) as doador_estado,
+            COALESCE(o.cep, u.cep) as doador_cep
+            
+        FROM pet AS p
+        LEFT JOIN ong AS o ON p.id_ong_fk = o.id_ong
+        LEFT JOIN usuario AS u ON p.id_usuario_fk = u.id_usuario
+        WHERE p.id_pet = :id_pet AND p.status_disponibilidade = 'disponivel'";
             
     $stmt = $conn->prepare($sql);
     $stmt->execute([':id_pet' => $id_pet]);
@@ -96,6 +102,27 @@ try {
     $stmt_fotos = $conn->prepare($sql_fotos);
     $stmt_fotos->execute([':id_pet' => $id_pet]);
     $pet_fotos = $stmt_fotos->fetchAll(PDO::FETCH_ASSOC);
+
+    // --- LÓGICA GOOGLE MAPS ---
+    $google_maps_url = '#'; // URL Padrão
+    $endereco_completo_array = [];
+
+    // Constrói a string de busca do endereço
+    if (!empty($pet['doador_logradouro'])) $endereco_completo_array[] = $pet['doador_logradouro'];
+    if (!empty($pet['doador_numero'])) $endereco_completo_array[] = $pet['doador_numero'];
+    if (!empty($pet['doador_bairro'])) $endereco_completo_array[] = $pet['doador_bairro'];
+    if (!empty($pet['doador_cidade'])) $endereco_completo_array[] = $pet['doador_cidade'];
+    if (!empty($pet['doador_estado'])) $endereco_completo_array[] = $pet['doador_estado'];
+
+    if (!empty($endereco_completo_array)) {
+        // Formato: "Rua Exemplo, 123, Bairro, Cidade, UF"
+        $query_string = implode(', ', $endereco_completo_array);
+        // Gera a URL de busca do Google Maps
+        $google_maps_url = 'https://www.google.com/maps/search/?api=1&query=' . urlencode($query_string);
+    } elseif (!empty($pet['doador_cep'])) {
+        // Fallback: se só tiver o CEP, busca pelo CEP
+        $google_maps_url = 'https://www.google.com/maps/search/?api=1&query=' . urlencode($pet['doador_cep']);
+    }
     
     // Define uma foto padrão caso não ache nenhuma
     $foto_principal = $base_path . 'images/perfil/teste.jpg';
@@ -296,11 +323,10 @@ try {
                         echo htmlspecialchars($cidade) . ' - ' . htmlspecialchars($estado);
                     ?>
                     <div class="maps">
-                        <a style="color: var(--cor-vermelho); text-decoration: underline;" target="_blank"href="https://www.google.com/maps/place/Etec+de+Praia+Grande/@-24.0089687,-46.4373564,16.5z/data=!4m6!3m5!1s0x94ce1d5858ac3641:0x99fe8e3b11617077!8m2!3d-24.0085484!4d-46.4354463!16s%2Fg%2F11sw0llbtt?entry=ttu&g_ep=EgoyMDI1MTAyOC4wIKXMDSoASAFQAw%3D%3D">
+                        <a style="color: var(--cor-vermelho); text-decoration: underline;" target="_blank" href="<?php echo htmlspecialchars($google_maps_url); ?>">
                             Ver no Mapa
                         </a>
                     </div>
-                    
                 </div>
             </div>
         </div>
