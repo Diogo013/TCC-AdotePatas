@@ -715,3 +715,59 @@ main, section, footer {
 .text-danger {
   color: #dc3545 !important;
 }
+
+/* ==========================================================================
+   BANNER HERO RESPONSIVO - IMAGEM MAIS ALTA
+   ========================================================================== */
+
+.banner-hero {
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  background-color: var(--cor-laranja-claro);
+}
+
+.banner-container {
+  width: 100%;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.banner-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  object-position: center 60%; /* Foca mais no topo da imagem - MOSTRA MAIS OS ANIMAIS */
+}
+
+/* Altura do banner para desktop */
+.banner-hero .banner-image {
+  height: 380px; /* Aumentei um pouco a altura para compensar */
+}
+
+/* Tablet */
+@media (max-width: 992px) {
+  .banner-hero .banner-image {
+    height: 300px;
+    object-position: center 25%; /* Ajuste progressivo para dispositivos menores */
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .banner-hero .banner-image {
+    height: 250px;
+    object-position: center 30%;
+  }
+}
+
+/* Mobile pequeno */
+@media (max-width: 576px) {
+  .banner-hero .banner-image {
+    height: 200px;
+    object-position: center 35%;
+  }
+}

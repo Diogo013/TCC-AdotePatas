@@ -121,6 +121,12 @@ if ($logado) {
   </nav>
 </header>
 
+<section class="banner-hero">
+  <div class="banner-container">
+    <img src="images/ajuda/banner_hero.jpeg" alt="banner de de um cachorro e gato filhotes juntos com um campo de flores no fundo" class="banner-image">
+  </div>
+</section>
+
 <section class="perguntas-acordion py-5">
   <div class="container">
     <div class="row justify-content-center">
@@ -529,8 +535,21 @@ document.addEventListener('DOMContentLoaded', function() {
 function mostrarEmailContato() {
     const btnMostrarEmail = document.querySelector("#buttonEntrarContato");
     const BoxEmail = document.querySelector("#BoxContato");
-    btnMostrarEmail.classList.add("d-none");
-    BoxEmail.classList.remove("d-none");
+    const assunto = document.getElementById('inputAssunto');
+    const nome = document.getElementById('inputNome');
+    const email = document.getElementById('inputEmail');
+
+    if(btnMostrarEmail){
+      btnMostrarEmail.classList.add("d-none");
+      BoxEmail.classList.remove("d-none");
+    }
+
+    if(nome.readOnly && email.readOnly){
+      assunto.focus();
+    } else {
+      nome.focus();
+    }
+
 }
 </script>
 
