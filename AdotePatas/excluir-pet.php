@@ -64,11 +64,15 @@ try {
         }
     }
 
-    // 8. Redireciona de volta com sucesso (Padrão PRG)
-    $_SESSION['mensagem_status'] = "Pet excluído com sucesso!";
-    $_SESSION['tipo_mensagem'] = 'success';
-    header('Location: perfil.php?page=meus-pets');
-    exit;
+ // ... código existente ...
+
+// 8. Redireciona de volta com sucesso (Padrão PRG)
+$_SESSION['toast_message'] = "Pet excluído com sucesso!";
+$_SESSION['toast_type'] = 'success';
+header('Location: perfil.php?page=meus-pets');
+exit;
+
+// ... código existente ...
 
 } catch (Exception $e) {
     // 9. Se der qualquer erro, redireciona com a mensagem de falha

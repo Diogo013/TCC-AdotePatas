@@ -15,9 +15,8 @@ if (session_status() === PHP_SESSION_NONE) {
  * de usuário válido na sessão.
  */
 function requerer_login() {
-    if (empty($_SESSION['user_id'])) {
-        // Redireciona para a página de login
-        header('Location: login.php');
+    if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_tipo'])) {
+        header("Location: login");
         exit;
     }
 }

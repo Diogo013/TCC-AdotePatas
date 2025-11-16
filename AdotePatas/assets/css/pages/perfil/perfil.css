@@ -621,118 +621,97 @@
   }
 
   /* ==========================================================================
-    TOAST/MODAL DE NOTIFICAÇÃO - Estilos e Animações
-    ========================================================================== */
-  .toast {
+   TOAST - CORREÇÕES CRÍTICAS
+   ========================================================================== */
+.toast {
     position: fixed;
     top: 2rem;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 2000;
-    display: flex;
+    z-index: 9999;
+    display: none;
     align-items: center;
-    margin-top: 1.5rem;
     min-width: 350px;
     max-width: 90%;
     border-radius: 12px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
     overflow: hidden;
-    opacity: 0;
-    pointer-events: none;
     font-family: "Poppins", sans-serif;
-  }
+    background-color: #d1fae5; /* Verde claro padrão */
+    color: #065f46; /* Verde escuro */
+}
 
-  .toast.show {
-    opacity: 1;
-    pointer-events: auto;
-    animation: slideIn 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-  }
+.toast.success {
+    background-color: #d1fae5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
 
-  .toast.hide {
-    animation: slideOut 0.5s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards;
-  }
+.toast.danger {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
 
-  .toast-icon {
+.toast.warning {
+    background-color: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+}
+
+.toast-icon {
     flex-shrink: 0;
-    width: 110px;
-    height: 110px;
-    margin-right: 1rem;
-  }
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
 
-  .toast-content {
+.toast-content {
     flex-grow: 1;
-  }
+    padding: 1rem;
+}
 
-  .toast-message {
+.toast-message {
     margin: 0;
     font-weight: 500;
     font-size: 1rem;
     line-height: 1.4;
-    padding: 1rem;
-  }
+}
 
-  /* --- Cores por tipo --- */
-  .toast--success {
-    background-color: #d1fae5; /* Verde claro */
-    color: #065f46; /* Verde escuro */
-  }
-  .toast--warning,
-  .toast--danger {
-    background-color: #fee2e2; /* Vermelho claro */
-    color: #991b1b; /* Vermelho escuro */
-  }
-
-  /* --- Barra de Progresso --- */
-  .toast-progress-bar {
+.toast-progress-bar {
     position: absolute;
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 5px;
-  }
-  .toast--success .toast-progress-bar {
+    height: 4px;
     background-color: #34d399;
-  }
-  .toast--warning .toast-progress-bar,
-  .toast--danger .toast-progress-bar {
+}
+
+.toast.success .toast-progress-bar {
+    background-color: #34d399;
+}
+
+.toast.danger .toast-progress-bar {
     background-color: #f87171;
-  }
+}
 
-  .toast.show .toast-progress-bar {
-    animation: shrink 5s linear forwards;
-  }
+.toast.warning .toast-progress-bar {
+    background-color: #f59e0b;
+}
 
-  /* --- Animações --- */
-  @keyframes slideIn {
-    from {
-      top: -100px;
-      opacity: 0;
-    }
-    to {
-      top: 2rem;
-      opacity: 1;
-    }
-  }
+/* Animações corrigidas */
+@keyframes progress {
+    0% { width: 100%; }
+    100% { width: 0%; }
+}
 
-  @keyframes slideOut {
-    from {
-      top: 2rem;
-      opacity: 1;
-    }
-    to {
-      top: -100px;
-      opacity: 0;
-    }
-  }
-
-  @keyframes shrink {
-    from {
-      width: 100%;
-    }
-    to {
-      width: 0%;
-    }
-  }
+/* Garantir que o toast fique acima de tudo */
+.toast {
+    z-index: 9999 !important;
+}
 
   /* Estilos para o botão de trocar banner */
 .banner-actions {

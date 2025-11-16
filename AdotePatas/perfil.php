@@ -3,7 +3,23 @@ session_start();
 
 include_once 'conexao.php'; // 1. Inclui a conexão com o banco
 
+// Verifica se há mensagens de sucesso/erro para exibir
+$toast_message = '';
+$toast_type = 'success';
 
+if (isset($_SESSION['toast_message'])) {
+    $toast_message = $_SESSION['toast_message'];
+    $toast_type = $_SESSION['toast_type'] ?? 'success';
+    
+    // Limpa a mensagem da sessão após usar
+    unset($_SESSION['toast_message']);
+    unset($_SESSION['toast_type']);
+}
+
+// DEBUG: Log para verificar se as mensagens estão chegando
+if (!empty($toast_message)) {
+    error_log("DEBUG perfil.php - Toast message found: " . $toast_message);
+}
 
 // 2. Segurança: Verifica se o usuário está logado
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_tipo'])) {
@@ -26,13 +42,13 @@ try {
     } else {
         $erro = "Tipo de usuário inválido.";
     }
-
+    
     if (empty($erro)) {
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(':id', $user_id, PDO::PARAM_INT);
         $stmt->execute();
         $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
-
+        
         if (!$usuario) {
             $erro = "Usuário não encontrado no banco de dados.";
         }
@@ -43,12 +59,27 @@ try {
 }
 
 /* ==========================================================================
-   LÓGICA DE NAVEGAÇÃO (SWITCH CASE) E BANNER
-   ========================================================================== */
+LÓGICA DE NAVEGAÇÃO (SWITCH CASE) E BANNER
+========================================================================== */
 
 // 1. Determina a página atual. O padrão é 'perfil'.
 // Usamos um parâmetro URL 'page' para controlar o switch
 $pagina = $_GET['page'] ?? 'perfil';
+
+// Verifica se há mensagens de sucesso/erro para exibir
+if ($pagina == 'meus-pets') {
+    if (isset($_SESSION['toast_message'])) {
+        $toast_message = $_SESSION['toast_message'];
+        $toast_type = $_SESSION['toast_type'] ?? 'success';
+        
+        // Limpa a mensagem da sessão após usar
+        unset($_SESSION['toast_message']);
+        unset($_SESSION['toast_type']);
+    }
+}
+
+
+
 
 // 2. Prepara a lógica do banner, MAS só se a página for 'perfil'
 $caminhoBanner = ''; // Inicializa a variável
@@ -135,6 +166,14 @@ if ($pagina == 'pets-curtidos') {
         error_log("Erro ao buscar pets curtidos: " . $e->getMessage());
     }
 }
+
+// DEBUG: Verificar se as variáveis de sessão estão chegando
+if (isset($_SESSION['toast_message'])) {
+    error_log("DEBUG perfil.php - Toast message: " . $_SESSION['toast_message']);
+} else {
+    error_log("DEBUG perfil.php - Nenhuma toast message na sessão");
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -610,6 +649,74 @@ if ($pagina == 'pets-curtidos') {
             <?php endif; ?>
         });
     </script>
+
+  <script>
+// Toast para TODAS as páginas (não apenas meus-pets)
+<?php if (!empty($toast_message)): ?>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Exibindo toast:', "<?php echo $toast_message; ?>");
+    showToast("<?php echo addslashes($toast_message); ?>", "<?php echo $toast_type; ?>");
+});
+<?php endif; ?>
+
+// Função Toast global corrigida
+function showToast(message, type = 'success') {
+    console.log('Chamando showToast:', message, type);
+    
+    const toast = document.getElementById('toast-notification');
+    const toastIcon = document.getElementById('toast-icon');
+    const toastMessage = document.getElementById('toast-message');
+    
+    if (!toast) {
+        console.error('Elemento toast não encontrado');
+        return;
+    }
+    if (!toastMessage) {
+        console.error('Elemento toast-message não encontrado');
+        return;
+    }
+    
+    // Limpa classes anteriores
+    toast.className = 'toast';
+    if (toastIcon) toastIcon.className = 'toast-icon';
+    
+    // Configura mensagem e tipo
+    toastMessage.textContent = message;
+    toast.classList.add(type);
+    
+    // Configura ícone
+    if (toastIcon) {
+        toastIcon.className = 'toast-icon';
+        if (type === 'success') {
+            toastIcon.classList.add('fas', 'fa-check');
+        } else if (type === 'danger') {
+            toastIcon.classList.add('fas', 'fa-times');
+        } else if (type === 'warning') {
+            toastIcon.classList.add('fas', 'fa-exclamation-triangle');
+        }
+    }
+    
+    // Mostra o toast
+    toast.style.display = 'flex';
+    
+    // Configura a barra de progresso
+    const progressBar = toast.querySelector('.toast-progress-bar');
+    if (progressBar) {
+        progressBar.style.animation = 'none';
+        void progressBar.offsetWidth; // Trigger reflow
+        progressBar.style.animation = 'progress 3s linear forwards';
+    }
+    
+    // Esconde após 3 segundos
+    setTimeout(() => { 
+        toast.style.display = 'none'; 
+    }, 3100);
+}
+
+// Debug: verifica se a função está disponível globalmente
+window.showToast = showToast;
+console.log('Função showToast carregada');
+</script>
 
      <script>
     document.addEventListener('DOMContentLoaded', function() {

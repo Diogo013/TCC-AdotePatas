@@ -213,19 +213,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     ':caminho_foto' => $caminho
                 ]);
             }
-            
-            // Se tudo deu certo, confirma a transação
-            $conn->commit();
 
-            // --- INÍCIO DA LÓGICA PRG (Post-Redirect-Get) ---
-            unset($_SESSION['form_data']); // Limpa os dados do formulário
-            
-            $_SESSION['mensagem_status'] = "Pet cadastrado com sucesso!";
-            $_SESSION['tipo_mensagem'] = 'success';
+// Se tudo deu certo, confirma a transação
+$conn->commit();
 
-            // Redireciona para o dashboard ou para a página "meus pets"
-            header("Location: perfil?page=meus-pets"); // posteriormente alterar para "meus-pets.php"
-            exit();
+// --- LÓGICA PRG CORRIGIDA ---
+unset($_SESSION['form_data']); // Limpa os dados do formulário
+
+// Salva a mensagem na sessão para exibir no perfil
+$_SESSION['toast_message'] = "Pet cadastrado com sucesso!";
+$_SESSION['toast_type'] = 'success';
+
+// Redireciona para a página meus-pets
+header("Location: perfil?page=meus-pets");
+exit();
             
         } catch (PDOException $e) {
             $conn->rollBack();

@@ -3,6 +3,18 @@
 include_once 'conexao.php';
 include_once 'session.php';
 
+// Verifica se há mensagens toast para exibir (para erros)
+if (isset($_SESSION['toast_message'])) {
+    echo "<script>
+        document.addEventListener('DOMContentLoaded', function() {
+            showToast('" . addslashes($_SESSION['toast_message']) . "', '" . ($_SESSION['toast_type'] ?? 'danger') . "');
+        });
+    </script>";
+    // Limpa a mensagem da sessão após usar
+    unset($_SESSION['toast_message']);
+    unset($_SESSION['toast_type']);
+}
+
 // Protege a página: Somente usuários logados podem acessar
 requerer_login();
 
@@ -18,9 +30,9 @@ $pet_fotos = [];
 
 if (empty($id_pet_para_editar)) {
     // Se não tiver ID, volta para 'meus-pets' com erro
-    $_SESSION['mensagem_status'] = "ID do pet não fornecido.";
-    $_SESSION['tipo_mensagem'] = 'danger';
-    header('Location: perfil.php?page=meus-pets');
+    $_SESSION['toast_message'] = "ID do pet não fornecido.";
+    $_SESSION['toast_type'] = 'danger';
+    header('Location: perfil?page=meus-pets');
     exit;
 }
 
@@ -54,18 +66,13 @@ try {
 
     $pet_caracteristicas = json_decode($pet['caracteristicas'] ?? '[]', true);
 
-} catch (Exception $e) {
-    $_SESSION['mensagem_status'] = $e->getMessage();
-    $_SESSION['tipo_mensagem'] = 'danger';
-    header('Location: perfil.php?page=meus-pets');
+}  catch (Exception $e) {
+    $_SESSION['toast_message'] = $e->getMessage();
+    $_SESSION['toast_type'] = 'danger';
+    header('Location: perfil?page=meus-pets');
     exit;
 }
 
-// --- LÊ MENSAGENS DE ERRO (Vindas do atualizar-pet.php) ---
-$mensagem_status = $_SESSION['mensagem_status'] ?? '';
-$tipo_mensagem = $_SESSION['tipo_mensagem'] ?? '';
-unset($_SESSION['mensagem_status']);
-unset($_SESSION['tipo_mensagem']);
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -362,15 +369,6 @@ unset($_SESSION['tipo_mensagem']);
     </div>
 
     <div class="container-card w-full p-6 sm:p-10 rounded-3xl shadow-xl">
-        
-        <?php if (!empty($mensagem_status)): ?>
-            <div id="php-data" 
-                 data-message="<?php echo htmlspecialchars($mensagem_status); ?>" 
-                 data-type="<?php echo htmlspecialchars($tipo_mensagem); ?>" 
-                 style="display: none;">
-            </div>
-        <?php endif; ?>
-
         <form action="atualizar-pet.php" method="post" enctype="multipart/form-data" id="form-edit-pet" class="space-y-6">
             
             <input type="hidden" name="id_pet" value="<?php echo $pet['id_pet']; ?>">

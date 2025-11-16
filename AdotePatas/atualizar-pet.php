@@ -8,8 +8,8 @@ requerer_login();
 
 // 3. Garantir que é um método POST
 if ($_SERVER["REQUEST_METHOD"] != "POST") {
-    $_SESSION['mensagem_status'] = "Método inválido.";
-    $_SESSION['tipo_mensagem'] = 'danger';
+    $_SESSION['toast_message'] = "Método inválido.";
+    $_SESSION['toast_type'] = 'danger';
     header('Location: perfil.php?page=meus-pets');
     exit;
 }
@@ -214,11 +214,11 @@ try {
         }
     }
 
-    // 15. Redireciona de volta com sucesso
-    $_SESSION['mensagem_status'] = "Pet atualizado com sucesso!";
-    $_SESSION['tipo_mensagem'] = 'success';
-    header('Location: perfil.php?page=meus-pets');
-    exit;
+// 15. Redireciona de volta com sucesso
+$_SESSION['toast_message'] = "Pet atualizado com sucesso!";
+$_SESSION['toast_type'] = 'success';
+header('Location: perfil?page=meus-pets');
+exit;
 
 } catch (Exception $e) {
     // 16. Se deu erro, ROLLBACK
@@ -231,10 +231,10 @@ try {
         }
     }
 
-    // Redireciona de volta para a edição com o erro
-    $_SESSION['mensagem_status'] = $e->getMessage();
-    $_SESSION['tipo_mensagem'] = 'danger';
-    header('Location: editar-pet.php?id=' . $id_pet);
-    exit;
+// Redireciona de volta para a edição com o erro
+$_SESSION['toast_message'] = $e->getMessage();
+$_SESSION['toast_type'] = 'danger';
+header('Location: editar-pet.php?id=' . $id_pet);
+exit;
 }
 ?>
