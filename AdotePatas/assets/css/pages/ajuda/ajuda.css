@@ -434,6 +434,11 @@ main, section, footer {
   box-shadow: 0 0 0 0.25rem rgba(232, 122, 122, 0.25);
 }
 
+.accordion-button:not(.collapsed) {
+    color: var(--cor-vermelho) !important;
+    background-color: rgb(255, 194, 194, 0.3) !important;
+}
+
 .accordion-button::after {
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23e87a7a'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
   transform: rotate(-90deg);
@@ -561,7 +566,7 @@ main, section, footer {
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 1; /* Fica entre o fundo do botão e o texto */
-  font-size: 3rem; /* Menor */
+  font-size: 1rem; /* Menor */
   line-height: 1;
   color: #a82626; /* Cor base do coração, um pouco mais escura que o botão */
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3),
@@ -616,19 +621,18 @@ main, section, footer {
 @media (max-width: 992px) {
   .heart-background {
     margin-top: 3px;
-    font-size: 6rem;
+    font-size: 2.5rem;
   }
 }
 @media (max-width: 775px) {
   .heart-background {
     margin-top: 3px;
-    font-size: 5.5rem;
+    font-size: 2rem;
   }
 }
 @media (max-width: 575px) {
   .heart-background {
     margin-top: 3px;
-    font-size: 5rem;
   }
 }
 
@@ -769,5 +773,155 @@ main, section, footer {
   .banner-hero .banner-image {
     height: 200px;
     object-position: center 35%;
+  }
+}
+
+/* ==========================================================================
+   ESTILOS DOS CARDS DE REDIRECIONAMENTO
+   ========================================================================== */
+
+.cards-route {
+  background-color: var(--cor-branca);
+  box-shadow: rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 56px;
+}
+
+.card-route {
+  background: var(--cor-branca);
+  border-radius: 16px;
+  padding: 3rem 2.5rem;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.card-route::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, var(--cor-vermelho), var(--cor-rosa-escuro));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+.card-route:hover {
+  transform: translateY(-2px);
+  box-shadow: rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.05) 0px 8px 32px;
+  border-color: var(--cor-laranja-claro);
+}
+
+.card-route:hover::before {
+  transform: scaleX(1);
+}
+
+.card-route-link:hover {
+  text-decoration: none;
+}
+
+.card-route-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--cor-laranja-claro), var(--cor-rosa-pastel));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.card-route:hover .card-route-icon {
+  transform: scale(1.1);
+  background: linear-gradient(135deg, var(--cor-rosa-escuro), var(--cor-vermelho));
+}
+
+.card-route-icon i {
+  font-size: 2.5rem;
+  color: var(--cor-branca);
+  transition: all 0.3s ease;
+}
+
+.card-route:hover .card-route-icon i {
+  color: var(--cor-branca);
+}
+
+.card-route-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.card-route-title {
+  color: var(--cor-cinza-texto);
+  font-weight: 700;
+  font-size: 1.5rem;
+  margin-bottom: 0.75rem;
+  transition: color 0.3s ease;
+}
+
+.card-route:hover .card-route-title {
+  color: var(--cor-rosa-escuro);
+}
+
+.card-route-desc {
+  color: var(--cor-cinza-texto);
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin-bottom: 0;
+}
+
+/* Responsividade para os cards */
+@media (max-width: 992px) {
+  .card-route {
+    padding: 1.5rem 1rem;
+  }
+  
+  .card-route-icon {
+    width: 70px;
+    height: 70px;
+    margin-bottom: 1.25rem;
+  }
+  
+  .card-route-icon i {
+    font-size: 2rem;
+  }
+  
+  .card-route-title {
+    font-size: 1.3rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .card-route {
+    padding: 1.25rem 0.75rem;
+  }
+  
+  .card-route-icon {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 1rem;
+  }
+  
+  .card-route-icon i {
+    font-size: 1.75rem;
+  }
+  
+  .card-route-title {
+    font-size: 1.2rem;
+  }
+  
+  .card-route-desc {
+    font-size: 0.85rem;
   }
 }

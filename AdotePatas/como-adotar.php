@@ -1,51 +1,42 @@
 <?php
 session_start();
 
-// 1. Verificação de Login
-$logado = isset($_SESSION['user_id']) && isset($_SESSION['user_tipo']);
+include_once 'conexao.php';
+
+$logado = isset($_SESSION['user_id']);
 $usuario = null;
 $user_id = null;
 $user_tipo = null;
 $primeiro_nome = '';
+$pagina = "como-adotar"; // Definindo a página atual como "como-adotar"
 
-// 2. Se estiver logado, busca os dados (para exibir o nome no menu)
+// Carrega dados do usuário se estiver logado
 if ($logado) {
-    // Inclui conexão SÓ SE precisar
-    // Certifique-se que o caminho para conexao.php está correto
-    if (file_exists('conexao.php')) {
-        include_once 'conexao.php'; 
-    }
-    
     $user_id = $_SESSION['user_id'];
-    $user_tipo = $_SESSION['user_tipo'];
+    $user_tipo = $_SESSION['user_tipo'] ?? null;
 
-    // Define o primeiro nome
-    if (isset($_SESSION['nome'])) {
+    try {
+        if ($user_tipo == 'usuario') {
+            $sql = "SELECT nome, email, cpf FROM usuario WHERE id_usuario = :id LIMIT 1";
+        } elseif ($user_tipo == 'ong') {
+            $sql = "SELECT nome, email, cnpj FROM ong WHERE id_ong = :id LIMIT 1";
+        } else {
+            $sql = null;
+        }
+
+        if (!empty($sql)) {
+            $stmt = $conn->prepare($sql);
+            $stmt->bindParam(':id', $user_id, PDO::PARAM_INT);
+            $stmt->execute();
+            $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
+        }
+    } catch (PDOException $e) {
+        // silencioso — manter UX
+    }
+
+    if ($logado && isset($_SESSION['nome'])) {
         $partes = explode(' ', $_SESSION['nome']);
         $primeiro_nome = $partes[0] ?? '';
-    } elseif (isset($conn)) { // Tenta buscar no DB se a sessão 'nome' não existir
-        try {
-            if ($user_tipo == 'usuario') {
-                $sql = "SELECT nome FROM usuario WHERE id_usuario = :id LIMIT 1";
-            } elseif ($user_tipo == 'ong') {
-                $sql = "SELECT nome FROM ong WHERE id_ong = :id LIMIT 1";
-            } else {
-                $sql = null;
-            }
-
-            if ($sql) {
-                $stmt = $conn->prepare($sql);
-                $stmt->bindParam(':id', $user_id, PDO::PARAM_INT);
-                $stmt->execute();
-                $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
-                if ($usuario && isset($usuario['nome'])) {
-                    $partes = explode(' ', $usuario['nome']);
-                    $primeiro_nome = $partes[0];
-                }
-            }
-        } catch (PDOException $e) {
-            // Silencioso, não quebra a página se o DB falhar
-        }
     }
 }
 ?>
@@ -66,75 +57,84 @@ if ($logado) {
 <body>
 
 <header>
-  <nav class="navbar navbar-expand-lg navbar-static-white">
+  <nav class="navbar navbar-expand">
     <div class="container">
-      
-      <a class="navbar-brand" href="./"> <img src="./images/global/Logo-AdotePatas.png" alt="Logo Adote Patas" class="navbar-logo">
+      <a class="navbar-brand" href="./">
+        <img src="./images/global/Logo-AdotePatas.png" alt="Logo Adote Patas" class="navbar-logo">
       </a>
 
       <?php if ($logado): ?>
-        <div class="d-flex align-items-center gap-2">
-            <div class="d-none d-lg-block">
-                <ul class="navbar-nav d-flex flex-row gap-3">
-                    <li class="nav-item">
-                        <a class="nav-link navlink" href="sobre-nos">Sobre Nós</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link navlink" href="#">Ajuda</a>
-                    </li>
-                </ul>
-            </div>
-            
-            <a href="perfil?page=perfil" class="profile-info-link d-none d-lg-flex align-items-center gap-2 text-decoration-none" title="Ver meu perfil">
-              <span class="profile-name" style="color: var(--cor-vermelho);"><?php echo htmlspecialchars($primeiro_nome); ?></span>
-                <i class="fa-regular fa-circle-user profile-icon logged-in mr-4"></i>
-            </a>
+        <!-- Navbar para usuário LOGADO -->
+        <div class="d-flex align-items-center gap-4">
+          <!-- Links "Sobre Nós" e "Ajuda" (visíveis em telas grandes) -->
+          <div class="d-none d-xl-block">
+            <ul class="navbar-nav d-flex flex-row gap-4 mb-0">
+              <li class="nav-item">
+                <a class="nav-link navlink" href="sobre-nos">Sobre Nós</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link navlink" href="ajuda.php">Ajuda</a>
+              </li>
+            </ul>
+          </div>
 
-            <button class="border-0 bg-transparent p-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
-              <span class="fas fa-bars nav-icon" style="font-size: 2rem;"></span>
-            </button>
+          <!-- Nome e ícone do usuário -->
+          <a href="perfil?page=perfil" class="profile-info-link d-flex align-items-center gap-3 text-decoration-none" title="Ver meu perfil">
+            <div class="d-flex align-items-center flex-row-reverse gap-2">
+              <i class="fa-regular fa-circle-user profile-icon logged-in"></i>
+              <span class="profile-name fs-5" style="color: var(--cor-vermelho);"><?php echo htmlspecialchars($primeiro_nome); ?></span>
+            </div>
+          </a>
+
+          <!-- Botão do menu (SEMPRE VISÍVEL) -->
+          <button class="border-0 bg-transparent p-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
+            <span class="fas fa-bars nav-icon" style="font-size: 2rem;"></span>
+          </button>
         </div>
 
       <?php else: ?>
-<button class="navbar-toggler hamburger d-lg-none" style="border: none" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
-  <span class="fas fa-bars nav-icon" style="font-size: 2rem;"></span>
-</button>
+        <!-- Navbar para usuário NÃO LOGADO -->
+        <div class="d-flex align-items-center gap-4">
+          <!-- Links visíveis apenas em telas grandes (>1000px) -->
+          <div class="d-none d-xl-block">
+            <ul class="navbar-nav d-flex flex-row align-items-center gap-4 mb-0">
+              <li class="nav-item">
+                <a class="nav-link navlink" href="sobre-nos">Sobre Nós</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link navlink" href="ajuda.php">Ajuda</a>
+              </li>
+              <li class="nav-item position-relative">
+                <a class="nav-link loginlink" href="login">Entrar</a>
+              </li>
+            </ul>
+          </div>
 
-        <div class="d-flex align-items-center gap-2">
-            <div class="d-none d-lg-block">
-                <ul class="navbar-nav d-flex flex-row gap-3">
-                    <li class="nav-item">
-                        <a class="nav-link navlink" href="sobre-nos">Sobre Nós</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link navlink" href="#">Ajuda</a>
-                    </li>
-                    <li class="nav-item position-relative">
-                      <a class="nav-link loginlink" href="login">Entrar</a>
-                    </li>
-                </ul>
-            </div>
-        
-
+          <!-- Botão do menu (sempre visível) -->
+          <button class="border-0 bg-transparent p-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
+            <span class="fas fa-bars nav-icon" style="font-size: 2rem;"></span>
+          </button>
+        </div>
       <?php endif; ?>
-
     </div>
   </nav>
 </header>
 
+
+<!-- Offcanvas completo e funcional -->
 <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
   <div class="offcanvas-header border-bottom">
     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
   </div>
   
   <div class="offcanvas-body p-0">
-    
     <?php if ($logado): ?>
+      <!-- Conteúdo para usuário LOGADO -->
       <aside class="profile-sidebar p-3">
         <div class="sidebar-header text-center mb-4">
           <i class="fa-regular fa-circle-user sidebar-profile-icon logged-in"></i>
           <h5 class="mt-2 mb-0">
-            <?php echo htmlspecialchars($primeiro_nome); ?>
+            <?php echo htmlspecialchars($usuario['nome'] ?? 'Usuário'); ?>
           </h5>
           <small class="text-muted fs-6">
             <?php echo htmlspecialchars(ucfirst($user_tipo ?? '')); ?>
@@ -142,56 +142,89 @@ if ($logado) {
         </div>
         
         <nav class="nav nav-pills flex-column profile-nav">
-          <a class="nav-link" href="sobre-nos"><i class="fa-solid fa-info-circle fa-fw me-2"></i> Sobre Nós</a>
-          <a class="nav-link" href="#"><i class="fa-solid fa-question-circle fa-fw me-2"></i> Ajuda</a>
+          <!-- Links que aparecem apenas no offcanvas em telas pequenas -->
+          <div class="d-xl-none">
+            <a class="nav-link" href="sobre-nos">
+              <i class="fa-solid fa-info-circle fa-fw me-2"></i> Sobre Nós
+            </a>
+            <a class="nav-link" href="ajuda.php">
+              <i class="fa-solid fa-question-circle fa-fw me-2"></i> Ajuda
+            </a>
+            <hr class="my-2">
+          </div>
+          
+          <a class="nav-link <?php echo ($pagina == 'perfil') ? 'active' : ''; ?>" 
+             href="perfil?page=perfil" 
+             <?php echo ($pagina == 'perfil') ? 'aria-current="page"' : ''; ?>>
+            <i class="fa-regular fa-circle-user fa-fw me-2"></i> Meu Perfil
+          </a>
+          
+          <a class="nav-link <?php echo ($pagina == 'meus-pets') ? 'active' : ''; ?>" 
+             href="perfil?page=meus-pets"
+             <?php echo ($pagina == 'meus-pets') ? 'aria-current="page"' : ''; ?>>
+            <i class="fa-solid fa-paw fa-fw me-2"></i> Meus Pets
+          </a>
+
+          <a class="nav-link <?php echo ($pagina == 'pets-curtidos') ? 'active' : ''; ?>" 
+             href="perfil?page=pets-curtidos"
+             <?php echo ($pagina == 'pets-curtidos') ? 'aria-current="page"' : ''; ?>>
+            <i class="fa-regular fa-heart fa-fw me-2"></i> Pets Curtidos
+          </a>
+
+          <a class="nav-link" href="chat.php">
+            <i class="fa-regular fa-comments fa-fw me-3"></i> Chats
+          </a>
+
           <hr class="my-2">
-          <a class="nav-link" href="perfil?page=perfil"><i class="fa-regular fa-circle-user fa-fw me-2"></i> Meu Perfil</a>
-          <a class="nav-link" href="perfil?page=meus-pets"><i class="fa-solid fa-paw fa-fw me-2"></i> Meus Pets</a>
-          <a class="nav-link" href="perfil?page=pets-curtidos"><i class="fa-regular fa-heart fa-fw me-2"></i> Pets Curtidos</a>
-          <a class="nav-link" href="chat.php"><i class="fa-regular fa-comments fa-fw me-2"></i> Chats</a>
-          <hr class="my-2">
-          <a class="nav-link logout-link-sidebar" href="sair.php"><i class="fa-solid fa-right-from-bracket fa-fw me-2"></i> Sair</a>
+          
+          <a class="nav-link logout-link-sidebar" href="sair.php">
+            <i class="fa-solid fa-right-from-bracket fa-fw me-2"></i> Sair
+          </a>
         </nav>
       </aside>
-
     <?php else: ?>
+      <!-- Conteúdo para usuário NÃO LOGADO -->
       <aside class="profile-sidebar p-3">
         <div class="sidebar-header text-center mb-4">
           <i class="fa-regular fa-circle-user sidebar-profile-icon logged-out"></i>
           <h5 class="mt-2 mb-0">Visitante</h5>
-          <small class="text-muted fs-6">Faça login para ver seu perfil</small>
+          <small class="text-muted fs-6">Faça login para acessar mais recursos</small>
         </div>
-
+        
         <nav class="nav nav-pills flex-column profile-nav">
           <a class="nav-link" href="sobre-nos">
             <i class="fa-solid fa-info-circle fa-fw me-2"></i> Sobre Nós
           </a>
-          <a class="nav-link" href="#">
+          
+          <a class="nav-link" href="ajuda.php">
             <i class="fa-solid fa-question-circle fa-fw me-2"></i> Ajuda
           </a>
+          
           <hr class="my-2">
+          
           <a class="nav-link loginlink-sidebar" href="login">
             <i class="fa-solid fa-right-to-bracket fa-fw me-2"></i> Entrar
           </a>
         </nav>
       </aside>
     <?php endif; ?>
-
   </div>
 </div>
-<main class="como-adotar-section"id="como-adotar">
+
+<main class="como-adotar-section" id="como-adotar">
   <div class="container">
     
     <div class="row">
       <div class="col-12 text-center">
-        <h1 class="section-title-kawaii" style="font-size: 2.7rem">O Caminho para o seu Novo Amigo</h1>
-        <p class="section-subtitle-poppins" style="font-size: 1.2rem">Adotar é um ato de amor! Veja como é fácil:</p>
+        <h1 class="section-title-kawaii">O Caminho para o seu Novo Amigo</h1>
+        <p class="section-subtitle-poppins">Adotar é um ato de amor! Veja como é fácil:</p>
       </div>
     </div>
 
     <div class="row align-items-center">
       
-      <div class="col-lg-6 order-lg-1 order-2">
+      <!-- PASSOS - Primeiro em mobile, esquerda em desktop -->
+      <div class="col-lg-6 order-1 order-lg-1">
         <ul class="adoption-steps">
           
           <li class="step-item">
@@ -206,7 +239,8 @@ if ($logado) {
 
           <li class="step-item">
             <div class="step-icon-wrapper">
-              <i class="bi bi-search"></i> </div>
+              <i class="bi bi-search"></i>
+            </div>
             <div class="step-content">
               <h3>2. Procure pelo seu Amiguinho</h3>
               <p>Encontre o pet que mais combina com você.</p>
@@ -246,7 +280,8 @@ if ($logado) {
         </ul>
       </div>
 
-      <div class="col-lg-6 order-lg-2 order-1 mb-5 mb-lg-0">
+      <!-- IMAGEM - Segundo em mobile, direita em desktop -->
+      <div class="col-lg-6 order-2 order-lg-2 mt-4 mt-lg-0">
         <div class="adoption-illustration text-center">
           <img src="./images/como-adotar/como-adotar-image.png" 
                alt="Ilustração de uma pessoa feliz abraçando dois cachorrinhos." 

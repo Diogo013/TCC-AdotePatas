@@ -70,7 +70,7 @@ if ($logado) {
                 <a class="nav-link navlink active" href="sobre-nos">Sobre Nós</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link navlink" href="#">Ajuda</a>
+                <a class="nav-link navlink" href="ajuda.php">Ajuda</a>
               </li>
             </ul>
           </div>
@@ -99,7 +99,7 @@ if ($logado) {
                 <a class="nav-link navlink active" href="sobre-nos">Sobre Nós</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link navlink" href="#">Ajuda</a>
+                <a class="nav-link navlink" href="ajuda.php">Ajuda</a>
               </li>
               <li class="nav-item position-relative">
                 <a class="nav-link loginlink" href="login">Entrar</a>

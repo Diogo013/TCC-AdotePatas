@@ -9,6 +9,14 @@ $user_id = null;
 $user_tipo = null;
 $primeiro_nome = '';
 $pagina = "ajuda"; // Definindo a página atual como "ajuda"
+$acesso = "";
+
+
+if ($logado){
+  $acesso = "pets";
+} else {
+  $acesso = "cadastro";
+}
 
 // Carrega dados do usuário se estiver logado (mesma lógica do sobre-nos.php)
 if ($logado) {
@@ -121,12 +129,80 @@ if ($logado) {
   </nav>
 </header>
 
+
 <section class="banner-hero">
   <div class="banner-container">
     <img src="images/ajuda/banner_hero.jpeg" alt="banner de de um cachorro e gato filhotes juntos com um campo de flores no fundo" class="banner-image">
   </div>
 </section>
 
+<!-- Substitua a seção cards-route existente por este código: -->
+ 
+<section class="cards-route py-5">
+  <div class="container">
+    <div class="row g-4 justify-content-center">
+      <!-- Card 1: Adotar -->
+      <div class="col-12 col-sm-6 col-lg-3">
+        <a href="<?php echo htmlspecialchars($acesso); ?>" class="card-route-link text-decoration-none">
+          <div class="card-route h-100">
+            <div class="card-route-icon">
+              <i class="fas fa-paw"></i>
+            </div>
+            <div class="card-route-content">
+              <h3 class="card-route-title">Adotar</h3>
+              <p class="card-route-desc">Encontre seu novo amigo de quatro patas</p>
+            </div>
+          </div>
+        </a>
+      </div>
+      
+      <!-- Card 2: Como Adotar -->
+      <div class="col-12 col-sm-6 col-lg-3">
+        <a href="como-adotar.php" class="card-route-link text-decoration-none">
+          <div class="card-route h-100">
+            <div class="card-route-icon">
+              <i class="fas fa-question-circle"></i>
+            </div>
+            <div class="card-route-content">
+              <h3 class="card-route-title">Como Adotar</h3>
+              <p class="card-route-desc">Conheça o processo de adoção</p>
+            </div>
+          </div>
+        </a>
+      </div>
+      
+      <!-- Card 3: Login -->
+      <div class="col-12 col-sm-6 col-lg-3">
+        <a href="login" class="card-route-link text-decoration-none">
+          <div class="card-route h-100">
+            <div class="card-route-icon">
+              <i class="fas fa-user"></i>
+            </div>
+            <div class="card-route-content">
+              <h3 class="card-route-title">Login</h3>
+              <p class="card-route-desc">Acesse sua conta</p>
+            </div>
+          </div>
+        </a>
+      </div>
+      
+      <!-- Card 4: Política de Privacidade -->
+      <div class="col-12 col-sm-6 col-lg-3">
+        <a href="politica-de-privacidade.php" class="card-route-link text-decoration-none">
+          <div class="card-route h-100">
+            <div class="card-route-icon">
+              <i class="fas fa-shield-alt"></i>
+            </div>
+            <div class="card-route-content">
+              <h3 class="card-route-title">Política de Privacidade</h3>
+              <p class="card-route-desc">Conheça nossos termos</p>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
 <section class="perguntas-acordion py-5">
   <div class="container">
     <div class="row justify-content-center">

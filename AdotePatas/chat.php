@@ -121,7 +121,7 @@ $horario_completo = date('H:i');
                 <a class="nav-link navlink" href="sobre-nos">Sobre Nós</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link navlink" href="#">Ajuda</a>
+                <a class="nav-link navlink" href="ajuda.php">Ajuda</a>
               </li>
             </ul>
           </div>
