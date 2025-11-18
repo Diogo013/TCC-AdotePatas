@@ -8,9 +8,8 @@ $usuario = null;
 $user_id = null;
 $user_tipo = null;
 $primeiro_nome = '';
-$pagina = "chats"; // CORREÇÃO: Definindo a página atual
+$pagina = "chats";
 
-// Carrega dados do usuário se estiver logado (mesma lógica do index.php)
 if ($logado) {
     $user_id = $_SESSION['user_id'];
     $user_tipo = $_SESSION['user_tipo'] ?? null;
@@ -40,36 +39,32 @@ if ($logado) {
     }
 }
 
-// 2. Lógica da Página (similar ao perfil.php)
-$conversa_id = $_GET['id'] ?? null; // Pega o ID da conversa ativa pela URL
+$conversa_id = $_GET['id'] ?? null;
 
-// 3. Dados Fictícios (Substituir por sua busca no BD)
-// Em um app real, você faria um SELECT para buscar as conversas do usuário
 $lista_conversas = [
     [
         "id" => 1,
         "nome" => "Adote Patas",
         "preview" => "Olá! Vimos que você se interessou...",
         "data" => "02/04",
-        "avatar" => "images/global/Logo-AdotePatas.png" // Usando o logo como exemplo
+        "avatar" => "images/global/Logo-AdotePatas.png"
     ],
     [
         "id" => 2,
         "nome" => "Marcella",
         "preview" => "Texto texto texto...",
         "data" => "04/08",
-        "avatar" => "https://via.placeholder.com/50/BF6964/FFFFFF?text=M" // Placeholder
+        "avatar" => "https://via.placeholder.com/50/BF6964/FFFFFF?text=M"
     ],
     [
         "id" => 3,
         "nome" => "Nome",
         "preview" => "Olá! Vimos que você se interess...",
         "data" => "04/08",
-        "avatar" => "https://via.placeholder.com/50/DEA796/FFFFFF?text=N" // Placeholder
+        "avatar" => "https://via.placeholder.com/50/DEA796/FFFFFF?text=N"
     ]
 ];
 
-// Variável para guardar os dados da conversa ativa (se houver)
 $conversa_ativa = null;
 if ($conversa_id) {
     foreach ($lista_conversas as $conversa) {
@@ -80,14 +75,9 @@ if ($conversa_id) {
     }
 }
 
-// Define o fuso horário padrão para Brasília
 date_default_timezone_set('America/Sao_Paulo');
-
-// Pega a hora, minuto e segundo atuais
-$hora_atual = date('H'); // Formato 24h (ex: 14)
-$minuto_atual = date('i'); // Minutos com zero à esquerda (ex: 05)
-
-// Para pegar tudo de uma vez formatado (ex: 14:05)
+$hora_atual = date('H');
+$minuto_atual = date('i');
 $horario_completo = date('H:i');
 
 ?>
@@ -159,12 +149,12 @@ $horario_completo = date('H:i');
         
         <?php foreach ($lista_conversas as $conversa): ?>
           <?php
-            // Verifica se este item é o ativo
             $is_active = ($conversa_id == $conversa['id']);
           ?>
           <a href="chat.php?id=<?php echo $conversa['id']; ?>" 
              class="chat-list-item <?php echo $is_active ? 'active' : ''; ?>"
-             <?php echo $is_active ? 'aria-current="true"' : ''; ?>>
+             <?php echo $is_active ? 'aria-current="true"' : ''; ?>
+             data-conversation-id="<?php echo $conversa['id']; ?>">
             
             <img src="<?php echo htmlspecialchars($conversa['avatar']); ?>" alt="Foto de perfil de <?php echo htmlspecialchars($conversa['nome']); ?>" class="chat-avatar">
             
@@ -187,6 +177,10 @@ $horario_completo = date('H:i');
 
       <?php if ($conversa_ativa): ?>
         <div class="chat-active-header">
+            <button class="btn btn-back-mobile d-md-none">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+            
             <img src="<?php echo htmlspecialchars($conversa_ativa['avatar']); ?>" alt="Foto de perfil de <?php echo htmlspecialchars($conversa_ativa['nome']); ?>" class="chat-avatar">
             <span class="chat-active-name"><?php echo htmlspecialchars($conversa_ativa['nome']); ?></span>
         </div>
@@ -219,7 +213,6 @@ $horario_completo = date('H:i');
                 </div>
             </div>
 
-
             <div class="message received">
                 <p>Ele é muito manhoso, e não gosta de ficar sozinho</p>
                 <div class="date message-timestamp">
@@ -234,8 +227,7 @@ $horario_completo = date('H:i');
                 </div>
             </div>
 
-
-            </div>
+        </div>
 
         <div class="chat-input-area">
           <button class="files chat-send-files" type="button">
@@ -247,32 +239,29 @@ $horario_completo = date('H:i');
             </button>
         </div>
 
-        <!-- Adicione este código dentro da section chat-conversation-area, após o chat-input-area -->
-  <div class="modal fade" id="fileModal" tabindex="-1" aria-labelledby="fileModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-sm modal-dialog-centered">
-          <div class="modal-content">
-              <div class="modal-header">
-                  <h5 class="modal-title" id="fileModalLabel">Enviar Arquivo</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-              </div>
-              <div class="modal-body">
-                  <div class="d-grid gap-2">
-                      <button type="button" class="btn btn-outline-primary btn-lg" id="documentBtn">
-                          <i class="fa-solid fa-file-lines me-2"></i>Documento
-                      </button>
-                      <button type="button" class="btn btn-outline-success btn-lg" id="mediaBtn">
-                          <i class="fa-solid fa-image me-2"></i>Fotos/Vídeos
-                      </button>
-                  </div>
-              </div>
-          </div>
-      </div>
-  </div>
-  
-  <!-- Inputs de arquivo ocultos -->
-  <input type="file" id="documentInput" accept=".pdf,.doc,.docx,.txt,.rtf" hidden>
-  <input type="file" id="mediaInput" accept="image/*,video/*" hidden>
-
+        <div class="modal fade" id="fileModal" tabindex="-1" aria-labelledby="fileModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-sm modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="fileModalLabel">Enviar Arquivo</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-outline-primary btn-lg" id="documentBtn">
+                                <i class="fa-solid fa-file-lines me-2"></i>Documento
+                            </button>
+                            <button type="button" class="btn btn-outline-success btn-lg" id="mediaBtn">
+                                <i class="fa-solid fa-image me-2"></i>Fotos/Vídeos
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <input type="file" id="documentInput" accept=".pdf,.doc,.docx,.txt,.rtf" hidden>
+        <input type="file" id="mediaInput" accept="image/*,video/*" hidden>
 
       <?php else: ?>
         <div class="chat-placeholder">
@@ -282,14 +271,11 @@ $horario_completo = date('H:i');
         </div>
       <?php endif; ?>
 
-
-      
     </section>
 
   </div>
 </main>
 
-<!-- Toast Personalizado -->
 <div id="toast-notification" class="adp-toast p-0" style="display: none;">
     <div id="toast-icon" class="adp-toast-icon" style="font-size: 1.6rem"></div>
     <div class="adp-toast-content">
@@ -297,7 +283,6 @@ $horario_completo = date('H:i');
     </div>
     <div class="adp-toast-progress-bar"></div>
 </div>
-
 
 <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
   <div class="offcanvas-header border-bottom">
@@ -361,9 +346,48 @@ $horario_completo = date('H:i');
   </div>
 </div>
 
-
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="assets/js/pages/chat/file-size-upload.js" ></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Botão voltar no mobile
+    const backButton = document.querySelector('.btn-back-mobile');
+    if (backButton) {
+        backButton.addEventListener('click', function() {
+            window.location.href = 'chat.php';
+        });
+    }
+
+    // Verifica se estamos em mobile e há conversa ativa para aplicar a classe
+    function checkMobileLayout() {
+        if (window.innerWidth < 768 && <?php echo ($conversa_ativa && $conversa_id) ? 'true' : 'false'; ?>) {
+            document.body.classList.add('chat-active-mobile');
+        } else {
+            document.body.classList.remove('chat-active-mobile');
+        }
+    }
+
+    // Verifica layout ao carregar
+    checkMobileLayout();
+
+    // Verifica layout ao redimensionar a janela
+    window.addEventListener('resize', checkMobileLayout);
+
+    // Ao clicar em uma conversa no mobile
+    const chatLinks = document.querySelectorAll('.chat-list-item');
+    chatLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            // Apenas em telas menores que 768px
+            if (window.innerWidth < 768) {
+                e.preventDefault();
+                const conversationId = this.getAttribute('data-conversation-id');
+                window.location.href = `chat.php?id=${conversationId}`;
+            }
+        });
+    });
+});
+</script>
 </body>
 </html>

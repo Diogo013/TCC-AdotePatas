@@ -1,0 +1,16 @@
+[
+    {
+        "id": 1,
+        "nome": "Associação de Amparo aos Animais de Praia Grande",
+        "sigla": "AAAPG",
+        "dataParceria": "17/11/2025",
+        "redeSocial": {
+            "instagram": "https://www.instagram.com/aaapgoficial/",
+            "facebook": "#"
+        },
+        "fotoPerfil": "./images/ongs/logo-aaapg.webp",
+        "descricao": "Fundada em 1986, a AAAPG é uma ONG sem fins lucrativos dedicada a oferecer refúgio seguro a animais vítimas de abandono e maus-tratos, promovendo cuidados físicos e emocionais.",
+        "email": "atendimento.aaapg@gmail.com",
+        "local" : "https://www.google.com/maps/place/Associa%C3%A7%C3%A3o+de+Amparo+aos+Animais+de+Praia+Grande/@-24.0361577,-46.523802,17.75z/data=!4m6!3m5!1s0x94ce21d10f36845b:0x39cbef7c1446cd63!8m2!3d-24.0362212!4d-46.5231183!16s%2Fg%2F11c30x_jtv?entry=ttu&g_ep=EgoyMDI1MTExMi4wIKXMDSoASAFQAw%3D%3D"
+    }
+]

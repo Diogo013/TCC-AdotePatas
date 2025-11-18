@@ -253,12 +253,14 @@ if ($logado && $user_tipo == 'usuario') {
           </div>
 
           <div class="col-4">
-            <div class="card-item">
-              <div class="card-icon">
-                <img src="./images/index/icone-ong.png" alt="Ícone de ONGs">
+            <a href="ongs-parceiras.php"  style="text-decoration: none;">
+              <div class="card-item">
+                <div class="card-icon">
+                  <img src="./images/index/icone-ong.png" alt="Ícone de ONGs">
+                </div>
+                <h3>ONGs</h3>
               </div>
-              <h3>ONGs</h3>
-            </div>
+            </a>
           </div>
 
           <div class="col-4">
