@@ -181,10 +181,65 @@ if ($conversa_id_ativa) {
         }
 
     } catch (PDOException $e) {
-        error_log("Erro ao buscar conversa ativa: " . $e->getMessage());
-        $conversa_id_ativa = null;
+        // silencioso — manter UX
+    }
+
+    if ($logado && isset($_SESSION['nome'])) {
+        $partes = explode(' ', $_SESSION['nome']);
+        $primeiro_nome = $partes[0] ?? '';
     }
 }
+
+// 2. Lógica da Página (similar ao perfil.php)
+$conversa_id = $_GET['id'] ?? null; // Pega o ID da conversa ativa pela URL
+
+// 3. Dados Fictícios (Substituir por sua busca no BD)
+// Em um app real, você faria um SELECT para buscar as conversas do usuário
+$lista_conversas = [
+    [
+        "id" => 1,
+        "nome" => "Adote Patas",
+        "preview" => "Olá! Vimos que você se interessou...",
+        "data" => "02/04",
+        "avatar" => "images/global/Logo-AdotePatas.png" // Usando o logo como exemplo
+    ],
+    [
+        "id" => 2,
+        "nome" => "Marcella",
+        "preview" => "Texto texto texto...",
+        "data" => "04/08",
+        "avatar" => "https://via.placeholder.com/50/BF6964/FFFFFF?text=M" // Placeholder
+    ],
+    [
+        "id" => 3,
+        "nome" => "Nome",
+        "preview" => "Olá! Vimos que você se interess...",
+        "data" => "04/08",
+        "avatar" => "https://via.placeholder.com/50/DEA796/FFFFFF?text=N" // Placeholder
+    ]
+];
+
+// Variável para guardar os dados da conversa ativa (se houver)
+$conversa_ativa = null;
+if ($conversa_id) {
+    foreach ($lista_conversas as $conversa) {
+        if ($conversa['id'] == $conversa_id) {
+            $conversa_ativa = $conversa;
+            break;
+        }
+    }
+}
+
+// Define o fuso horário padrão para Brasília
+date_default_timezone_set('America/Sao_Paulo');
+
+// Pega a hora, minuto e segundo atuais
+$hora_atual = date('H'); // Formato 24h (ex: 14)
+$minuto_atual = date('i'); // Minutos com zero à esquerda (ex: 05)
+
+// Para pegar tudo de uma vez formatado (ex: 14:05)
+$horario_completo = date('H:i');
+
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -247,45 +302,28 @@ if ($conversa_id_ativa) {
 
       <div class="chat-list">
         
-        <?php if (empty($lista_conversas)): ?>
-            <p class="text-center p-3 text-muted">Nenhuma conversa encontrada.</p>
-        <?php else: ?>
-            <?php foreach ($lista_conversas as $conversa): ?>
-              <?php
-                // Verifica se este item é o ativo
-                $is_active = ($conversa_id_ativa == $conversa['id_conversa']);
-                
-                // Foto de perfil (avatar)
-                $avatar_path = $base_path . 'images/perfil/teste.jpg'; // Padrão
-                if (!empty($conversa['foto_outra_pessoa'])) {
-                    $avatar_path = $base_path . htmlspecialchars($conversa['foto_outra_pessoa']);
-                }
-                
-                // Data formatada
-                $data_formatada = 'Sem data';
-                if (!empty($conversa['data_ultima_msg'])) {
-                    $data_formatada = date('d/m/Y', strtotime($conversa['data_ultima_msg']));
-                }
-              ?>
-              <a href="<?php echo $base_path; ?>chat/<?php echo $conversa['id_conversa']; ?>" 
-                 class="chat-list-item <?php echo $is_active ? 'active' : ''; ?>"
-                 <?php echo $is_active ? 'aria-current="true"' : ''; ?>>
-                
-                <img src="<?php echo $avatar_path; ?>" alt="Foto de perfil de <?php echo htmlspecialchars($conversa['nome_outra_pessoa']); ?>" class="chat-avatar" onerror="this.src='<?php echo $base_path; ?>images/perfil/teste.jpg';">
-                
-                <div class="chat-item-details">
-                  <div class="chat-item-header">
-                    <span class="chat-name"><?php echo htmlspecialchars($conversa['nome_outra_pessoa']); ?></span>
-                    <span class="chat-date"><?php echo $data_formatada; ?></span>
-                  </div>
-                  <p class="chat-preview-title">Interesse em: <strong><?php echo htmlspecialchars($conversa['pet_nome']); ?></strong></p>
-                  <p class="chat-preview">
-                    <?php echo htmlspecialchars($conversa['preview_ultima_msg'] ?? 'Inicie a conversa...'); ?>
-                  </p>
-                </div>
-              </a>
-            <?php endforeach; ?>
-        <?php endif; ?>
+        <?php foreach ($lista_conversas as $conversa): ?>
+          <?php
+            // Verifica se este item é o ativo
+            $is_active = ($conversa_id == $conversa['id']);
+          ?>
+          <a href="chat.php?id=<?php echo $conversa['id']; ?>" 
+             class="chat-list-item <?php echo $is_active ? 'active' : ''; ?>"
+             <?php echo $is_active ? 'aria-current="true"' : ''; ?>>
+            
+            <img src="<?php echo htmlspecialchars($conversa['avatar']); ?>" alt="Foto de perfil de <?php echo htmlspecialchars($conversa['nome']); ?>" class="chat-avatar">
+            
+            <div class="chat-item-details">
+              <div class="chat-item-header">
+                <span class="chat-name"><?php echo htmlspecialchars($conversa['nome']); ?></span>
+                <span class="chat-date"><?php echo htmlspecialchars($conversa['data']); ?></span>
+              </div>
+              <p class="chat-preview">
+                <?php echo htmlspecialchars($conversa['preview']); ?>
+              </p>
+            </div>
+          </a>
+        <?php endforeach; ?>
         
       </div>
     </aside>
@@ -301,46 +339,55 @@ if ($conversa_id_ativa) {
             }
         ?>
         <div class="chat-active-header">
-            <img src="<?php echo $avatar_ativo_path; ?>" alt="Foto de perfil de <?php echo htmlspecialchars($conversa_ativa['nome_outra_pessoa']); ?>" class="chat-avatar" onerror="this.src='<?php echo $base_path; ?>images/perfil/teste.jpg';">
-            <div class="chat-active-info">
-                <span class="chat-active-name"><?php echo htmlspecialchars($conversa_ativa['nome_outra_pessoa']); ?></span>
-                <span class="chat-active-pet">Interessado(a) em: <strong><?php echo htmlspecialchars($conversa_ativa['pet_nome']); ?></strong></span>
+            <img src="<?php echo htmlspecialchars($conversa_ativa['avatar']); ?>" alt="Foto de perfil de <?php echo htmlspecialchars($conversa_ativa['nome']); ?>" class="chat-avatar">
+            <span class="chat-active-name"><?php echo htmlspecialchars($conversa_ativa['nome']); ?></span>
+        </div>
+
+        <div class="chat-messages">
+
+            <div class="message received">
+                <p>Olá! Vimos que você se interessou pelo Caramelo</p>
+                <div class="date message-timestamp">
+                  <?php echo date('d/m/Y' . "   " . $horario_completo); ?>
+                </div>
             </div>
-            
-            <?php if ($eu_sou_protetor): ?>
-                <!-- *** NOSSO BOTÃO PARA O PDF (PRÓXIMO PASSO) *** -->
-                <a href="<?php echo $base_path; ?>gerar_pdf.php?solicitacao_id=<?php echo $conversa_ativa['id_solicitacao_fk']; ?>" 
-                   target="_blank" 
-                   class="btn btn-outline-danger btn-sm ms-auto" 
-                   title="Ver formulário de adoção">
-                   <i class="fa-solid fa-file-pdf me-1"></i> Ver Formulário
-                </a>
-            <?php endif; ?>
-        </div>
+            <div class="message sent">
+                <p>Sim! Gostaria de saber mais sobre ele.</p>
+                <div class="date message-timestamp">
+                  <?php echo date('d/m/Y' . "   " . $horario_completo); ?>
+                </div>
+            </div>
+            <div class="message received">
+                <p>Claro! Qual sua Dúvida?</p>
+                <div class="date message-timestamp">
+                  <?php echo date('d/m/Y' . "   " . $horario_completo); ?>
+                </div>
+            </div>
 
-        <div class="chat-messages" id="chat-messages-container">
-            
-            <?php if (empty($lista_mensagens)): ?>
-                <p class="text-center text-muted mt-4">Nenhuma mensagem ainda.</p>
-            <?php else: ?>
-                <?php foreach ($lista_mensagens as $msg): ?>
-                    <?php
-                        // Verifica se a mensagem é "enviada" (sent) ou "recebida" (received)
-                        $classe_msg = 'received'; // Padrão é recebida
-                        if ($msg['id_remetente_fk'] == $user_id_logado && $msg['tipo_remetente'] == $user_tipo_logado) {
-                            $classe_msg = 'sent'; // É minha, então é enviada
-                        }
-                        
-                        $data_msg = date('H:i, d/m/Y', strtotime($msg['data_envio']));
-                    ?>
-                    <div class="message <?php echo $classe_msg; ?>">
-                        <p><?php echo nl2br(htmlspecialchars($msg['conteudo'])); ?></p>
-                        <div class="date message-timestamp"><?php echo $data_msg; ?></div>
-                    </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
+            <div class="message sent">
+                <p>Moro em um Apartamento, posso deixar ele sozinho enquanto trabalho?</p>
+                <div class="date message-timestamp">
+                  <?php echo date('d/m/Y' . "   " . $horario_completo); ?>
+                </div>
+            </div>
 
-        </div>
+
+            <div class="message received">
+                <p>Ele é muito manhoso, e não gosta de ficar sozinho</p>
+                <div class="date message-timestamp">
+                  <?php echo date('d/m/Y' . "   " . $horario_completo); ?>
+                </div>
+            </div>
+
+            <div class="message received">
+                <p>Aconselho deixar com alguém ou adotar um amiguinho para o  Caramelo!</p>
+                <div class="date message-timestamp">
+                  <?php echo date('d/m/Y' . "   " . $horario_completo); ?>
+                </div>
+            </div>
+
+
+            </div>
 
         <div class="chat-input-area">
           <button class="files chat-send-files" type="button" data-bs-toggle="modal" data-bs-target="#fileModal" aria-label="Anexar arquivo">
@@ -352,25 +399,32 @@ if ($conversa_id_ativa) {
             </button>
         </div>
 
-        <!-- Modal de Anexos (do seu template) -->
-        <div class="modal fade" id="fileModal" tabindex="-1" aria-labelledby="fileModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-sm modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="fileModalLabel">Enviar Arquivo</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="d-grid gap-2">
-                            <button type="button" class="btn btn-outline-primary btn-lg" id="documentBtn"><i class="fa-solid fa-file-lines me-2"></i>Documento</button>
-                            <button type="button" class="btn btn-outline-success btn-lg" id="mediaBtn"><i class="fa-solid fa-image me-2"></i>Fotos/Vídeos</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <input type="file" id="documentInput" accept=".pdf,.doc,.docx,.txt,.rtf" hidden>
-        <input type="file" id="mediaInput" accept="image/*,video/*" hidden>
+        <!-- Adicione este código dentro da section chat-conversation-area, após o chat-input-area -->
+  <div class="modal fade" id="fileModal" tabindex="-1" aria-labelledby="fileModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-sm modal-dialog-centered">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h5 class="modal-title" id="fileModalLabel">Enviar Arquivo</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                  <div class="d-grid gap-2">
+                      <button type="button" class="btn btn-outline-primary btn-lg" id="documentBtn">
+                          <i class="fa-solid fa-file-lines me-2"></i>Documento
+                      </button>
+                      <button type="button" class="btn btn-outline-success btn-lg" id="mediaBtn">
+                          <i class="fa-solid fa-image me-2"></i>Fotos/Vídeos
+                      </button>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+  
+  <!-- Inputs de arquivo ocultos -->
+  <input type="file" id="documentInput" accept=".pdf,.doc,.docx,.txt,.rtf" hidden>
+  <input type="file" id="mediaInput" accept="image/*,video/*" hidden>
+
 
       <?php else: ?>
         <!-- Placeholder (nenhuma conversa selecionada) -->
@@ -380,12 +434,14 @@ if ($conversa_id_ativa) {
             <p>Selecione uma conversa ao lado para começar.</p>
         </div>
       <?php endif; ?>
+
+
       
     </section>
   </div>
 </main>
 
-<!-- Toast (do seu template) -->
+<!-- Toast Personalizado -->
 <div id="toast-notification" class="adp-toast p-0" style="display: none;">
     <div id="toast-icon" class="adp-toast-icon" style="font-size: 1.6rem"></div>
     <div class="adp-toast-content">
@@ -394,7 +450,7 @@ if ($conversa_id_ativa) {
     <div class="adp-toast-progress-bar"></div>
 </div>
 
-<!-- Offcanvas (do seu template, agora com a variável $pagina correta) -->
+
 <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
   <div class="offcanvas-header border-bottom">
     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
@@ -425,122 +481,6 @@ if ($conversa_id_ativa) {
 
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="<?php echo $base_path; ?>assets/js/pages/chat/file-size-upload.js" ></script>
-<!-- *** SCRIPT DE CHAT *** -->
-<?php if ($conversa_ativa): // Só executa o JS se uma conversa estiver aberta ?>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        
-        // --- 1. Seleciona os elementos do DOM ---
-        const chatMessages = document.getElementById('chat-messages-container');
-        const messageInput = document.getElementById('chat-message-input');
-        const sendBtn = document.getElementById('chat-send-btn');
-
-        // Se os elementos não existirem, não faz nada
-        if (!chatMessages || !messageInput || !sendBtn) {
-            return;
-        }
-
-        // --- 2. Pega as variáveis do PHP ---
-        const conversaId = <?php echo json_encode($conversa_id_ativa); ?>;
-        const basePath = <?php echo json_encode($base_path); ?>;
-        const postURL = basePath + 'mensagem.php';
-
-        // --- 3. Função para rolar o chat para baixo ---
-        function scrollToBottom() {
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        // Rola para o final assim que a página carrega
-        scrollToBottom();
-
-        // --- 4. Função para adicionar a mensagem na UI ---
-        // (Isso faz o chat parecer instantâneo)
-        function addMessageToUI(text, side, timestamp = 'enviando...') {
-            const messageDiv = document.createElement('div');
-            messageDiv.classList.add('message', side);
-            
-            // Sanitiza o texto (forma simples de evitar XSS)
-            const p = document.createElement('p');
-            p.textContent = text;
-            
-            const timestampDiv = document.createElement('div');
-            timestampDiv.classList.add('date', 'message-timestamp');
-            timestampDiv.textContent = timestamp;
-
-            messageDiv.appendChild(p);
-            messageDiv.appendChild(timestampDiv);
-            chatMessages.appendChild(messageDiv);
-
-            scrollToBottom();
-            
-            // Retorna o elemento da data para podermos atualizar depois
-            return timestampDiv; 
-        }
-
-        // --- 5. Função Principal para Enviar a Mensagem ---
-        async function sendMessage() {
-            const conteudo = messageInput.value.trim();
-
-            if (conteudo === '' || !conversaId) {
-                return; // Não envia mensagem vazia
-            }
-
-            // Limpa o input imediatamente
-            messageInput.value = '';
-            messageInput.focus();
-
-            // Adiciona a mensagem na tela (Otimista)
-            const timestampElement = addMessageToUI(conteudo, 'sent');
-
-            try {
-                const response = await fetch(postURL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        conversa_id: conversaId,
-                        conteudo: conteudo
-                    })
-                });
-
-                const result = await response.json();
-
-                if (response.ok && result.success) {
-                    // Sucesso! Atualiza o "enviando..." para a hora certa
-                    timestampElement.textContent = result.timestamp || 'enviado';
-                } else {
-                    // Falhou! Mostra um erro
-                    timestampElement.textContent = 'Falha ao enviar';
-                    timestampElement.style.color = 'red';
-                    console.error('Erro do servidor:', result.message);
-                }
-
-            } catch (error) {
-                // Falha de rede!
-                timestampElement.textContent = 'Erro de rede';
-                timestampElement.style.color = 'red';
-                console.error('Erro de fetch:', error);
-            }
-        }
-
-        // --- 6. Event Listeners ---
-        
-        // Clique no botão Enviar
-        sendBtn.addEventListener('click', sendMessage);
-
-        // Apertar "Enter" no campo de texto
-        messageInput.addEventListener('keydown', function(event) {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault(); // Impede de pular linha
-                sendMessage();
-            }
-        });
-
-    });
-</script>
-<?php endif; ?>
+<script src="assets/js/pages/chat/file-size-upload.js" ></script>
 </body>
 </html>

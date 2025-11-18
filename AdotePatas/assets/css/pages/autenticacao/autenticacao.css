@@ -446,3 +446,50 @@ img {
     width: 0%;
   }
 }
+
+
+/* Estilos específicos para os campos de Cidade/UF */
+.grid-cols-1.md\:grid-cols-4 {
+    gap: 1rem; /* 16px no mobile */
+}
+
+@media (min-width: 768px) {
+    .grid-cols-1.md\:grid-cols-4 {
+        gap: 1.5rem; /* 24px no desktop */
+    }
+}
+
+/* Ajustes específicos para o campo UF */
+.input-style.text-center.md\:text-left {
+    min-width: 60px; /* Largura mínima para o campo UF */
+}
+
+/* Melhorias para mobile */
+@media (max-width: 767px) {
+    .grid-cols-1 > div {
+        width: 100%;
+    }
+    
+    /* Ajuste específico para o campo UF no mobile */
+    .md\:col-span-1 input {
+        text-align: center;
+        font-weight: 600;
+    }
+    
+    /* Garante que os inputs tenham tamanho adequado no mobile */
+    .input-style {
+        padding: 1rem;
+        font-size: 16px; /* Previne zoom no iOS */
+    }
+}
+
+/* Melhoria adicional para telas muito pequenas */
+@media (max-width: 380px) {
+    .grid-cols-1.md\:grid-cols-4 {
+        gap: 0.75rem;
+    }
+    
+    .input-style {
+        padding: 0.875rem;
+    }
+}

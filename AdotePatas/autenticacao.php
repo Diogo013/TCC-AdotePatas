@@ -625,20 +625,22 @@ $animationMessage = $_GET['message'] ?? 'Redirecionando...';
                        value="<?php echo htmlspecialchars($_POST['bairro-cadastro'] ?? ''); ?>" readonly>
             </div>
         </div>
-        <div>
-            <div class="flex gap-6">
-                <div class="w-3/4">
-                    <label for="cidade-cadastro" class="sr-only">Cidade</label>
-                    <input type="text" name="cidade-cadastro" id="cidade-cadastro" placeholder="Cidade" required class="input-style w-full"
-                    value="<?php echo htmlspecialchars($_POST['cidade-cadastro'] ?? ''); ?>" readonly>
-                </div>
-                <div class="w-1/4">
-                    <label for="estado-cadastro" class="sr-only">UF</label>
-                    <input type="text" name="estado-cadastro" id="estado-cadastro" placeholder="UF" required class="input-style w-full"
-                    value="<?php echo htmlspecialchars($_POST['estado-cadastro'] ?? ''); ?>" readonly>
-                </div>
-            </div>
-        </div>
+
+            <!-- No formulário de cadastro_usuario -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
+    <div class="md:col-span-3">
+        <label for="cidade-cadastro" class="sr-only">Cidade</label>
+        <input type="text" name="cidade-cadastro" id="cidade-cadastro" placeholder="Cidade" required 
+               class="input-style w-full" value="<?php echo htmlspecialchars($_POST['cidade-cadastro'] ?? ''); ?>" readonly>
+    </div>
+    <div class="md:col-span-1">
+        <label for="estado-cadastro" class="sr-only">UF</label>
+        <input type="text" name="estado-cadastro" id="estado-cadastro" placeholder="UF" required 
+               class="input-style w-full text-center md:text-left" 
+               value="<?php echo htmlspecialchars($_POST['estado-cadastro'] ?? ''); ?>" readonly>
+    </div>
+</div>
+
         <div>
             <label for="email-cadastro" class="sr-only">E-mail</label> <input type="email" name="email-cadastro" id="email-cadastro" placeholder="E-mail" required class="input-style w-full"
                    value="<?php echo htmlspecialchars($email ?? ''); ?>">
@@ -721,20 +723,20 @@ $animationMessage = $_GET['message'] ?? 'Redirecionando...';
                        value="<?php echo htmlspecialchars($_POST['bairro-ong'] ?? ''); ?>" readonly>
             </div>
         </div>
-        <div>
-            <div class="flex gap-6">
-                <div class="w-3/4">
-                    <label for="cidade-ong" class="sr-only">Cidade</label>
-                    <input type="text" name="cidade-ong" id="cidade-ong" placeholder="Cidade" required class="input-style w-full"
-                           value="<?php echo htmlspecialchars($_POST['cidade-ong'] ?? ''); ?>" readonly>
-                </div>
-                <div class="w-1/4">
-                    <label for="estado-ong" class="sr-only">UF</label>
-                    <input type="text" name="estado-ong" id="estado-ong" placeholder="UF" required class="input-style w-full"
-                           value="<?php echo htmlspecialchars($_POST['estado-ong'] ?? ''); ?>" readonly>
-                </div>
-            </div>
-        </div>
+<!-- No formulário de cadastro_ong -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
+    <div class="md:col-span-3">
+        <label for="cidade-ong" class="sr-only">Cidade</label>
+        <input type="text" name="cidade-ong" id="cidade-ong" placeholder="Cidade" required 
+               class="input-style w-full" value="<?php echo htmlspecialchars($_POST['cidade-ong'] ?? ''); ?>" readonly>
+    </div>
+    <div class="md:col-span-1">
+        <label for="estado-ong" class="sr-only">UF</label>
+        <input type="text" name="estado-ong" id="estado-ong" placeholder="UF" required 
+               class="input-style w-full text-center md:text-left" 
+               value="<?php echo htmlspecialchars($_POST['estado-ong'] ?? ''); ?>" readonly>
+    </div>
+</div>
         <div>
             <label for="email_ong" class="sr-only">E-mail</label> <input type="email" name="email_ong" id="email_ong" placeholder="E-mail" required class="input-style w-full"
                    value="<?php echo htmlspecialchars($_POST['email_ong'] ?? ''); ?>">

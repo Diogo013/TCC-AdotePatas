@@ -36,7 +36,7 @@ $erro = '';
 // 4. Busca os dados completos do usuário no banco (Isso só executa UMA VEZ)
 try {
     if ($user_tipo == 'usuario') {
-        $sql = "SELECT nome, email, cpf, banner_fixo FROM usuario WHERE id_usuario = :id LIMIT 1";
+        $sql = "SELECT nome, email, cep, numero, complemento, cpf, banner_fixo FROM usuario WHERE id_usuario = :id LIMIT 1";
     } elseif ($user_tipo == 'ong') {
         $sql = "SELECT nome, email, cnpj, banner_fixo FROM ong WHERE id_ong = :id LIMIT 1";
     } else {
@@ -290,23 +290,23 @@ if (isset($_SESSION['toast_message'])) {
 
                                     <div class="row g-3 mb-3">
                                         <div class="col-md-4">
-                                            <label for="inputCep" class="form-label sr-only">CEP</label>
+                                        <label for="inputCep" class="form-label"><strong>CEP:</strong></label>
                                             <input type="text" class="form-control" id="inputCep" name="cep"
                                                    placeholder="CEP"
                                                    value="<?php echo htmlspecialchars($usuario['cep'] ?? ''); ?>" disabled data-profile-field>
                                             <div id="feedbackCep" class="feedback-message"></div>
                                         </div>
                                         <div class="col-md-3">
-                                            <label for="inputNumero" class="form-label sr-only">Número</label>
+                                            <label for="inputNumero" class="form-label"><strong>Número:</strong></label>
                                             <input type="text" class="form-control" id="inputNumero" name="numero"
                                                    placeholder="Número"
                                                    value="<?php echo htmlspecialchars($usuario['numero'] ?? ''); ?>" disabled data-profile-field>
                                             <div id="feedbackNumero" class="feedback-message"></div>
                                         </div>
                                         <div class="col-md-5">
-                                            <label for="inputComplemento" class="form-label sr-only">Complemento (Opcional)</label>
+                                            <label for="inputComplemento" class="form-label"><strong>Complemento:</strong></label>
                                             <input type="text" class="form-control" id="inputComplemento" name="complemento"
-                                                   placeholder="Complemento (Opcional)"
+                                                   placeholder="Complemento"
                                                    value="<?php echo htmlspecialchars($usuario['complemento'] ?? ''); ?>" disabled data-profile-field>
                                         </div>
                                     </div>
@@ -909,7 +909,7 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(data => {
             if (data.success) {
-                showToast('Banner atualizado com sucesso! A página será recarregada.', 'success');
+               // showToast('Banner atualizado com sucesso! A página será recarregada.', 'success');
                 
                 // Fecha o modal
                 const modal = bootstrap.Modal.getInstance(bannerModal);

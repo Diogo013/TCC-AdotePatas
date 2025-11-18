@@ -126,7 +126,7 @@
 
 .chat-list-item.active,
 .chat-list-item.active:hover {
-    background-color: var(--cor-rosa-pastel-claro); /* Usando a variável */
+    background-color: var(--cor-rosa-pastel-claro);
     padding-left: calc(1rem - 4px);
 }
 
@@ -191,19 +191,16 @@
     font-weight: 500;
 }
 
-
 /* 5. Coluna Direita (Área da Conversa) */
 .chat-conversation-area {
     display: flex;
-    flex-direction: column; /* Organiza header, mensagens, input em coluna */
+    flex-direction: column;
     height: 100%;
-    position: relative; /* Para o background-image */
-
-    /* === NOVO: O WALLPAPER DE FUNDO === */
-    background-image: url('../../../images/chat/wallpaper.jpg'); /* Caminho correto para o seu wallpaper */
+    position: relative;
+    background-image: url('../../../images/chat/wallpaper.jpg');
     background-repeat: repeat;
-    background-size: 150px; /* Ajuste o tamanho conforme desejar */
-    background-color: var(--cor-laranja-claro); /* Cor de fallback caso a imagem não carregue */
+    background-size: 150px;
+    background-color: var(--cor-laranja-claro);
 }
 
 /* Placeholder quando NENHUMA conversa está selecionada */
@@ -211,10 +208,10 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center; /* Centraliza verticalmente também */
+    justify-content: center;
     text-align: center;
     padding: 2rem;
-    height: 100%; /* Ocupa a altura total */
+    height: 100%;
 }
 
 .chat-placeholder-logo {
@@ -236,17 +233,15 @@
     color: var(--cor-cinza-texto);
 }
 
-/* === NOVO: Estilos para a conversa ATIVA === */
-
 /* Header da conversa ativa */
 .chat-active-header {
     display: flex;
     align-items: center;
     padding: 1rem 1.5rem;
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-    background-color: var(--cor-branca); /* Fundo branco para o cabeçalho */
-    flex-shrink: 0; /* Impede que ele encolha */
-    z-index: 10; /* Garante que fique acima das mensagens */
+    background-color: var(--cor-branca);
+    flex-shrink: 0;
+    z-index: 10;
 }
 
 .chat-active-header .chat-avatar {
@@ -262,12 +257,12 @@
 
 /* Área de mensagens */
 .chat-messages {
-    flex-grow: 1; /* Ocupa o espaço restante */
+    flex-grow: 1;
     padding: 1.5rem;
-    overflow-y: auto; /* Permite rolar as mensagens */
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 10px; /* Espaçamento entre as mensagens */
+    gap: 10px;
 }
 
 .message {
@@ -277,39 +272,38 @@
     font-family: "Poppins", sans-serif;
     font-size: 1.4rem;
     line-height: 1.4;
-    word-wrap: break-word; /* Quebra palavras longas */
+    word-wrap: break-word;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .message.received {
     background-color: var(--cor-branca);
     color: var(--cor-cinza-texto);
-    align-self: flex-start; /* Alinha à esquerda */
-    border-bottom-left-radius: 4px; /* Ponta de balão sutil */
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
 }
 
 .message.sent {
-    background-color: var(--cor-rosa-claro); /* Cor de envio */
-    color: var(--cor-vermelho-escuro); /* Texto mais escuro para contraste */
-    align-self: flex-end; /* Alinha à direita */
-    border-bottom-right-radius: 4px; /* Ponta de balão sutil */
+    background-color: var(--cor-rosa-claro);
+    color: var(--cor-vermelho-escuro);
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
 }
 
-
-/* === NOVO: Input e Botão de Envio === */
+/* Input e Botão de Envio */
 .chat-input-area {
     display: flex;
     align-items: center;
     padding: 1rem 1.5rem;
     border-top: 1px solid rgba(0, 0, 0, 0.08);
-    background-color: var(--cor-branca); /* Fundo branco para a área de input */
-    flex-shrink: 0; /* Impede que ele encolha */
-    gap: 10px; /* Espaçamento entre input e botão */
+    background-color: var(--cor-branca);
+    flex-shrink: 0;
+    gap: 10px;
 }
 
 .chat-message-input {
-    flex-grow: 1; /* Ocupa o máximo de espaço possível */
-    border-radius: 25px; /* Mais arredondado */
+    flex-grow: 1;
+    border-radius: 25px;
     border: 1px solid var(--cor-laranja-claro);
     padding: 1rem 1.5rem;
     font-family: "Poppins", sans-serif;
@@ -321,13 +315,13 @@
 .chat-message-input:focus {
     background-color: var(--cor-branca);
     border-color: var(--cor-rosa-pastel);
-    box-shadow: 0 0 0 2px rgba(var(--cor-rosa-pastel-rgb), 0.5); /* Sombra mais sutil */
+    box-shadow: 0 0 0 2px rgba(var(--cor-rosa-pastel-rgb), 0.5);
 }
 
 .chat-send-btn {
-    background-color: var(--cor-vermelho); /* Botão da cor principal */
+    background-color: var(--cor-vermelho);
     color: var(--cor-branca);
-    border-radius: 50%; /* Botão redondo */
+    border-radius: 50%;
     width: 50px;
     height: 50px;
     display: flex;
@@ -335,25 +329,26 @@
     justify-content: center;
     font-size: 1.3rem;
     transition: background-color 0.2s ease, transform 0.2s ease;
-    flex-shrink: 0; /* Impede que encolha */
+    flex-shrink: 0;
 }
 
 .chat-send-btn:hover {
-    background-color: var(--cor-branca); /* Escurece no hover */
+    background-color: var(--cor-branca);
     color: var(--cor-vermelho);
     border: solid 1px var(--cor-vermelho);
     transform: scale(1.07);
 }
 .chat-send-btn:active {
-    background-color: var(--cor-branca) !important; /* Escurece no hover */
+    background-color: var(--cor-branca) !important;
     color: var(--cor-vermelho) !important;
     border: solid 1px var(--cor-vermelho) !important;
     transform: scale(0.95);
 }
+
 .chat-send-files {
-    background-color: var(--cor-vermelho); /* Botão da cor principal */
+    background-color: var(--cor-vermelho);
     color: var(--cor-branca);
-    border-radius: 50%; /* Botão redondo */
+    border-radius: 50%;
     width: 50px;
     height: 50px;
     display: flex;
@@ -361,18 +356,18 @@
     justify-content: center;
     font-size: 1.3rem;
     transition: background-color 0.2s ease, transform 0.2s ease;
-    flex-shrink: 0; /* Impede que encolha */
+    flex-shrink: 0;
     padding: 7.5px 15px;
 }
 
 .chat-send-files:hover {
-    background-color: var(--cor-branca); /* Escurece no hover */
+    background-color: var(--cor-branca);
     color: var(--cor-vermelho);
     border: solid 1px var(--cor-vermelho);
     transform: scale(1.07);
 }
 .chat-send-files:active {
-    background-color: var(--cor-branca); /* Escurece no hover */
+    background-color: var(--cor-branca);
     color: var(--cor-vermelho);
     border: solid 1px var(--cor-vermelho);
     transform: scale(0.95);
@@ -449,29 +444,117 @@
 
 .message-timestamp {
     font-family: "Poppins", sans-serif;
-    font-size: 0.8rem; /* Tamanho menor para a data/hora */
+    font-size: 0.8rem;
     color: var(--cor-cinza-texto);
-    opacity: 0.8; /* Mais sutil */
-    margin-top: 5px; /* Espaço entre a mensagem e o timestamp */
-    text-align: right; /* Alinha a data/hora à direita dentro do balão */
-    display: block; /* Garante que o span ocupe a linha toda */
-    white-space: nowrap; /* Evita quebra de linha indesejada */
+    opacity: 0.8;
+    margin-top: 5px;
+    text-align: right;
+    display: block;
+    white-space: nowrap;
 }
 
-/* Ajustes para o timestamp dentro de mensagens recebidas e enviadas */
 .message.received .message-timestamp {
-    text-align: right; /* Timestamp à esquerda em mensagens recebidas */
+    text-align: right;
 }
 
 .message.sent .message-timestamp {
-    text-align: left; /* Timestamp à direita em mensagens enviadas */
+    text-align: left;
 }
 
+/* ==========================================================================
+   COMPORTAMENTO MOBILE (APENAS < 768px)
+   ========================================================================== */
 
-/* 6. Responsividade */
+/* Estado mobile quando uma conversa está ativa */
+@media (max-width: 767.98px) {
+    body.chat-active-mobile .chat-sidebar {
+        display: none !important;
+    }
+
+    body.chat-active-mobile .chat-conversation-area {
+        display: flex !important;
+        width: 100%;
+    }
+
+    /* Ajustes específicos para mobile quando a conversa está ativa */
+    body.chat-active-mobile .chat-container {
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+
+    body.chat-active-mobile .chat-main-card {
+        border-radius: 0;
+        box-shadow: none;
+        height: calc(100vh - 70px);
+    }
+}
+
+/* Botão Voltar no Mobile */
+.btn-back-mobile {
+    background: none;
+    border: none;
+    color: var(--cor-vermelho);
+    font-size: 1.8rem;
+    margin-right: 1rem;
+    padding: 0.5rem;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.btn-back-mobile:hover {
+    color: var(--cor-rosa-escuro);
+    transform: translateX(-2px);
+}
+
+/* Mostra o botão voltar apenas em mobile */
+@media (max-width: 767.98px) {
+    .btn-back-mobile {
+        display: flex;
+    }
+    
+    .chat-active-header {
+        padding: 1rem;
+        position: sticky;
+        top: 0;
+        background-color: var(--cor-branca);
+        z-index: 100;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    
+    .chat-active-header .chat-avatar {
+        width: 40px;
+        height: 40px;
+        margin-right: 1rem;
+    }
+    
+    .chat-active-name {
+        font-size: 1.6rem;
+        flex-grow: 1;
+    }
+
+    .chat-messages {
+        padding: 1rem;
+    }
+    
+    .message {
+        max-width: 85%;
+    }
+    
+    .chat-input-area {
+        padding: 1rem;
+        position: sticky;
+        bottom: 0;
+        background-color: var(--cor-branca);
+    }
+}
+
+/* Responsividade geral */
 @media (max-width: 991.98px) {
     .chat-page-body {
-        padding-top: 70px; /* Header é menor no mobile */
+        padding-top: 70px;
     }
     .chat-container {
         max-height: none;
@@ -485,10 +568,11 @@
         border-radius: 0;
         border: none;
         box-shadow: none;
+        height: calc(100vh - 70px);
     }
     
     .chat-sidebar {
-        height: auto;
+        height: 100%;
         min-height: calc(100vh - 70px); 
         border-right: none;
     }
@@ -498,18 +582,18 @@
     }
 }
 
-/* Novo media query para o layout mobile do chat (coluna da conversa visível) */
-@media (max-width: 767.98px) {
-    /* Quando uma conversa é selecionada no mobile, a sidebar é oculta e a área de conversa aparece */
-    body.chat-active-mobile .chat-sidebar {
-        display: none;
+/* Em telas >= 768px, garante que ambas as colunas estão visíveis */
+@media (min-width: 768px) {
+    .chat-sidebar {
+        display: flex !important;
     }
-    body.chat-active-mobile .chat-conversation-area {
-        display: flex !important; /* Força a exibição */
-        width: 100%;
-        border-radius: 0; /* Remove bordas para ocupar a tela toda */
-        box-shadow: none;
-        height: calc(100vh - 70px); /* Altura total da viewport menos o header */
+    
+    .chat-conversation-area {
+        display: flex !important;
+    }
+    
+    body.chat-active-mobile .chat-sidebar {
+        display: flex !important;
     }
 }
 
