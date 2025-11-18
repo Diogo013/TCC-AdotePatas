@@ -4,6 +4,14 @@ include_once 'conexao.php';
 include_once 'session.php';
 
 
+
+if ($_SERVER['SERVER_NAME'] == 'localhost') {
+    $base_path = '/TCC-AdotePatas/AdotePatas/';
+} else {
+    $base_path = '/'; // Para a Hostinger (adotepatas.com)
+}
+
+
 // 2. Segurança: Verifica se o usuário está logado
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_tipo'])) {
     // Se não estiver logado, redireciona para a página de login
@@ -17,11 +25,6 @@ $usuario = null;
 $erro = '';
 
 
-if ($_SERVER['SERVER_NAME'] == 'localhost') {
-    $base_path = '/TCC-AdotePatas/AdotePatas/';
-} else {
-    $base_path = '/'; // Para a Hostinger (adotepatas.com)
-}
 $pagina = "pet-detalhe";
 
 $id_pet = $_GET['id'] ?? 0;
@@ -307,13 +310,13 @@ $sql = "SELECT
                 </div>
 
                 <div class="d-flex justify-content-center text-center">
-                    <a href="<?php echo $base_path; ?>formulario?id_pet=<?php echo $pet['id_pet']; ?>" class="adopt-btn">
+                    <a href="<?php echo $base_path; ?>formulario/<?php echo $pet['id_pet']; ?>" class="adopt-btn">
                         <div class="heart-background" aria-hidden="true">
                             <i class="bi bi-heart-fill"></i>
                         </div>
                         <span>Quero Adotar!</span>
                     </a>
-</div>
+                </div>
 
                 <div class="location">
                     <i class="fa-solid fa-location-dot" style="font-size: 1.2rem; color: var(--cor-vermelho);"></i>

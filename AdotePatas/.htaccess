@@ -48,3 +48,6 @@ RewriteRule ^pet-detalhe/([0-9]+)/?$ pet-detalhe.php?id=$1   [NC,L]
 # query string (como ?page=meus-pets) para o perfil.php.
 RewriteRule ^perfil/?$ perfil.php [NC,L]
 RewriteRule ^sobre-nos/?$ Sobre-nos.php [NC,L]  
+RewriteRule ^formulario/([0-9]+)/?$ formulario-adocao.php?id=$1 [NC,L]
+RewriteRule ^chat/?$ chat.php [NC,L]
+RewriteRule ^chat/([0-9]+)/?$ chat.php?id=$1 [NC,L]
