@@ -355,19 +355,67 @@ if ($conversa_id_ativa) {
         // Variáveis do PHP
         const conversaId = <?php echo json_encode($conversa_id_ativa); ?>;
         const basePath = <?php echo json_encode($base_path); ?>;
+        const userId = <?php echo json_encode($user_id_logado); ?>;
+        const userTipo = <?php echo json_encode($user_tipo_logado); ?>;
         const postURL = basePath + 'mensagem.php';
-        const pollURL = basePath + 'buscar-mensagens.php';
         
-        // *** INICIALIZAÇÃO DO LAST ID (Vem do PHP) ***
-        let lastMessageId = <?php echo json_encode($ultimo_id_msg); ?>;
+        // Configuração do WebSocket
+        const wsScheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
+        const wsHost = '<?php echo $_SERVER['SERVER_NAME']; ?>';
+        const wsPort = '8080';
+        const wsUrl = `${wsScheme}://${wsHost}:${wsPort}`;
+        
+        let ws = null;
+
+        function connectWebSocket() {
+            try {
+                ws = new WebSocket(wsUrl);
+                
+                ws.onopen = function() {
+                    console.log('Conectado ao WebSocket');
+                    // Inscrever na conversa atual
+                    ws.send(JSON.stringify({
+                        type: 'subscribe',
+                        conversa_id: conversaId
+                    }));
+                };
+
+                ws.onmessage = function(event) {
+                    const data = JSON.parse(event.data);
+                    
+                    if (data.type === 'new_message') {
+                        // Adiciona mensagem apenas se não for do usuário atual
+                        if (data.user_id != userId || data.user_tipo != userTipo) {
+                            addMessageToUI(data.mensagem, 'received', data.timestamp);
+                        }
+                    }
+                };
+
+                ws.onclose = function() {
+                    console.log('Conexão WebSocket fechada. Tentando reconectar em 5 segundos.');
+                    setTimeout(connectWebSocket, 5000);
+                };
+
+                ws.onerror = function(error) {
+                    console.error('Erro no WebSocket:', error);
+                };
+            } catch (error) {
+                console.error('Erro ao conectar WebSocket:', error);
+                // Fallback para polling se WebSocket falhar
+                startPolling();
+            }
+        }
+
+        function startPolling() {
+            console.log('Usando polling como fallback');
+            setInterval(pollMessages, 3000);
+        }
 
         function scrollToBottom() {
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
-        scrollToBottom();
 
-        function addMessageToUI(text, side, timestamp = 'enviando...', isHtml = false) {
-            // Remove o aviso de "nenhuma mensagem" se existir
+        function addMessageToUI(text, side, timestamp = 'enviando...') {
             const noMsgText = document.getElementById('no-messages-text');
             if(noMsgText) noMsgText.remove();
 
@@ -375,11 +423,7 @@ if ($conversa_id_ativa) {
             messageDiv.classList.add('message', side);
             
             const p = document.createElement('p');
-            if (isHtml) {
-                p.innerHTML = text; // Cuidado com XSS aqui se vier do input, mas do banco é ok se filtrado
-            } else {
-                p.textContent = text;
-            }
+            p.textContent = text;
             
             const timestampDiv = document.createElement('div');
             timestampDiv.classList.add('date', 'message-timestamp');
@@ -390,7 +434,7 @@ if ($conversa_id_ativa) {
             chatMessages.appendChild(messageDiv);
 
             scrollToBottom();
-            return timestampDiv; 
+            return timestampDiv;
         }
 
         async function sendMessage() {
@@ -400,10 +444,11 @@ if ($conversa_id_ativa) {
             messageInput.value = '';
             messageInput.focus();
 
-            // Feedback visual imediato (otimista)
+            // Feedback visual imediato
             const timestampElement = addMessageToUI(conteudo, 'sent');
 
             try {
+                // Envia via AJAX para salvar no banco
                 const response = await fetch(postURL, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
@@ -413,6 +458,17 @@ if ($conversa_id_ativa) {
 
                 if (response.ok && result.success) {
                     timestampElement.textContent = result.timestamp || 'enviado';
+                    
+                    // Envia via WebSocket para outros usuários
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({
+                            type: 'message',
+                            conversa_id: conversaId,
+                            mensagem: conteudo,
+                            user_id: userId,
+                            user_tipo: userTipo
+                        }));
+                    }
                 } else {
                     timestampElement.textContent = 'Falha ao enviar';
                     timestampElement.style.color = 'red';
@@ -423,6 +479,7 @@ if ($conversa_id_ativa) {
             }
         }
 
+        // Event listeners
         sendBtn.addEventListener('click', sendMessage);
         messageInput.addEventListener('keydown', function(event) {
             if (event.key === 'Enter' && !event.shiftKey) {
@@ -431,24 +488,19 @@ if ($conversa_id_ativa) {
             }
         });
 
-        // *** LÓGICA DE POLLING (RECEBER MENSAGENS) ***
+        // Polling como fallback (mantém sua lógica original)
+        let lastMessageId = <?php echo json_encode($ultimo_id_msg); ?>;
+
         async function pollMessages() {
             try {
-                // Monta a URL com os parâmetros
-                const url = `${pollURL}?conversa_id=${conversaId}&ultimo_id=${lastMessageId}`;
-                
-                const response = await fetch(url);
+                const response = await fetch(`${basePath}buscar-mensagens.php?conversa_id=${conversaId}&ultimo_id=${lastMessageId}`);
                 const result = await response.json();
 
                 if (response.ok && result.success && result.messages.length > 0) {
                     result.messages.forEach(msg => {
-                        
-                        
                         if (!msg.sou_eu) {
                             addMessageToUI(msg.conteudo, 'received', msg.data_formatada);
                         }
-                        
-                        // Atualiza o ponteiro para a próxima busca
                         if (msg.id_mensagem > lastMessageId) {
                             lastMessageId = msg.id_mensagem;
                         }
@@ -459,8 +511,11 @@ if ($conversa_id_ativa) {
             }
         }
 
-        // Inicia o ciclo de polling a cada 3 segundos
-        setInterval(pollMessages, 3000);
+        // Inicia WebSocket (e polling como fallback)
+        connectWebSocket();
+        
+        // Scroll inicial
+        scrollToBottom();
     });
 </script>
 <?php endif; ?>
