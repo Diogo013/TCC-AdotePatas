@@ -406,7 +406,7 @@ if ($logado) {
                 <div class="heart-background" aria-hidden="true">
                   <i class="bi bi-heart-fill"></i>
                 </div>
-                <span>Enviar Mensagem</span>
+                <span id="btnText">Enviar Mensagem</span>
               </button>
             </div>
           </form>
@@ -416,6 +416,26 @@ if ($logado) {
     </div>
   </div>
 </section>
+
+<!-- ESTRUTURA DO MODAL -->
+<div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header border-0">
+        <h5 class="modal-title" id="notificationModalLabel">Aviso</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center py-4">
+        <div id="modalIcon" class="mb-3"></div>
+        <h4 id="modalTitle" class="mb-3"></h4>
+        <p id="modalMessage" class="text-muted"></p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center">
+        <button type="button" class="btn btn-secondary px-4 rounded-pill" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Offcanvas completo e funcional -->
 <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
@@ -541,6 +561,36 @@ document.addEventListener('DOMContentLoaded', function() {
   const offcanvasElement = document.getElementById('offcanvasNavbar');
   const body = document.body;
 
+  const notificationModal = new bootstrap.Modal(document.getElementById('notificationModal'));
+
+  function showModal(title, message, type = 'info') {
+      const modalTitle = document.getElementById('modalTitle');
+      const modalMessage = document.getElementById('modalMessage');
+      const modalIcon = document.getElementById('modalIcon');
+      
+      modalTitle.innerText = title;
+      modalMessage.innerText = message;
+      
+      let iconHtml = '';
+      let colorClass = '';
+      
+      if (type === 'success') {
+          iconHtml = '<i class="bi bi-check-circle-fill" style="font-size: 3rem; color: #198754;"></i>';
+          colorClass = 'text-success';
+      } else if (type === 'error') {
+          iconHtml = '<i class="bi bi-x-circle-fill" style="font-size: 3rem; color: #dc3545;"></i>';
+          colorClass = 'text-danger';
+      } else {
+          iconHtml = '<i class="bi bi-info-circle-fill" style="font-size: 3rem; color: #0d6efd;"></i>';
+          colorClass = 'text-primary';
+      }
+      
+      modalIcon.innerHTML = iconHtml;
+      modalTitle.className = `mb-3 ${colorClass}`;
+      
+      notificationModal.show();
+  }
+
   if (formContato) {
     formContato.addEventListener('submit', function(e) {
       e.preventDefault();
@@ -549,31 +599,65 @@ document.addEventListener('DOMContentLoaded', function() {
       const assunto = document.getElementById('inputAssunto').value;
       const nome = document.getElementById('inputNome').value;
       const email = document.getElementById('inputEmail').value;
+      const btnEnviar = document.getElementById('btnEnviarMensagem');
+      const btnText = document.getElementById('btnText');
 
       if (!assunto.trim()) {
-        alert('Por favor, preencha o assunto.');
+        showModal('Atenção', 'Por favor, preencha o campo de assunto.', 'error');
         return;
       }
-
       if (!mensagem.trim() || mensagem === '<p></p>') {
-        alert('Por favor, escreva sua mensagem.');
+        showModal('Atenção', 'Por favor, escreva sua mensagem no campo de texto.', 'error');
         return;
       }
 
-      const dados = {
-        nome: nome,
-        email: email,
-        assunto: assunto,
-        mensagem: mensagem
-      };
+      // --- CORREÇÃO DE SEGURANÇA NO JS ---
+      // Se por algum motivo o 'btnText' não existir, usamos um texto padrão.
+      let textoOriginal = "Enviar Mensagem";
+      
+      if (btnText) {
+          textoOriginal = btnText.innerText;
+          btnText.innerText = "Enviando...";
+      } else {
+          console.warn("Elemento btnText não encontrado, pulando atualização de texto.");
+      }
+      
+      if (btnEnviar) btnEnviar.disabled = true;
+      // -----------------------------------
 
-      alert('Mensagem preparada para envio!\n\nAssunto: ' + dados.assunto + '\n\nMensagem enviada com sucesso (simulação).');
-
-      formContato.reset();
-      tinymce.get('meuEditorDeMensagem').setContent('');
+      fetch('enviar-email-ajuda.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          nome: nome,
+          email: email,
+          assunto: assunto,
+          mensagem: mensagem
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showModal('Sucesso!', data.message, 'success');
+          formContato.reset();
+          tinymce.get('meuEditorDeMensagem').setContent('');
+        } else {
+          showModal('Ops!', data.message, 'error');
+        }
+      })
+      .catch(error => {
+        console.error('Erro:', error);
+        showModal('Erro de Conexão', 'Não foi possível se comunicar com o servidor. Tente novamente mais tarde.', 'error');
+      })
+      .finally(() => {
+        // Restaura o botão com segurança
+        if (btnText) btnText.innerText = textoOriginal;
+        if (btnEnviar) btnEnviar.disabled = false;
+      });
     });
   }
-
   if (contactBtn) {
     contactBtn.addEventListener('click', function() {
       document.querySelector('.contact-form').scrollIntoView({

@@ -146,6 +146,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         error_log("Erro ao logar como ong: " . $e->getMessage());
                     }
                 }
+
+                //  Tenta logar como ADMINISTRADOR
+                if (!$logado) {
+                    try {
+                        $sql = "SELECT id_admin, senha, nome FROM administrador WHERE email = :email LIMIT 1";
+                        $stmt = $conn->prepare($sql);
+                        $stmt->bindParam(':email', $email);
+                        $stmt->execute();
+                        $admin = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                        if ($admin && ($senha == $admin['senha'])) {
+                            session_start();
+                            $_SESSION['nome'] = $admin['nome'];
+                            $_SESSION['user_id'] = $admin['id_admin'];
+                            $_SESSION['user_email'] = $email;
+                            $_SESSION['user_tipo'] = 'admin'; // Define tipo como admin
+                            $logado = true;
+                            
+                            // Redireciona direto para o painel admin dentro do perfil
+                            header("Location: perfil?page=painel-admin");
+                            exit;
+                        }
+                    } catch (PDOException $e) {
+                        error_log("Erro ao logar como admin: " . $e->getMessage());
+                    }
+                }
                 
                 if (!$logado) {
                     $mensagem_status = "E-mail ou senha incorretos.";

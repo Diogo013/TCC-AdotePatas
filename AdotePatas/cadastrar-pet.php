@@ -534,7 +534,6 @@ exit();
                                 <?php 
                                     if ($especie == 'cachorro') echo 'Cachorro';
                                     elseif ($especie == 'gato') echo 'Gato';
-                                    elseif ($especie == 'outro') echo 'Outro';
                                     else echo 'Espécie'; // Placeholder
                                 ?>
                             </span>
@@ -543,7 +542,6 @@ exit();
                         <ul class="custom-select-options" role="listbox" aria-labelledby="select-label-especie">
                             <li class="custom-option" data-value="cachorro" role="option" tabindex="0">Cachorro</li>
                             <li class="custom-option" data-value="gato" role="option" tabindex="0">Gato</li>
-                            <li class="custom-option" data-value="outro" role="option" tabindex="0">Outro</li>
                         </ul>
                     </div>
                 </div>

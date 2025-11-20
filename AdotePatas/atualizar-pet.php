@@ -72,6 +72,10 @@ try {
     $tem_permissao = false;
     if ($user_tipo == 'usuario' && $pet['id_usuario_fk'] == $user_id) $tem_permissao = true;
     if ($user_tipo == 'ong' && $pet['id_ong_fk'] == $user_id) $tem_permissao = true;
+    // 1. Admin pode tudo
+    if ($user_tipo == 'admin') {
+        $tem_permissao = true;
+    } 
 
     if (!$tem_permissao) throw new Exception("Você não tem permissão para atualizar este pet.");
 
@@ -217,7 +221,12 @@ try {
 // 15. Redireciona de volta com sucesso
 $_SESSION['toast_message'] = "Pet atualizado com sucesso!";
 $_SESSION['toast_type'] = 'success';
-header('Location: perfil?page=meus-pets');
+// --- REDIRECIONAMENTO INTELIGENTE ---
+if ($user_tipo == 'admin') {
+    header('Location: perfil?page=painel-admin');
+} else {
+    header('Location: perfil?page=meus-pets');
+}
 exit;
 
 } catch (Exception $e) {

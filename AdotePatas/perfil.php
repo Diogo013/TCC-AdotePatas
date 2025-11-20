@@ -39,6 +39,8 @@ try {
         $sql = "SELECT nome, email, cep, numero, complemento, cpf, banner_fixo FROM usuario WHERE id_usuario = :id LIMIT 1";
     } elseif ($user_tipo == 'ong') {
         $sql = "SELECT nome, email, cnpj, banner_fixo FROM ong WHERE id_ong = :id LIMIT 1";
+    } elseif ($user_tipo == 'admin') {
+        $sql = "SELECT nome, email FROM administrador WHERE id_admin = :id LIMIT 1";
     } else {
         $erro = "Tipo de usuário inválido.";
     }
@@ -48,6 +50,10 @@ try {
         $stmt->bindParam(':id', $user_id, PDO::PARAM_INT);
         $stmt->execute();
         $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($user_tipo == 'admin') {
+            $usuario['banner_fixo'] = 'banner1.jpg'; 
+        }
         
         if (!$usuario) {
             $erro = "Usuário não encontrado no banco de dados.";
@@ -87,6 +93,39 @@ if ($pagina == 'perfil') {
     // Usa o banner fixo do banco, se existir, senão usa o banner1.jpg
     $bannerFixo = $usuario['banner_fixo'] ?? 'banner1.jpg';
     $caminhoBanner = 'images/perfil/' . $bannerFixo;
+}
+
+// --- LÓGICA DO ADMIN (BUSCA TUDO) ---
+$todos_usuarios = [];
+$todas_ongs = [];
+$todos_pets = [];
+
+if ($user_tipo == 'admin' && $pagina == 'painel-admin') {
+    try {
+        // Busca Usuários
+        $stmt = $conn->query("SELECT * FROM usuario ORDER BY id_usuario DESC");
+        $todos_usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Busca ONGs
+        $stmt = $conn->query("SELECT * FROM ong ORDER BY id_ong DESC");
+        $todas_ongs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Busca Pets (com nome do dono)
+        $sql_pets_admin = "
+            SELECT p.*, 
+                   COALESCE(u.nome, o.nome) as dono_nome,
+                   CASE WHEN p.id_usuario_fk IS NOT NULL THEN 'Usuário' ELSE 'ONG' END as tipo_dono
+            FROM pet p
+            LEFT JOIN usuario u ON p.id_usuario_fk = u.id_usuario
+            LEFT JOIN ong o ON p.id_ong_fk = o.id_ong
+            ORDER BY p.id_pet DESC
+        ";
+        $stmt = $conn->query($sql_pets_admin);
+        $todos_pets = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    } catch (PDOException $e) {
+        $erro = "Erro ao carregar dados do painel: " . $e->getMessage();
+    }
 }
 
 // ==========================================================
@@ -227,6 +266,122 @@ if (isset($_SESSION['toast_message'])) {
                 <?php
                 // Inicia o switch case para carregar o conteúdo principal
                 switch ($pagina) {
+
+                      // ==========================================================
+                    // CASO ADMIN: PAINEL GERAL
+                    // ==========================================================
+                    case 'painel-admin':
+                        if ($user_tipo !== 'admin') { echo "Acesso negado."; break; }
+                ?>
+                    <main style="animation: fadeIn 0.8s ease-out;">
+                        <h1 class="mb-4 text-danger fw-bold"><i class="fa-solid fa-user-shield me-2"></i>Painel Administrativo</h1>
+
+                        <!-- TABELA DE PETS -->
+                        <div class="admin-table-card">
+                            <h3 class="mb-3 text-secondary">Gerenciar Pets (<?php echo count($todos_pets); ?>)</h3>
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Nome</th>
+                                            <th>Dono</th>
+                                            <th>Status</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($todos_pets as $p): ?>
+                                        <tr>
+                                            <td>#<?php echo $p['id_pet']; ?></td>
+                                            <td><strong><?php echo htmlspecialchars($p['nome']); ?></strong></td>
+                                            <td>
+                                                <?php echo htmlspecialchars($p['dono_nome']); ?> 
+                                                <small class="text-muted">(<?php echo $p['tipo_dono']; ?>)</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-<?php echo ($p['status_disponibilidade'] == 'disponivel') ? 'success' : 'secondary'; ?>">
+                                                    <?php echo ucfirst($p['status_disponibilidade']); ?>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <a href="pet-detalhe/<?php echo $p['id_pet']; ?>" target="_blank" class="btn btn-sm btn-info text-white" title="Ver"><i class="fa-solid fa-eye"></i></a>
+                                                <!-- Reusa a página de editar pet, passando o ID -->
+                                                <a href="editar-pet.php?id=<?php echo $p['id_pet']; ?>" class="btn btn-sm btn-primary" title="Editar"><i class="fa-solid fa-pencil"></i></a>
+                                                <button onclick="confirmarExclusao('admin-acoes.php?acao=excluir_pet&id=<?php echo $p['id_pet']; ?>')" class="btn btn-sm btn-danger" title="Excluir"><i class="fa-solid fa-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- TABELA DE USUÁRIOS -->
+                        <div class="admin-table-card">
+                            <h3 class="mb-3 text-secondary">Gerenciar Usuários (<?php echo count($todos_usuarios); ?>)</h3>
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Nome</th>
+                                            <th>Email</th>
+                                            <th>CPF</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($todos_usuarios as $u): ?>
+                                        <tr>
+                                            <td>#<?php echo $u['id_usuario']; ?></td>
+                                            <td><?php echo htmlspecialchars($u['nome']); ?></td>
+                                            <td><?php echo htmlspecialchars($u['email']); ?></td>
+                                            <td><?php echo htmlspecialchars($u['cpf']); ?></td>
+                                            <td>
+                                                <button onclick="confirmarExclusao('admin-acoes.php?acao=excluir_usuario&id=<?php echo $u['id_usuario']; ?>')" class="btn btn-sm btn-danger" title="Excluir Usuário"><i class="fa-solid fa-user-xmark"></i></button>
+                                            </td>
+                                        </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- TABELA DE ONGS -->
+                        <div class="admin-table-card">
+                            <h3 class="mb-3 text-secondary">Gerenciar ONGs (<?php echo count($todas_ongs); ?>)</h3>
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Nome</th>
+                                            <th>CNPJ</th>
+                                            <th>Email</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($todas_ongs as $o): ?>
+                                        <tr>
+                                            <td>#<?php echo $o['id_ong']; ?></td>
+                                            <td><?php echo htmlspecialchars($o['nome']); ?></td>
+                                            <td><?php echo htmlspecialchars($o['cnpj']); ?></td>
+                                            <td><?php echo htmlspecialchars($o['email']); ?></td>
+                                            <td>
+                                                <button onclick="confirmarExclusao('admin-acoes.php?acao=excluir_ong&id=<?php echo $o['id_ong']; ?>')" class="btn btn-sm btn-danger" title="Excluir ONG"><i class="fa-solid fa-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </main>
+                <?php
+                    break; // Fim do 'case painel-admin'
                     
                     // ==========================================================
                     // CASO 1: PÁGINA 'MEU PERFIL' (Padrão)
@@ -516,21 +671,22 @@ if (isset($_SESSION['toast_message'])) {
                                 <i class="fa-regular fa-circle-user fa-fw me-2"></i> Meu Perfil
                             </a>
                             
-                            <a class="nav-link <?php echo ($pagina == 'meus-pets') ? 'active' : ''; ?>" 
-                               href="perfil?page=meus-pets"
-                               <?php echo ($pagina == 'meus-pets') ? 'aria-current="page"' : ''; ?>>
-                                <i class="fa-solid fa-paw fa-fw me-2"></i> Meus Pets
-                            </a>
-                            
-                            <a class="nav-link <?php echo ($pagina == 'pets-curtidos') ? 'active' : ''; ?>" 
-                               href="perfil?page=pets-curtidos"
-                               <?php echo ($pagina == 'pets-curtidos') ? 'aria-current="page"' : ''; ?>>
-                                <i class="fa-regular fa-heart fa-fw me-2"></i> Pets Curtidos
-                            </a>
-
-                            <a class="nav-link" href="chat.php">
-                                <i class="fa-regular fa-comments fa-fw me-2"></i> Chats
-                            </a>
+                           <?php if ($user_tipo == 'admin'): ?>
+                                <a class="nav-link <?php echo ($pagina == 'painel-admin') ? 'active' : ''; ?>" href="perfil?page=painel-admin" style="color: #dc3545;">
+                                    <i class="fa-solid fa-gauge-high fa-fw me-2"></i> Painel Admin
+                                </a>
+                            <?php else: ?>
+                                <!-- ITENS DE USUÁRIO NORMAL -->
+                                <a class="nav-link <?php echo ($pagina == 'meus-pets') ? 'active' : ''; ?>" href="perfil?page=meus-pets">
+                                    <i class="fa-solid fa-paw fa-fw me-2"></i> Meus Pets
+                                </a>
+                                <a class="nav-link <?php echo ($pagina == 'pets-curtidos') ? 'active' : ''; ?>" href="perfil?page=pets-curtidos">
+                                    <i class="fa-regular fa-heart fa-fw me-2"></i> Pets Curtidos
+                                </a>
+                                <a class="nav-link" href="chat.php">
+                                    <i class="fa-regular fa-comments fa-fw me-2"></i> Chats
+                                </a>
+                            <?php endif; ?>
                             <hr class="my-2">
                             
                             <a class="nav-link logout-link-sidebar" href="sair.php">
@@ -602,6 +758,26 @@ if (isset($_SESSION['toast_message'])) {
     </div>
 </div>
 
+<!-- MODAL DE CONFIRMAÇÃO GENÉRICO -->
+            <div class="modal fade" id="genericConfirmModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Confirmação</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            Tem certeza que deseja realizar esta exclusão? <br>
+                            <strong class="text-danger">Isso não poderá ser desfeito.</strong>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <a href="#" id="genericConfirmBtn" class="btn btn-danger">Sim, Excluir</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/5.0.8/jquery.inputmask.min.js"></script>
@@ -609,6 +785,14 @@ if (isset($_SESSION['toast_message'])) {
     <script src="assets/js/pages/perfil/editar.js" type="module"></script>
 
     <script>
+
+        function confirmarExclusao(url) {
+            const modalEl = document.getElementById('genericConfirmModal');
+            const modal = new bootstrap.Modal(modalEl);
+            document.getElementById('genericConfirmBtn').href = url;
+            modal.show();
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             // Só executa se estivermos na página 'meus-pets'
             <?php if ($pagina == 'meus-pets'): ?>

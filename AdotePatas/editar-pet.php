@@ -53,6 +53,8 @@ try {
         $tem_permissao = true;
     } elseif ($user_tipo == 'ong' && $pet['id_ong_fk'] == $user_id) {
         $tem_permissao = true;
+    } elseif ($user_tipo == 'admin') {
+        $tem_permissao = true;
     }
 
     if (!$tem_permissao) {
