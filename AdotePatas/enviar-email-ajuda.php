@@ -14,18 +14,30 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// 2. Recebe os dados JSON do JavaScript
+// 2. Recebe e valida dados de uma vez
 $input = json_decode(file_get_contents('php://input'), true);
+
+if (json_last_error() !== JSON_ERROR_NONE) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'message' => 'JSON inválido.']);
+    exit;
+}
 
 $nome = trim($input['nome'] ?? '');
 $email = trim($input['email'] ?? '');
 $assunto = trim($input['assunto'] ?? '');
 $mensagem = trim($input['mensagem'] ?? '');
 
-// 3. Validação Básica
-if (empty($nome) || empty($email) || empty($assunto) || empty($mensagem)) {
+// 3. Validação mais eficiente
+$errors = [];
+if (empty($nome)) $errors[] = 'nome';
+if (empty($email)) $errors[] = 'email';
+if (empty($assunto)) $errors[] = 'assunto';
+if (empty($mensagem)) $errors[] = 'mensagem';
+
+if (!empty($errors)) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Por favor, preencha todos os campos.']);
+    echo json_encode(['success' => false, 'message' => 'Campos obrigatórios: ' . implode(', ', $errors)]);
     exit;
 }
 
@@ -35,70 +47,68 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     exit;
 }
 
-// 4. Configuração do PHPMailer
+// 4. Template HTML pré-definido (evita concatenação complexa)
+$emailTemplate = function($nome, $email, $assunto, $mensagem) {
+    return "
+    <div style='font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;'>
+        <div style='background-color: #bf6964; color: white; padding: 20px; text-align: center;'>
+            <h2 style='margin: 0;'>Nova Mensagem de Contato</h2>
+        </div>
+        <div style='padding: 20px;'>
+            <p><strong>De:</strong> {$nome}</p>
+            <p><strong>E-mail:</strong> {$email}</p>
+            <p><strong>Assunto:</strong> {$assunto}</p>
+            <hr style='border: 0; border-top: 1px solid #eee; margin: 20px 0;'>
+            <h3 style='color: #bf6964;'>Mensagem:</h3>
+            <div style='background-color: #f9f9f9; padding: 15px; border-radius: 5px; border-left: 4px solid #bf6964;'>
+                {$mensagem}
+            </div>
+        </div>
+        <div style='background-color: #f4f4f4; padding: 10px; text-align: center; font-size: 0.8em; color: #777;'>
+            Enviado através do formulário de contato do site Adote Patas.
+        </div>
+    </div>
+    ";
+};
+
+// 5. Configuração otimizada do PHPMailer
 $mail = new PHPMailer(true);
 
 try {
-    // --- Configurações do Servidor (Iguais ao recuperar-senha.php) ---
+    // Configurações SMTP
     $mail->isSMTP();
     $mail->Host       = 'smtp.gmail.com';
     $mail->SMTPAuth   = true;
-    $mail->Username   = 'adotepatastcc@gmail.com'; // Seu e-mail do projeto
-    $mail->Password   = 'ynzgbyiqaislwgme';        // Sua senha de App
+    $mail->Username   = 'adotepatastcc@gmail.com';
+    $mail->Password   = 'ynzgbyiqaislwgme';
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
     $mail->Port       = 465;
-    $mail->CharSet    = 'UTF-8'; // Garante acentos corretos
+    $mail->CharSet    = 'UTF-8';
+    
+    // Timeout reduzido para evitar espera longa
+    $mail->Timeout    = 10; // 10 segundos
+    $mail->SMTPDebug  = 0; // Garantir que debug está desligado
 
-    // --- Destinatários ---
-    // Quem envia: O sistema (autenticado)
-    $mail->setFrom('adotepatastcc@gmail.com', 'Adote Patas - Contato Site');
-    
-    // Quem recebe: A administração do site (você mesmo)
+    // Destinatários
+    $mail->setFrom('adotepatastcc@gmail.com', 'Adote Patas - Contato Site', false);
     $mail->addAddress('adotepatastcc@gmail.com', 'Administração Adote Patas');
-    
-    // Responder para: O e-mail do usuário que preencheu o formulário
-    // Assim, quando você clicar em "Responder" no Gmail, vai direto para o usuário.
     $mail->addReplyTo($email, $nome);
 
-    // --- Conteúdo ---
+    // Conteúdo
     $mail->isHTML(true);
     $mail->Subject = "Fale Conosco: " . $assunto;
-    
-    // Corpo do e-mail bonito em HTML
-    $mail->Body    = "
-        <div style='font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;'>
-            <div style='background-color: #bf6964; color: white; padding: 20px; text-align: center;'>
-                <h2 style='margin: 0;'>Nova Mensagem de Contato</h2>
-            </div>
-            <div style='padding: 20px;'>
-                <p><strong>De:</strong> {$nome}</p>
-                <p><strong>E-mail:</strong> {$email}</p>
-                <p><strong>Assunto:</strong> {$assunto}</p>
-                <hr style='border: 0; border-top: 1px solid #eee; margin: 20px 0;'>
-                <h3 style='color: #bf6964;'>Mensagem:</h3>
-                <div style='background-color: #f9f9f9; padding: 15px; border-radius: 5px; border-left: 4px solid #bf6964;'>
-                    {$mensagem}
-                </div>
-            </div>
-            <div style='background-color: #f4f4f4; padding: 10px; text-align: center; font-size: 0.8em; color: #777;'>
-                Enviado através do formulário de contato do site Adote Patas.
-            </div>
-        </div>
-    ";
-    
-    // Texto puro para clientes de e-mail antigos
+    $mail->Body    = $emailTemplate($nome, $email, $assunto, $mensagem);
     $mail->AltBody = "Nova mensagem de contato:\n\nNome: {$nome}\nE-mail: {$email}\nAssunto: {$assunto}\n\nMensagem:\n{$mensagem}";
 
-    // 5. Envia
+    // 6. Envio rápido com timeout
     $mail->send();
     
-    echo json_encode(['success' => true, 'message' => 'Mensagem enviada com sucesso! Em breve entraremos em contato.']);
+    echo json_encode(['success' => true, 'message' => 'Mensagem enviada com sucesso!']);
 
 } catch (Exception $e) {
-    // Loga o erro no servidor para debug (opcional)
-    // error_log("Erro PHPMailer: {$mail->ErrorInfo}");
-    
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'Erro ao enviar e-mail. Tente novamente mais tarde.']);
+    // Log de erro opcional (manter comentado em produção)
+    // error_log("Erro PHPMailer: " . $e->getMessage());
 }
 ?>

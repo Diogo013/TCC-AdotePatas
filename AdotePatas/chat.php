@@ -243,7 +243,7 @@ if ($conversa_id_ativa) {
             </div>
             <?php if ($eu_sou_protetor): ?>
                 <a href="<?php echo $base_path; ?>gerar-pdf.php?solicitacao_id=<?php echo $conversa_ativa['id_solicitacao_fk']; ?>" 
-                   target="_blank" class="btn btn-outline-danger btn-sm ms-auto" title="Ver formulário">
+                   target="_blank" class="btn btn-outline-danger btn-sm ms-auto pdf-button" style="color: var(--cor-vermelho); border: solid 1px var(--cor-vermelho)" title="Ver formulário">
                    <i class="fa-solid fa-file-pdf me-1"></i> Ver Formulário
                 </a>
             <?php endif; ?>

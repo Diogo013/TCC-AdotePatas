@@ -533,7 +533,7 @@ try {
                 <div>
                     <label id="select-label-disponibilidade">Status</label>
                     <select name="status_disponibilidade" id="status_disponibilidade-real" class="select-hidden" aria-hidden="true" tabindex="-1">
-                        <option value="disponivel" <?php echo ($pet['status_disponibilidade'] == 'disponivel') ? 'selected' : ''; ?>>Disponível</option>
+                        <option value="Em Analise" <?php echo ($pet['status_disponibilidade'] == 'Em Analise') ? 'selected' : ''; ?>>Em Análise</option>
                         <option value="adotado" <?php echo ($pet['status_disponibilidade'] == 'adotado') ? 'selected' : ''; ?>>Adotado</option>
                         <option value="indisponivel" <?php echo ($pet['status_disponibilidade'] == 'indisponivel') ? 'selected' : ''; ?>>Indisponível</option>
                     </select>
@@ -549,7 +549,7 @@ try {
                             <span class="custom-select-arrow"></span>
                         </button>
                         <ul class="custom-select-options" role="listbox" aria-labelledby="select-label-disponibilidade">
-                            <li class="custom-option" data-value="disponivel" role="option" tabindex="0">Disponível</li>
+                            <li class="custom-option" data-value="Em Analise" role="option" tabindex="0">Em Análise</li>
                             <li class="custom-option" data-value="adotado" role="option" tabindex="0">Adotado</li>
                             <li class="custom-option" data-value="indisponivel" role="option" tabindex="0">Indisponível</li>
                         </ul>
@@ -704,6 +704,41 @@ try {
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js"></script>
 <script src="assets/js/pages/autenticacao/autenticacao.js" type="module"></script>
+
+<script>
+
+// Verificar se houve mudanças no formulário
+function checkFormChanges() {
+    const form = document.getElementById('form-edit-pet');
+    const submitBtn = document.getElementById('submit-btn');
+    
+    if (!form || !submitBtn) return;
+    
+    // Flag para controlar se deve mostrar alerta
+    window.formHasChanges = false;
+    
+    // Monitorar mudanças em todos os campos
+    form.addEventListener('change', function() {
+        window.formHasChanges = true;
+        updateSaveButton();
+    });
+    
+    // Monitorar input em campos de texto
+    const textInputs = form.querySelectorAll('input[type="text"], input[type="number"], textarea');
+    textInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            window.formHasChanges = true;
+            updateSaveButton();
+        });
+    });
+    
+    // Inicializar o botão
+    updateSaveButton();
+}
+
+// Inicializar a verificação de mudanças
+document.addEventListener('DOMContentLoaded', checkFormChanges);
+</script>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {

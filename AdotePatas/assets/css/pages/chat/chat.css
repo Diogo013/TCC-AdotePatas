@@ -181,6 +181,11 @@
     text-overflow: ellipsis; 
 }
 
+.pdf-button:hover{
+    background-color: var(--cor-vermelho) !important;
+    color: var(--cor-branca) !important;
+}
+
 .chat-list-item.active .chat-name {
     color: var(--cor-vermelho);
 }

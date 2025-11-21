@@ -6,7 +6,7 @@ include_once 'conexao.php';
 if (!file_exists('fpdf/fpdf.php')) {
     die("Erro: Biblioteca FPDF não encontrada. Por favor, baixe em fpdf.org e coloque na pasta 'fpdf'.");
 }
-
+date_default_timezone_set('America/Sao_Paulo');
 require('fpdf/fpdf.php');
 
 // 2. Segurança: Verifica Login
@@ -88,7 +88,7 @@ try {
         function Header() {
             // Logo (se tiver, coloque o caminho correto)
             if(file_exists('images/global/Logo-AdotePatas.png')) {
-                $this->Image('images/global/Logo-AdotePatas.png',10,6,30);
+                $this->Image('images/global/Logo-AdotePatas.png',10,6,20);
             }
             $this->SetFont('Arial','B',15);
             // Move to the right
@@ -128,7 +128,7 @@ try {
         }
         
         function SectionTitle($title) {
-            $this->Ln(5);
+            $this->Ln(0);
             $this->SetFont('Arial','B',12);
             $this->SetTextColor(217, 83, 79); // Vermelho AdotePatas
             $this->Cell(0, 10, utf8_decode(strtoupper($title)), 0, 1, 'L');
@@ -177,6 +177,9 @@ try {
         if ($resposta === 'sim') $resposta = "Sim";
         if ($resposta === 'nao') $resposta = "Não";
         if (empty($resposta)) $resposta = "-";
+        if($pergunta === "Aceita assinar termo de responsabilidade?"){
+            $resposta = "   $resposta"; 
+        }
 
         $pdf->DataRow($pergunta, $resposta);
     }

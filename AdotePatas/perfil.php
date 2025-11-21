@@ -84,9 +84,6 @@ if ($pagina == 'meus-pets') {
     }
 }
 
-
-
-
 // 2. Prepara a lógica do banner, MAS só se a página for 'perfil'
 $caminhoBanner = ''; // Inicializa a variável
 if ($pagina == 'perfil') {
@@ -129,7 +126,6 @@ if ($user_tipo == 'admin' && $pagina == 'painel-admin') {
 }
 
 // ==========================================================
-// INÍCIO DO BLOCO ADICIONADO
 // Lógica para buscar os pets do usuário (APENAS se a página for 'meus-pets')
 // ==========================================================
 $pets = [];
@@ -152,10 +148,8 @@ if ($pagina == 'meus-pets') {
                     WHERE ";
         
         if ($user_tipo == 'usuario') {
-            // [Cite: adote_patas.sql, Tabela pet, Coluna id_usuario_fk]
             $sql_pets .= "id_usuario_fk = :id_usuario"; 
         } elseif ($user_tipo == 'ong') {
-            // [Cite: adote_patas.sql, Tabela pet, Coluna id_ong_fk]
             $sql_pets .= "id_ong_fk = :id_usuario";
         } else {
             throw new Exception("Tipo de usuário inválido para buscar pets.");
@@ -166,11 +160,10 @@ if ($pagina == 'meus-pets') {
         $pets = $stmt_pets->fetchAll(PDO::FETCH_ASSOC);
     } catch (Exception $e) {
         $erro_pets = "Erro ao buscar seus pets: " . $e->getMessage();
-        // Para debug: error_log("Erro ao buscar pets: " . $e->getMessage());
     }
 }
 
-// 4. --- NOVA LÓGICA 'Pets Curtidos' ---
+// 4. --- LÓGICA 'Pets Curtidos' ---
 $pets_curtidos = [];
 $erro_pets_curtidos = '';
 if ($pagina == 'pets-curtidos') {
@@ -193,7 +186,6 @@ if ($pagina == 'pets-curtidos') {
                             pet_fotos AS pf ON pf.id_foto = pf_min.min_id_foto
                          WHERE 
                              f.id_usuario = :id_usuario";
-                         // Opcional: AND p.status_disponibilidade = 'disponivel'
                          
         $stmt_curtidos = $conn->prepare($sql_curtidos);
         $stmt_curtidos->bindParam(':id_usuario', $user_id, PDO::PARAM_INT);
@@ -206,13 +198,46 @@ if ($pagina == 'pets-curtidos') {
     }
 }
 
+// ==========================================================
+// LÓGICA PARA PETS EM ANÁLISE (ADMIN)
+// ==========================================================
+$pets_analise = [];
+$erro_analise = '';
+if ($pagina == 'pet-analise') {
+    try {
+        $sql_analise = "
+            SELECT p.*, 
+                   COALESCE(u.nome, o.nome) as dono_nome,
+                   CASE WHEN p.id_usuario_fk IS NOT NULL THEN 'Usuário' ELSE 'ONG' END as tipo_dono,
+                   pf.caminho_foto AS foto
+            FROM pet p
+            LEFT JOIN usuario u ON p.id_usuario_fk = u.id_usuario
+            LEFT JOIN ong o ON p.id_ong_fk = o.id_ong
+            LEFT JOIN (
+                SELECT id_pet_fk, MIN(id_foto) as min_id_foto
+                FROM pet_fotos
+                GROUP BY id_pet_fk
+            ) pf_min ON p.id_pet = pf_min.id_pet_fk
+            LEFT JOIN pet_fotos AS pf ON pf.id_foto = pf_min.min_id_foto
+            WHERE p.status_disponibilidade = 'Em Analise'
+            ORDER BY p.id_pet DESC
+        ";
+        
+        $stmt_analise = $conn->query($sql_analise);
+        $pets_analise = $stmt_analise->fetchAll(PDO::FETCH_ASSOC);
+        
+    } catch (PDOException $e) {
+        $erro_analise = "Erro ao buscar pets para análise: " . $e->getMessage();
+        error_log("Erro ao buscar pets em análise: " . $e->getMessage());
+    }
+}
+
 // DEBUG: Verificar se as variáveis de sessão estão chegando
 if (isset($_SESSION['toast_message'])) {
     error_log("DEBUG perfil.php - Toast message: " . $_SESSION['toast_message']);
 } else {
     error_log("DEBUG perfil.php - Nenhuma toast message na sessão");
 }
-
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -228,6 +253,12 @@ if (isset($_SESSION['toast_message'])) {
                 break;
             case 'pets-curtidos':
                 echo "Pets Curtidos";
+                break;
+            case 'painel-admin':
+                echo "Painel Admin";
+                break;
+            case 'pet-analise':
+                echo "Pets em Análise";
                 break;
             case 'perfil':
             default:
@@ -267,58 +298,17 @@ if (isset($_SESSION['toast_message'])) {
                 // Inicia o switch case para carregar o conteúdo principal
                 switch ($pagina) {
 
-                      // ==========================================================
+                    // ==========================================================
                     // CASO ADMIN: PAINEL GERAL
                     // ==========================================================
                     case 'painel-admin':
-                        if ($user_tipo !== 'admin') { echo "Acesso negado."; break; }
+                        if ($user_tipo !== 'admin') { header("Location: login"); break; }
                 ?>
                     <main style="animation: fadeIn 0.8s ease-out;">
-                        <h1 class="mb-4 text-danger fw-bold"><i class="fa-solid fa-user-shield me-2"></i>Painel Administrativo</h1>
-
-                        <!-- TABELA DE PETS -->
-                        <div class="admin-table-card">
-                            <h3 class="mb-3 text-secondary">Gerenciar Pets (<?php echo count($todos_pets); ?>)</h3>
-                            <div class="table-responsive">
-                                <table class="table table-hover align-middle">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>ID</th>
-                                            <th>Nome</th>
-                                            <th>Dono</th>
-                                            <th>Status</th>
-                                            <th>Ações</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php foreach ($todos_pets as $p): ?>
-                                        <tr>
-                                            <td>#<?php echo $p['id_pet']; ?></td>
-                                            <td><strong><?php echo htmlspecialchars($p['nome']); ?></strong></td>
-                                            <td>
-                                                <?php echo htmlspecialchars($p['dono_nome']); ?> 
-                                                <small class="text-muted">(<?php echo $p['tipo_dono']; ?>)</small>
-                                            </td>
-                                            <td>
-                                                <span class="badge bg-<?php echo ($p['status_disponibilidade'] == 'disponivel') ? 'success' : 'secondary'; ?>">
-                                                    <?php echo ucfirst($p['status_disponibilidade']); ?>
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <a href="pet-detalhe/<?php echo $p['id_pet']; ?>" target="_blank" class="btn btn-sm btn-info text-white" title="Ver"><i class="fa-solid fa-eye"></i></a>
-                                                <!-- Reusa a página de editar pet, passando o ID -->
-                                                <a href="editar-pet.php?id=<?php echo $p['id_pet']; ?>" class="btn btn-sm btn-primary" title="Editar"><i class="fa-solid fa-pencil"></i></a>
-                                                <button onclick="confirmarExclusao('admin-acoes.php?acao=excluir_pet&id=<?php echo $p['id_pet']; ?>')" class="btn btn-sm btn-danger" title="Excluir"><i class="fa-solid fa-trash"></i></button>
-                                            </td>
-                                        </tr>
-                                        <?php endforeach; ?>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
+                        
                         <!-- TABELA DE USUÁRIOS -->
                         <div class="admin-table-card">
+                            <h1 class="mb-4 fw-bold" style="color: var(--cor-rosa-escuro);"><i class="fa-solid fa-user-shield me-2"></i>Painel Administrativo</h1>
                             <h3 class="mb-3 text-secondary">Gerenciar Usuários (<?php echo count($todos_usuarios); ?>)</h3>
                             <div class="table-responsive">
                                 <table class="table table-hover align-middle">
@@ -382,6 +372,183 @@ if (isset($_SESSION['toast_message'])) {
                     </main>
                 <?php
                     break; // Fim do 'case painel-admin'
+
+                    // ==========================================================
+                    // CASO ADMIN: PETS EM ANÁLISE
+                    // ==========================================================
+                    case 'pet-analise':
+                        if ($user_tipo !== 'admin') { 
+                         header("Location: login"); 
+                            break; 
+                        }
+                    ?>
+                        <main class="profile-card" style="animation: fadeIn 0.8s ease-out;">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h1 class="fw-bold"  style="color: var(--cor-rosa-escuro) !important;">
+                                    <i class="fa-solid fa-clipboard-list me-2"></i>Pets em Análise
+                                </h1>
+                               <span id="contador-pets" class="badge fs-6" style="background-color: var(--cor-rosa-escuro) !important; color: var(--cor-branca); !important">
+    <?php echo count($pets_analise); ?> pets aguardando
+</span>
+                            </div>
+
+                            <?php if (!empty($erro_analise)): ?>
+                                <div class="alert alert-danger">
+                                    <?php echo htmlspecialchars($erro_analise); ?>
+                                </div>
+                            <?php elseif (empty($pets_analise)): ?>
+                                <div class="d-flex justify-content-center flex-column align-items-center py-5">
+                                    
+                            <lottie-player src="animações/cat-laptop.json" background="transparent" speed="1" style="width: 300px; height: 300px;"
+                                loop autoplay>
+                            </lottie-player>
+
+                                    <h3 style="color: var(--cor-vermelho);">Nenhum pet aguardando análise!</h3>
+                                    <p class="mb-0">Todos os pets foram analisados e aprovados.</p>
+                                </div>
+                            <?php else: ?>
+                                <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4" id="petsAnaliseGrid">
+                                    <?php foreach ($pets_analise as $pet): ?>
+                                    <div class="col" id="pet-card-<?php echo $pet['id_pet']; ?>">
+                                        <div class="pet-card">
+                                            <div class="pet-card-img">
+                                                <img src="<?php echo htmlspecialchars($pet['foto'] ?? 'images/global/placeholder-pet.png'); ?>" 
+                                                     alt="Foto de <?php echo htmlspecialchars($pet['nome']); ?>"
+                                                     onerror="this.src='images/perfil/teste.jpg';">
+                                            </div>
+                                            
+                                            <div class="pet-card-body flex-wrap p-3">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <h2 class="pet-name me-2 mb-0"><?php echo htmlspecialchars($pet['nome']); ?></h2>
+                                                    <?php if (!empty($pet['sexo'])): ?>
+                                                        <?php if ($pet['sexo'] == 'femea'): ?>
+                                                            <i class="fa-solid fa-venus pet-gender-female" style="color: var(--cor-femea-simbolo)" aria-label="Fêmea" title="Fêmea"></i>
+                                                        <?php else: ?>
+                                                            <i class="fa-solid fa-mars pet-gender-male" style="color: var(--cor-macho-simbolo)" aria-label="Macho" title="Macho"></i>
+                                                        <?php endif; ?>
+                                                    <?php endif; ?>
+                                                </div>
+                                                
+                                                <div class="pet-info mb-2">
+                                                    <small class="text-muted">
+                                                        <strong>Dono:</strong> <?php echo htmlspecialchars($pet['dono_nome']); ?> (<?php echo $pet['tipo_dono']; ?>)
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="pet-card-actions d-flex justify-content-between align-items-center p-3 border-top">
+                                                <span class="badge bg-warning text-dark status-badge">
+                                                    <i class="fa-solid fa-clock me-1"></i>Em Análise
+                                                </span>
+                                                <div class="action-buttons">
+                                                    <a href="editar-pet.php?id=<?php echo $pet['id_pet']; ?>" class="btn btn-sm btn-outline-primary me-2" title="Editar Pet"> <i class="fa-solid fa-pencil"></i> </a>
+                                                    <button class="btn btn-sm btn-success btn-aprovar-pet" 
+                                                            data-pet-id="<?php echo $pet['id_pet']; ?>"
+                                                            title="Aprovar Pet">
+                                                        <i class="fa-solid fa-check"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
+                        </main>
+
+            <script>
+    function refresh() {
+        window.location.reload();
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const petsGrid = document.getElementById('petsAnaliseGrid');
+
+        if (petsGrid) {
+            petsGrid.addEventListener('click', function(event) {
+                const aprovarBtn = event.target.closest('.btn-aprovar-pet');
+                if (aprovarBtn) {
+                    event.preventDefault();
+                    const petId = aprovarBtn.dataset.petId;
+                    aprovarPet(petId, aprovarBtn);
+                }
+            });
+        }
+
+        async function aprovarPet(petId, buttonElement) {
+            buttonElement.disabled = true;
+            buttonElement.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i>';
+
+            try {
+                const response = await fetch('aprovar-pet.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `id_pet=${petId}`
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    showToast('Pet analisado com sucesso!', 'success');
+
+                    // Remove visualmente
+                    const petCard = document.getElementById(`pet-card-${petId}`);
+                    if (petCard) petCard.classList.add("fade-out");
+
+                    setTimeout(() => {
+                        if (petCard) petCard.remove();
+
+                        // --- LÓGICA DE CONTAGEM E REFRESH ---
+                        
+                        // 1. Tenta pelo ID do contador (Mais preciso)
+                        const contadorEl = document.getElementById('contador-pets');
+                        
+                        // 2. Backup: Verifica se a Grid ficou vazia
+                        const gridEl = document.getElementById('petsAnaliseGrid');
+                        const isGridEmpty = gridEl && gridEl.children.length === 0;
+
+                        let count = 0;
+
+                        if (contadorEl) {
+                            // Pega apenas os números do texto
+                            let currentText = contadorEl.textContent; 
+                            let currentNumber = parseInt(currentText.replace(/\D/g, '')); // Remove tudo que não é número
+
+                            if (!isNaN(currentNumber)) {
+                                count = Math.max(0, currentNumber - 1);
+                                contadorEl.textContent = `${count} pets aguardando`;
+                            }
+                        }
+
+                        // 3. DECISÃO FINAL DE REFRESH
+                        // Atualiza se o contador chegou a 0 OU se a grid está visualmente vazia
+                        if (count === 0 || isGridEmpty) {
+                            console.log("Todos os pets analisados. Atualizando...");
+                            refresh();
+                        }
+
+                    }, 1000);
+
+                } else {
+                    showToast(result.message || 'Erro ao aprovar.', 'danger');
+                    resetButton(buttonElement);
+                }
+
+            } catch (error) {
+                console.error('Erro:', error);
+                showToast('Erro de conexão.', 'danger');
+                resetButton(buttonElement);
+            }
+        }
+
+        function resetButton(btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-check me-1"></i>';
+        }
+    });
+</script>
+                    <?php
+                        break; // Fim do 'case pet-analise'
                     
                     // ==========================================================
                     // CASO 1: PÁGINA 'MEU PERFIL' (Padrão)
@@ -443,6 +610,8 @@ if (isset($_SESSION['toast_message'])) {
                                         </div>
                                     <?php endif; ?>
 
+                                <?php if (in_array($user_tipo, ['usuario', 'ong'])) : ?>
+
                                     <div class="row g-3 mb-3">
                                         <div class="col-md-4">
                                         <label for="inputCep" class="form-label"><strong>CEP:</strong></label>
@@ -474,6 +643,8 @@ if (isset($_SESSION['toast_message'])) {
                                            value="<?php echo htmlspecialchars($usuario['cidade'] ?? ''); ?>">
                                     <input type="hidden" id="inputEstado" name="estado" data-profile-field
                                            value="<?php echo htmlspecialchars($usuario['estado'] ?? ''); ?>">
+
+                                    <?php endif; ?>
 
                                     <hr class="my-4">
 
@@ -675,6 +846,13 @@ if (isset($_SESSION['toast_message'])) {
                                 <a class="nav-link <?php echo ($pagina == 'painel-admin') ? 'active' : ''; ?>" href="perfil?page=painel-admin" style="color: #dc3545;">
                                     <i class="fa-solid fa-gauge-high fa-fw me-2"></i> Painel Admin
                                 </a>
+
+                                <a class="nav-link <?php echo ($pagina == 'pet-analise') ? 'active' : ''; ?>" href="perfil?page=pet-analise">
+                                    <i class="fa-solid fa-clipboard-list fa-fw me-2"></i> Pets a Analisar
+                                    <?php if ($pagina == 'pet-analise' && isset($pets_analise) && count($pets_analise) > 0): ?>
+                                    <?php endif; ?>
+                                </a>
+
                             <?php else: ?>
                                 <!-- ITENS DE USUÁRIO NORMAL -->
                                 <a class="nav-link <?php echo ($pagina == 'meus-pets') ? 'active' : ''; ?>" href="perfil?page=meus-pets">

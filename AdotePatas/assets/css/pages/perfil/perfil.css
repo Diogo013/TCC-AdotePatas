@@ -1,816 +1,866 @@
-  @import "../../global/global.css";
+@import "../../global/global.css";
 
-  /* ==========================================================================
-    ESTILOS GLOBAIS DA PÁGINA
-    ========================================================================== */
-  body {
-    background-color: var(--cor-laranja-claro) !important;
-    overflow-x: hidden;
-    padding: 0;
-  }
+/* ==========================================================================
+  ESTILOS GLOBAIS DA PÁGINA
+  ========================================================================== */
+body {
+  background-color: var(--cor-laranja-claro) !important;
+  overflow-x: hidden;
+  padding: 0;
+}
 
+/* Limpando as cores de placeholder que você tinha */
+.col-3, .col-9 {
+  background-color: transparent;
+}
 
-  /* Limpando as cores de placeholder que você tinha */
-  .col-3, .col-9 {
-    background-color: transparent;
-  }
+/* ==========================================================================
+  BOTÃO VOLTAR
+  ========================================================================== */
+.btn-voltar {
+  position: absolute; 
+  top: 1rem; 
+  left: 1rem; 
+  z-index: 100; 
+  display: inline-flex; 
+  align-items: center;
+  gap: 0.5rem; 
+  padding: 0.75rem 1.25rem;
+  color: var(--cor-vermelho);
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+}
 
-  /* ==========================================================================
-    BOTÃO VOLTAR
-    ========================================================================== */
-  .btn-voltar {
-    position: absolute; 
-    top: 1rem; 
-    left: 1rem; 
-    z-index: 100; 
-    display: inline-flex; 
-    align-items: center;
-    gap: 0.5rem; 
-    padding: 0.75rem 1.25rem;
-    color: var(--cor-vermelho);
-    font-weight: 500;
-    cursor: pointer;
-    text-decoration: none;
-  }
+/* Garante que o card de pets não tenha o fundo rosa do .profile-card */
+.pets-grid-container {
+  background: none;
+  box-shadow: none;
+  padding: 0;
+}
 
-  /* Garante que o card de pets não tenha o fundo rosa do .profile-card */
-          .pets-grid-container {
-              background: none;
-              box-shadow: none;
-              padding: 0;
-          }
+/* Container para os botões de ação no card */
+.pet-card-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px; /* Espaçamento acima dos botões */
+  padding-top: 10px;
+  border-top: 1px solid #eee;
+}
 
-          /* Container para os botões de ação no card */
-          .pet-card-actions {
-              display: flex;
-              gap: 10px;
-              margin-top: 15px; /* Espaçamento acima dos botões */
-              padding-top: 10px;
-              border-top: 1px solid #eee;
-          }
-          
-          /* Remove o ícone de like e ajusta o nome */
-          .pet-card-body .pet-name {
-              flex-grow: 1; /* O nome ocupa o espaço */
-          }
+/* Remove o ícone de like e ajusta o nome */
+.pet-card-body .pet-name {
+  flex-grow: 1; /* O nome ocupa o espaço */
+}
 
-  .pet-card {
-    background-color: var(--cor-branca, #ffffff);
-    border-radius: 20px;
-    box-shadow: 0 10px 25px -10px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    transition: box-shadow 0.3s ease, transform 0.3s ease;
-    cursor: pointer;
-    text-align: center;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-  }
+.pet-card {
+background-color: var(--cor-branca, #ffffff);
+border-radius: 20px;
+box-shadow: 0 10px 25px -10px rgba(0, 0, 0, 0.1);
+overflow: hidden;
+transition: box-shadow 0.3s ease, transform 0.3s ease;
+cursor: pointer;
+text-align: center;
+height: 100%;
+display: flex;
+flex-direction: column;
+}
 
-  .pet-card:hover {
-    box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.15);
-    transform: translateY(-5px);
-  }
+.pet-card:hover {
+box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.15);
+transform: translateY(-5px);
+}
 
-  .pet-card-img {
-    width: 100%;
-    aspect-ratio: 4 / 2;
-    position: relative;
-    overflow: hidden;
-  }
+.pet-card-img {
+width: 100%;
+aspect-ratio: 4 / 2;
+position: relative;
+overflow: hidden;
+}
 
-  .pet-card-img img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    clip-path: ellipse(100% 95% at 50% 0%);
-    transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  }
+.pet-card-img img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+display: block;
+clip-path: ellipse(100% 95% at 50% 0%);
+transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
 
-  .pet-card:hover .pet-card-img img {
-    transform: scale(1.08);
-  }
+.pet-card:hover .pet-card-img img {
+transform: scale(1.08);
+}
 
-  .pet-card-body {
-    padding: 1rem 1.5rem 1.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.6rem;
-    flex-grow: 1;
-  }
+.pet-card-body {
+padding: 1rem 1.5rem 1.5rem;
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 0.6rem;
+flex-grow: 1;
+}
 
-  .pet-name {
-    font-family: "Poppins", sans-serif;
-    font-weight: 700;
-    font-size: 1.3rem;
-    color: var(--cor-cinza-texto);
-    margin: 0;
-    flex-grow: 1;
-    text-align: left;
-    padding-left: 10px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+.pet-name {
+font-family: "Poppins", sans-serif;
+font-weight: 700;
+font-size: 1.3rem;
+color: var(--cor-cinza-texto);
+margin: 0;
+flex-grow: 1;
+text-align: left;
+padding-left: 10px;
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+}
 
-  .pet-gender-female,
-  .pet-gender-male,
-  .pet-like {
-    font-size: 1.2rem;
-    flex-shrink: 0;
-  }
+.pet-gender-female,
+.pet-gender-male,
+.pet-like {
+font-size: 1.2rem;
+flex-shrink: 0;
+}
 
-  .pet-gender-female {
-    color: var(--cor-rosa-escuro);
-  }
+.pet-gender-female {
+color: var(--cor-rosa-escuro);
+}
 
-  .pet-gender-male {
-    color: var(--cor-macho-simbolo);
-  }
+.pet-gender-male {
+color: var(--cor-macho-simbolo);
+}
 
-  .pet-like {
-    color: var(--cor-vermelho, #9b0000);
-    transition: transform 0.2s ease, color 0.2s ease;
-  }
+.pet-like {
+color: var(--cor-vermelho, #9b0000);
+transition: transform 0.2s ease, color 0.2s ease;
+}
 
-  .pet-like:hover {
-      transform: scale(1.2);
-  }
+.pet-like:hover {
+  transform: scale(1.2);
+}
 
-  .pet-like.favorited {
-      font-weight: 900;
-      color: var(--cor-vermelho, #9b0000);
-  }
+.pet-like.favorited {
+  font-weight: 900;
+  color: var(--cor-vermelho, #9b0000);
+}
 
-  .btn-voltar:focus-visible {
-    outline: 2px solid var(--cor-branca);
-    outline-offset: 2px;
-  }
+.btn-voltar:focus-visible {
+outline: 2px solid var(--cor-branca);
+outline-offset: 2px;
+}
 
-  .form-control{
-    outline: none !important;
-  }
+.form-control{
+outline: none !important;
+}
 
-   /* Estilos extras para o painel admin */
-        .admin-table-card {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            margin-bottom: 30px;
-        }
-        .table img.pet-thumb {
-            width: 50px;
-            height: 50px;
-            object-fit: cover;
-            border-radius: 50%;
-        }
+/* Estilos extras para o painel admin */
+.admin-table-card {
+  background: white;
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  margin-bottom: 30px;
+}
+.table img.pet-thumb {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 50%;
+}
 
-  /* ==========================================================================
-    LAYOUT DE ALTURA TOTAL (100vh)
-    ========================================================================== */
+/* ==========================================================================
+  LAYOUT DE ALTURA TOTAL (100vh)
+  ========================================================================== */
 
-  /* 1. Define uma altura mínima para a linha que contém o sidebar e o conteúdo.
-        Calculamos 100vh menos o 'margin-top' (mt-5) e 'padding-top' (pt-4) 
-        do .container-fluid */
-  .full-height-row {
-    min-height: calc(100vh - 3rem - 1.5rem); /* mt-5 = 3rem, pt-4 = 1.5rem */
-  }
+/* 1. Define uma altura mínima para a linha que contém o sidebar e o conteúdo.
+      Calculamos 100vh menos o 'margin-top' (mt-5) e 'padding-top' (pt-4) 
+      do .container-fluid */
+.full-height-row {
+min-height: calc(100vh - 3rem - 1.5rem); /* mt-5 = 3rem, pt-4 = 1.5rem */
+}
 
-  /* 2. Faz a coluna do sidebar esticar para preencher a altura da linha */
-  .sidebar-wrapper-col {
-    display: flex;
-    flex-direction: column;
-  }
+/* 2. Faz a coluna do sidebar esticar para preencher a altura da linha */
+.sidebar-wrapper-col {
+display: flex;
+flex-direction: column;
+}
 
-  /* 3. O wrapper interno cresce para preencher a coluna */
-  .sidebar-sticky-wrapper {
-    flex-grow: 1;
-    position: relative; /* Necessário para o 'position: sticky' funcionar */
-  }
+/* 3. O wrapper interno cresce para preencher a coluna */
+.sidebar-sticky-wrapper {
+flex-grow: 1;
+position: relative; /* Necessário para o 'position: sticky' funcionar */
+}
 
-  /* ==========================================================================
-    SIDEBAR DE PERFIL
-    ========================================================================== */
-  .profile-sidebar {
-    background-color: var(--cor-branca);
-    border-radius: 15px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-    position: sticky; /* Faz o sidebar "grudar" */
-    top: 2rem; /* Distância do topo ao "grudar" */
-    
-    /* Garante que o sidebar ocupe o espaço do wrapper */
-    min-height: calc(100% - 2rem); 
-    width: 100%;
-  }
+/* ==========================================================================
+  SIDEBAR DE PERFIL
+  ========================================================================== */
+.profile-sidebar {
+background-color: var(--cor-branca);
+border-radius: 15px;
+box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+position: sticky; /* Faz o sidebar "grudar" */
+top: 2rem; /* Distância do topo ao "grudar" */
 
-  .sidebar-header .sidebar-profile-icon {
-    font-size: 5rem; 
-    color: var(--cor-vermelho);
-  }
+/* Garante que o sidebar ocupe o espaço do wrapper */
+min-height: calc(100% - 2rem); 
+width: 100%;
+}
 
-  .sidebar-header h5 {
-    color: var(--cor-cinza-texto);
-    font-weight: 600;
-    margin-top: 0.5rem;
-  }
+.sidebar-header .sidebar-profile-icon {
+font-size: 5rem; 
+color: var(--cor-vermelho);
+}
 
-  /* ... (restante dos estilos do sidebar que você já tinha) ... */
-  .profile-nav .nav-link {
-    color: var(--cor-cinza-texto);
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    transition: all 0.2s ease;
-    margin-bottom: 0.25rem;
-    padding: 0.75rem 1rem;
-  }
+.sidebar-header h5 {
+color: var(--cor-cinza-texto);
+font-weight: 600;
+margin-top: 0.5rem;
+}
 
-  .profile-nav .nav-link i {
-    font-size: 1.1rem;
-    color: var(--cor-rosa-escuro);
-    transition: color 0.2s ease;
-  }
+/* ... (restante dos estilos do sidebar que você já tinha) ... */
+.profile-nav .nav-link {
+color: var(--cor-cinza-texto);
+font-weight: 500;
+display: flex;
+align-items: center;
+transition: all 0.2s ease;
+margin-bottom: 0.25rem;
+padding: 0.75rem 1rem;
+}
 
-  .profile-nav .nav-link:hover {
-    background-color: var(--cor-laranja-claro);
-    color: var(--cor-rosa-escuro);
-  }
+.profile-nav .nav-link i {
+font-size: 1.1rem;
+color: var(--cor-rosa-escuro);
+transition: color 0.2s ease;
+}
 
-  .profile-nav .nav-link.active {
-    background-color: var(--cor-vermelho);
-    color: var(--cor-branca);
-    font-weight: 600;
-  }
+.profile-nav .nav-link:hover {
+background-color: var(--cor-laranja-claro);
+color: var(--cor-rosa-escuro);
+}
 
-  .profile-nav .nav-link.active i {
-    color: var(--cor-branca); 
-  }
+.profile-nav .nav-link.active {
+background-color: var(--cor-vermelho);
+color: var(--cor-branca);
+font-weight: 600;
+}
 
-  .logout-link-sidebar {
-    color: var(--cor-vermelho) !important;
-  }
+.profile-nav .nav-link.active i {
+color: var(--cor-branca); 
+}
 
-  .logout-link-sidebar i {
-    color: var(--cor-vermelho) !important;
-  }
+.logout-link-sidebar {
+color: var(--cor-vermelho) !important;
+}
 
-  .logout-link-sidebar:hover {
-    background-color: #fcebeb !important; 
-    color: var(--cor-vermelho) !important;
-  }
+.logout-link-sidebar i {
+color: var(--cor-vermelho) !important;
+}
 
-  /* ==========================================================================
-    CARD DE CONTEÚDO PRINCIPAL
-    ========================================================================== */
+.logout-link-sidebar:hover {
+background-color: #fcebeb !important; 
+color: var(--cor-vermelho) !important;
+}
+
+/* ==========================================================================
+  CARD DE CONTEÚDO PRINCIPAL
+  ========================================================================== */
+.profile-card {
+max-width: 100%; 
+margin: 0 auto; 
+padding: 2.5rem;
+background-color: #ffffff;
+border-radius: 15px;
+box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+border: 1px solid #eee;
+}
+
+.profile-card h1 {
+border-bottom: 2px solid var(--cor-rosa-pastel);
+padding-bottom: 10px;
+margin-bottom: 25px;
+font-weight: bold;
+color: #444;
+}
+
+.profile-card p {
+font-size: 1.15rem;
+margin-bottom: 1.2rem;
+color: #555;
+}
+
+.profile-card strong {
+color: #222;
+min-width: 100px;
+display: inline-block;
+}
+
+.feedback-message {
+  width: 100%;
+  margin-top: 0.25rem;
+  font-size: 0.875em;
+  color: var(--bs-form-invalid-color); /* Usa a cor vermelha de erro do Bootstrap */
+  display: none; /* Começa escondido */
+}
+.feedback-message.show {
+  display: block; /* Mostra a mensagem quando a classe 'show' é adicionada */
+}
+
+/* ==========================================================================
+  BANNER DO PERFIL
+  ========================================================================== */
+.profile-card .banner {
+width: 100%;
+height: 250px; /* << ALTURA DO SEU BANNER (Ajuste este valor como quiser) */
+
+overflow: hidden; /* ESSENCIAL: Corta o que sobrar da imagem */
+border-radius: 15px; /* O 'rounded' que estava na imagem, agora vai no container */
+margin-bottom: 1.5rem; /* Espaço entre o banner e o título "Meu Perfil" */
+background-color: var(--cor-laranja-claro); /* Cor de fundo enquanto a imagem carrega */
+}
+
+.profile-card .banner img {
+width: 100%;
+height: 100%;
+object-fit: cover;   /* MÁGICA 1: Faz a imagem preencher o container, mantendo a proporção e cortando o excesso */
+object-position: center; /* MÁGICA 2: Garante que o corte seja centralizado */
+}
+
+/* Remove a cor padrão do Bootstrap e aplica a sua variável */
+#btnEditar {
+background-color: var(--cor-vermelho);
+border-color: var(--cor-vermelho);
+color: var(--cor-branca); /* Garante que o texto fique legível */
+}
+
+/* Adiciona um efeito 'hover' sutil escurecendo o botão */
+#btnEditar:hover {
+background-color: #8a0000; /* Um tom um pouco mais escuro que --cor-vermelho */
+border-color: #8a0000;
+}
+
+a.pet-card-link-img,
+a.pet-card-link-nome {
+  text-decoration: none !important;
+  color: inherit !important;
+}
+a.pet-card-link-img { display: block; }
+
+/* Efeito de hover no card (para 'pets-curtidos') */
+.pet-card:hover {
+transform: translateY(-5px);
+box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+transition: all 0.3s ease;
+}
+
+/* Estilo do coração de favorito */
+.pet-like { cursor: pointer; transition: all 0.2s ease; }
+.pet-like.favorited {
+  color: var(--cor-vermelho, #d9006c);
+  transform: scale(1.1);
+}
+
+/* ==========================================================================
+  AJUSTES RESPONSIVOS (Mobile)
+  ========================================================================== */
+@media (max-width: 991.98px) {
+/* 1. Reseta a altura da linha */
+.full-height-row {
+  min-height: auto;
+}
+
+/* 2. O sidebar deixa de ser sticky e se comporta como um bloco normal */
+.profile-sidebar {
+  position: static;
+  min-height: auto;
+  margin-bottom: 2rem; 
+}
+
+.profile-card {
+  margin-top: 0; 
+  padding: 1.5rem; 
+}
+}
+
+/* Media query para o botão voltar */
+@media (max-width: 768px) {
+.btn-voltar {
+  top: 0.1rem; 
+  left: 1rem; 
+  padding: 0.5rem;
+  font-size: 0.9rem;
+}
+}
+@media (max-width: 480px) {
+.btn-voltar {
+  padding: 0.5rem;
+  top: 0.2rem;
+  left: 0.2rem;
+}
+}
+@media (max-width: 380px) {
+.btn-voltar {
+  padding: 0.25rem;
+  top: 0;
+  left: 0;
+}
+}
+
+/* Estilos para o cabeçalho "Meus Pets" */
+.header-pets-section {
+  border-color: var(--cor-rosa-pastel) !important; /* Usando sua variável */
+  padding-bottom: 15px !important;
+  margin-bottom: 25px !important;
+}
+
+.section-title-pets {
+  font-size: 2.2rem; /* Título maior */
+  color: var(--cor-branca); /* Cor mais escura para o título */
+  font-weight: 700;
+}
+
+.btn-add-pet-header {
+  background-color: var(--cor-vermelho); /* Cor vermelha existente para o botão do header */
+  border-color: var(--cor-vermelho);
+  font-weight: 500;
+  padding: 8px 20px;
+  border-radius: 8px; /* Bordas mais suaves */
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-add-pet-header:hover {
+  background-color: var(--cor-vermelho); /* Hover mais escuro */
+  transform: translateY(-1px);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Estilos para a seção de "Nenhum Pet Cadastrado" (Refatorado)              */
+/* -------------------------------------------------------------------------- */
+.no-pets-section {
+  border-radius: 12px; /* Bordas mais arredondadas */
+  padding: 40px 30px; /* Aumenta o padding */
+  animation: fadeIn 0.8s ease-out; /* Adiciona uma animação de fade-in */
+}
+
+/* Animação para a seção de "nenhum pet" */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.no-pets-illustration {
+  /* Garante que a ilustração não seja muito grande */
+  max-width: 250px; /* Ajuste conforme a ilustração */
+  height: auto;
+  margin-bottom: 30px; /* Mais espaço para o texto */
+}
+
+.no-pets-section .section-title { /* Especificidade para este título */
+  font-size: 2rem; /* Tamanho da fonte maior para o título */
+  color: var(--cor-dark); /* Cor mais neutra e elegante */
+  font-weight: 600; /* Mais peso para o título */
+  line-height: 1.3;
+}
+
+.no-pets-section .section-description { /* Especificidade para este texto */
+  font-size: 1.15rem; /* Tamanho da fonte para a descrição */
+  line-height: 1.6;
+  color: var(--cor-cinza-texto); /* Cor secundária para o texto */
+  max-width: 700px; /* Limita a largura do texto para melhor leitura */
+  margin-bottom: 30px !important;
+}
+
+.custom-btn-add-pet {
+  background-color: var(--cor-verde-pastel); /* Uma cor mais convidativa para a ação principal */
+  border: none;
+  font-weight: 600;
+  padding: 14px 35px; /* Botão maior */
+  border-radius: 30px; /* Botão com bordas bem arredondadas */
+  transition: all 0.3s ease;
+  text-transform: uppercase; /* Texto em caixa alta */
+  letter-spacing: 0.5px;
+  box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;
+}
+
+.custom-btn-add-pet:hover {
+  background-color: var(--cor-verde-pastel); /* Uma variação mais escura no hover */
+  transform: translateY(-3px); /* Efeito sutil de "levantar" */
+  box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;
+}
+
+/* Estilo para a frase de efeito */
+.no-pets-section .text-muted {
+  font-size: 0.95rem;
+  color: #888 !important;
+  margin-top: 20px !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Estilos para os Cards de Pets (Quando há pets cadastrados)                 */
+/* -------------------------------------------------------------------------- */
+.pet-card {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  overflow: hidden; /* Garante que a imagem respeite o border-radius */
+  transition: all 0.3s ease-in-out;
+  height: 100%; /* Garante que todos os cards na grid tenham a mesma altura */
+  display: flex;
+  flex-direction: column;
+}
+
+.pet-card:hover {
+  transform: translateY(-5px); /* Efeito de levantar no hover */
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+.pet-card-img {
+  width: 100%;
+  height: 200px; /* Altura fixa para a imagem */
+  overflow: hidden;
+}
+
+.pet-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Recorta a imagem para preencher o espaço */
+  transition: transform 0.3s ease-in-out;
+}
+
+.pet-card:hover .pet-card-img img {
+  transform: scale(1.05); /* Pequeno zoom na imagem no hover */
+}
+
+.pet-card-body {
+  padding: 15px 20px; /* Padding interno do corpo do card */
+  flex-grow: 1; /* Permite que o corpo ocupe o espaço restante */
+}
+
+.pet-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--cor-dark);
+  margin-bottom: 0; /* Ajuste para alinhar com o ícone de gênero */
+}
+
+.pet-gender-male {
+  color: var(--pet-gender-male); /* Cor azul */
+  font-size: 1.2rem;
+}
+
+.pet-gender-female {
+  color: var(--pet-gender-female); /* Cor rosa */
+  font-size: 1.2rem;
+}
+
+.pet-info {
+  font-size: 0.9rem;
+  color: var(--cor-secundaria);
+  margin-top: 5px;
+  margin-bottom: 10px;
+}
+
+.pet-card-actions {
+  padding: 15px 20px;
+  border-top: 1px solid #eee; /* Linha divisória sutil */
+  background-color: #fcfcfc; /* Fundo ligeiramente diferente para a área de ações */
+}
+
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.action-buttons .btn {
+  width: 40px; /* Largura fixa para botões de ícone */
+  height: 40px; /* Altura fixa para botões de ícone */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%; /* Botões de ação circulares */
+  transition: all 0.2s ease;
+  font-size: 1rem;
+}
+
+.action-buttons .btn-outline-danger:hover {
+  background-color: var(--cor-vermelho);
+}
+
+/* Media Queries para Responsividade (Mobile First) */
+@media (max-width: 767.98px) {
   .profile-card {
-    max-width: 100%; 
-    margin: 0 auto; 
-    padding: 2.5rem;
-    background-color: #ffffff;
-    border-radius: 15px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-    border: 1px solid #eee;
+    padding: 20px;
   }
-
-  .profile-card h1 {
-    border-bottom: 2px solid var(--cor-rosa-pastel);
-    padding-bottom: 10px;
-    margin-bottom: 25px;
-    font-weight: bold;
-    color: #444;
-  }
-
-  .profile-card p {
-    font-size: 1.15rem;
-    margin-bottom: 1.2rem;
-    color: #555;
-  }
-
-  .profile-card strong {
-    color: #222;
-    min-width: 100px;
-    display: inline-block;
-  }
-
-  .feedback-message {
-              width: 100%;
-              margin-top: 0.25rem;
-              font-size: 0.875em;
-              color: var(--bs-form-invalid-color); /* Usa a cor vermelha de erro do Bootstrap */
-              display: none; /* Começa escondido */
-          }
-          .feedback-message.show {
-              display: block; /* Mostra a mensagem quando a classe 'show' é adicionada */
-          }
-
-  /* ==========================================================================
-    BANNER DO PERFIL
-    ========================================================================== */
-  .profile-card .banner {
-    width: 100%;
-    height: 250px; /* << ALTURA DO SEU BANNER (Ajuste este valor como quiser) */
-    
-    overflow: hidden; /* ESSENCIAL: Corta o que sobrar da imagem */
-    border-radius: 15px; /* O 'rounded' que estava na imagem, agora vai no container */
-    margin-bottom: 1.5rem; /* Espaço entre o banner e o título "Meu Perfil" */
-    background-color: var(--cor-laranja-claro); /* Cor de fundo enquanto a imagem carrega */
-  }
-
-  .profile-card .banner img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;   /* MÁGICA 1: Faz a imagem preencher o container, mantendo a proporção e cortando o excesso */
-    object-position: center; /* MÁGICA 2: Garante que o corte seja centralizado */
-  }
-
-  /* Remove a cor padrão do Bootstrap e aplica a sua variável */
-  #btnEditar {
-    background-color: var(--cor-vermelho);
-    border-color: var(--cor-vermelho);
-    color: var(--cor-branca); /* Garante que o texto fique legível */
-  }
-
-  /* Adiciona um efeito 'hover' sutil escurecendo o botão */
-  #btnEditar:hover {
-    background-color: #8a0000; /* Um tom um pouco mais escuro que --cor-vermelho */
-    border-color: #8a0000;
-  }
-
-  a.pet-card-link-img,
-  a.pet-card-link-nome {
-      text-decoration: none !important;
-      color: inherit !important;
-  }
-  a.pet-card-link-img { display: block; }
-
-  /* Efeito de hover no card (para 'pets-curtidos') */
-  .pet-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-  }
-
-  /* Estilo do coração de favorito */
-  .pet-like { cursor: pointer; transition: all 0.2s ease; }
-  .pet-like.favorited {
-      color: var(--cor-vermelho, #d9006c);
-      transform: scale(1.1);
-  }
-
-
-
-  /* ==========================================================================
-    AJUSTES RESPONSIVOS (Mobile)
-    ========================================================================== */
-  @media (max-width: 991.98px) {
-    /* 1. Reseta a altura da linha */
-    .full-height-row {
-      min-height: auto;
-    }
-    
-    /* 2. O sidebar deixa de ser sticky e se comporta como um bloco normal */
-    .profile-sidebar {
-      position: static;
-      min-height: auto;
-      margin-bottom: 2rem; 
-    }
-
-    .profile-card {
-      margin-top: 0; 
-      padding: 1.5rem; 
-    }
-  }
-
-  /* Media query para o botão voltar */
-  @media (max-width: 768px) {
-    .btn-voltar {
-      top: 0.1rem; 
-      left: 1rem; 
-      padding: 0.5rem;
-      font-size: 0.9rem;
-    }
-  }
-  @media (max-width: 480px) {
-    .btn-voltar {
-      padding: 0.5rem;
-      top: 0.2rem;
-      left: 0.2rem;
-    }
-  }
-  @media (max-width: 380px) {
-    .btn-voltar {
-      padding: 0.25rem;
-      top: 0;
-      left: 0;
-    }
-  }
-
-  /* Estilos para o cabeçalho "Meus Pets" */
   .header-pets-section {
-      border-color: var(--cor-rosa-pastel) !important; /* Usando sua variável */
-      padding-bottom: 15px !important;
-      margin-bottom: 25px !important;
+    flex-direction: column; /* Coloca o título e o botão em linhas separadas */
+    align-items: flex-start !important;
   }
-
   .section-title-pets {
-      font-size: 2.2rem; /* Título maior */
-      color: var(--cor-branca); /* Cor mais escura para o título */
-      font-weight: 700;
+    font-size: 1.8rem;
+    margin-bottom: 15px !important;
   }
-
   .btn-add-pet-header {
-      background-color: var(--cor-vermelho); /* Cor vermelha existente para o botão do header */
-      border-color: var(--cor-vermelho);
-      font-weight: 500;
-      padding: 8px 20px;
-      border-radius: 8px; /* Bordas mais suaves */
-      transition: all 0.2s ease-in-out;
+    width: 100%; /* Botão do cabeçalho ocupa a largura total */
   }
 
-  .btn-add-pet-header:hover {
-      background-color: var(--cor-vermelho); /* Hover mais escuro */
-      transform: translateY(-1px);
-  }
-
-  /* -------------------------------------------------------------------------- */
-  /* Estilos para a seção de "Nenhum Pet Cadastrado" (Refatorado)              */
-  /* -------------------------------------------------------------------------- */
   .no-pets-section {
-      border-radius: 12px; /* Bordas mais arredondadas */
-      padding: 40px 30px; /* Aumenta o padding */
-      animation: fadeIn 0.8s ease-out; /* Adiciona uma animação de fade-in */
+    padding: 30px 20px;
   }
-
-  /* Animação para a seção de "nenhum pet" */
-  @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+  .no-pets-section .section-title {
+    font-size: 1.6rem;
   }
-
-  .no-pets-illustration {
-      /* Garante que a ilustração não seja muito grande */
-      max-width: 250px; /* Ajuste conforme a ilustração */
-      height: auto;
-      margin-bottom: 30px; /* Mais espaço para o texto */
+  .no-pets-section .section-description {
+    font-size: 1rem;
   }
-
-  .no-pets-section .section-title { /* Especificidade para este título */
-      font-size: 2rem; /* Tamanho da fonte maior para o título */
-      color: var(--cor-dark); /* Cor mais neutra e elegante */
-      font-weight: 600; /* Mais peso para o título */
-      line-height: 1.3;
-  }
-
-  .no-pets-section .section-description { /* Especificidade para este texto */
-      font-size: 1.15rem; /* Tamanho da fonte para a descrição */
-      line-height: 1.6;
-      color: var(--cor-cinza-texto); /* Cor secundária para o texto */
-      max-width: 700px; /* Limita a largura do texto para melhor leitura */
-      margin-bottom: 30px !important;
-  }
-
   .custom-btn-add-pet {
-      background-color: var(--cor-verde-pastel); /* Uma cor mais convidativa para a ação principal */
-      border: none;
-      font-weight: 600;
-      padding: 14px 35px; /* Botão maior */
-      border-radius: 30px; /* Botão com bordas bem arredondadas */
-      transition: all 0.3s ease;
-      text-transform: uppercase; /* Texto em caixa alta */
-      letter-spacing: 0.5px;
-      box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;
+    width: 100%; /* Botão ocupa a largura total em telas pequenas */
+    padding: 12px 25px;
   }
+}
+.modal-header{
+display: flex;
+flex-direction: column !important;
+}
 
-  .custom-btn-add-pet:hover {
-      background-color: var(--cor-verde-pastel); /* Uma variação mais escura no hover */
-      transform: translateY(-3px); /* Efeito sutil de "levantar" */
-      box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;
-  }
+.modal-header i{
+width: 70px;
+height: 70px;
+background-color: var(--cor-vermelho);
+border-radius: 50%;
+color: var(--cor-branca);
+font-size: 2rem;
+padding: 18px;
+margin-top: -70px;
+}
 
-  /* Estilo para a frase de efeito */
-  .no-pets-section .text-muted {
-      font-size: 0.95rem;
-      color: #888 !important;
-      margin-top: 20px !important;
-  }
-
-
-  /* -------------------------------------------------------------------------- */
-  /* Estilos para os Cards de Pets (Quando há pets cadastrados)                 */
-  /* -------------------------------------------------------------------------- */
-  .pet-card {
-      background-color: #fff;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-      overflow: hidden; /* Garante que a imagem respeite o border-radius */
-      transition: all 0.3s ease-in-out;
-      height: 100%; /* Garante que todos os cards na grid tenham a mesma altura */
-      display: flex;
-      flex-direction: column;
-  }
-
-  .pet-card:hover {
-      transform: translateY(-5px); /* Efeito de levantar no hover */
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
-  }
-
-  .pet-card-img {
-      width: 100%;
-      height: 200px; /* Altura fixa para a imagem */
-      overflow: hidden;
-  }
-
-  .pet-card-img img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover; /* Recorta a imagem para preencher o espaço */
-      transition: transform 0.3s ease-in-out;
-  }
-
-  .pet-card:hover .pet-card-img img {
-      transform: scale(1.05); /* Pequeno zoom na imagem no hover */
-  }
-
-  .pet-card-body {
-      padding: 15px 20px; /* Padding interno do corpo do card */
-      flex-grow: 1; /* Permite que o corpo ocupe o espaço restante */
-  }
-
-  .pet-name {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--cor-dark);
-      margin-bottom: 0; /* Ajuste para alinhar com o ícone de gênero */
-  }
-
-  .pet-gender-male {
-      color: var(--pet-gender-male); /* Cor azul */
-      font-size: 1.2rem;
-  }
-
-  .pet-gender-female {
-      color: var(--pet-gender-female); /* Cor rosa */
-      font-size: 1.2rem;
-  }
-
-  .pet-info {
-      font-size: 0.9rem;
-      color: var(--cor-secundaria);
-      margin-top: 5px;
-      margin-bottom: 10px;
-  }
-
-  .pet-card-actions {
-      padding: 15px 20px;
-      border-top: 1px solid #eee; /* Linha divisória sutil */
-      background-color: #fcfcfc; /* Fundo ligeiramente diferente para a área de ações */
-  }
-
-  .status-badge {
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-weight: 600;
-      font-size: 0.85rem;
-  }
-
-  .action-buttons .btn {
-      width: 40px; /* Largura fixa para botões de ícone */
-      height: 40px; /* Altura fixa para botões de ícone */
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%; /* Botões de ação circulares */
-      transition: all 0.2s ease;
-      font-size: 1rem;
-  }
-
-  .action-buttons .btn-outline-danger:hover {
-      background-color: var(--cor-vermelho);
-  }
-
-
-  /* Media Queries para Responsividade (Mobile First) */
-  @media (max-width: 767.98px) {
-      .profile-card {
-          padding: 20px;
-      }
-      .header-pets-section {
-          flex-direction: column; /* Coloca o título e o botão em linhas separadas */
-          align-items: flex-start !important;
-      }
-      .section-title-pets {
-          font-size: 1.8rem;
-          margin-bottom: 15px !important;
-      }
-      .btn-add-pet-header {
-          width: 100%; /* Botão do cabeçalho ocupa a largura total */
-      }
-
-      .no-pets-section {
-          padding: 30px 20px;
-      }
-      .no-pets-section .section-title {
-          font-size: 1.6rem;
-      }
-      .no-pets-section .section-description {
-          font-size: 1rem;
-      }
-      .custom-btn-add-pet {
-          width: 100%; /* Botão ocupa a largura total em telas pequenas */
-          padding: 12px 25px;
-      }
-  }
-  .modal-header{
-    display: flex;
-    flex-direction: column !important;
-  }
-
-  .modal-header i{
-    width: 70px;
-    height: 70px;
-    background-color: var(--cor-vermelho);
-    border-radius: 50%;
-    color: var(--cor-branca);
-    font-size: 2rem;
-    padding: 18px;
-    margin-top: -70px;
-  }
-
-  /* ==========================================================================
-   TOAST - CORREÇÕES CRÍTICAS
-   ========================================================================== */
+/* ==========================================================================
+ TOAST - CORREÇÕES CRÍTICAS
+ ========================================================================== */
 .toast {
-    position: fixed;
-    top: 2rem;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 9999;
-    display: none;
-    align-items: center;
-    min-width: 350px;
-    max-width: 90%;
-    border-radius: 12px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-    overflow: hidden;
-    font-family: "Poppins", sans-serif;
-    background-color: #d1fae5; /* Verde claro padrão */
-    color: #065f46; /* Verde escuro */
+position: fixed;
+top: 2rem;
+left: 50%;
+transform: translateX(-50%);
+z-index: 9999;
+display: none;
+align-items: center;
+min-width: 350px;
+max-width: 90%;
+border-radius: 12px;
+box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+overflow: hidden;
+font-family: "Poppins", sans-serif;
+background-color: #d1fae5; /* Verde claro padrão */
+color: #065f46; /* Verde escuro */
 }
 
 .toast.success {
-    background-color: #d1fae5;
-    color: #065f46;
-    border: 1px solid #a7f3d0;
+background-color: #d1fae5;
+color: #065f46;
+border: 1px solid #a7f3d0;
 }
 
 .toast.danger {
-    background-color: #fee2e2;
-    color: #991b1b;
-    border: 1px solid #fecaca;
+background-color: #fee2e2;
+color: #991b1b;
+border: 1px solid #fecaca;
 }
 
 .toast.warning {
-    background-color: #fef3c7;
-    color: #92400e;
-    border: 1px solid #fde68a;
+background-color: #fef3c7;
+color: #92400e;
+border: 1px solid #fde68a;
 }
 
 .toast-icon {
-    flex-shrink: 0;
-    width: 60px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
+flex-shrink: 0;
+width: 60px;
+height: 60px;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 1.5rem;
 }
 
 .toast-content {
-    flex-grow: 1;
-    padding: 1rem;
+flex-grow: 1;
+padding: 1rem;
 }
 
 .toast-message {
-    margin: 0;
-    font-weight: 500;
-    font-size: 1rem;
-    line-height: 1.4;
+margin: 0;
+font-weight: 500;
+font-size: 1rem;
+line-height: 1.4;
 }
 
 .toast-progress-bar {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 4px;
-    background-color: #34d399;
+position: absolute;
+bottom: 0;
+left: 0;
+width: 100%;
+height: 4px;
+background-color: #34d399;
 }
 
 .toast.success .toast-progress-bar {
-    background-color: #34d399;
+background-color: #34d399;
 }
 
 .toast.danger .toast-progress-bar {
-    background-color: #f87171;
+background-color: #f87171;
 }
 
 .toast.warning .toast-progress-bar {
-    background-color: #f59e0b;
+background-color: #f59e0b;
 }
 
 /* Animações corrigidas */
 @keyframes progress {
-    0% { width: 100%; }
-    100% { width: 0%; }
+0% { width: 100%; }
+100% { width: 0%; }
 }
 
 /* Garantir que o toast fique acima de tudo */
 .toast {
-    z-index: 9999 !important;
+z-index: 9999 !important;
 }
 
-  /* Estilos para o botão de trocar banner */
+/* Estilos para o botão de trocar banner */
 .banner-actions {
-    position: absolute;
-    bottom: 15px;
-    right: 15px;
+position: absolute;
+bottom: 15px;
+right: 15px;
 }
 
 .btn-change-banner {
-    background-color:   var(--cor-laranja-pastel) !important;
-    opacity: 0.9;
-    border: none;
-    border-radius: 20px;
-    padding: 8px 15px;
-    font-size: 0.85rem;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    color: var(--cor-branca);
+background-color:   var(--cor-laranja-pastel) !important;
+opacity: 0.9;
+border: none;
+border-radius: 20px;
+padding: 8px 15px;
+font-size: 0.85rem;
+transition: all 0.3s ease;
+box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+color: var(--cor-branca);
 }
 
 .btn-change-banner:hover {
-    background-color: var(--cor-laranja-pastel) !important;
-    opacity: 1;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    color: var(--cor-branca);
+background-color: var(--cor-laranja-pastel) !important;
+opacity: 1;
+transform: translateY(-2px);
+box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+color: var(--cor-branca);
 }
 
 /* Ajuste de posicionamento do banner */
 .profile-card .banner {
-    position: relative;
+position: relative;
 }
 
 /* Estilos para as opções de banner no modal */
 .banner-option {
-    cursor: pointer;
-    border: 3px solid transparent;
-    border-radius: 10px;
-    padding: 5px;
-    transition: all 0.3s ease;
-    text-align: center;
+cursor: pointer;
+border: 3px solid transparent;
+border-radius: 10px;
+padding: 5px;
+transition: all 0.3s ease;
+text-align: center;
 }
 
 .banner-option:hover {
-    border-color: var(--cor-rosa-pastel);
-    transform: scale(1.05);
+border-color: var(--cor-rosa-pastel);
+transform: scale(1.05);
 }
 
 .banner-option.active {
-    border-color: var(--cor-rosa-pastel);
-    background-color: rgba(155, 0, 0, 0.1);
+border-color: var(--cor-rosa-pastel);
+background-color: rgba(155, 0, 0, 0.1);
 }
 
 .banner-option img {
-    border-radius: 8px;
-    width: 100%;
-    height: 120px;
-    object-fit: cover;
+border-radius: 8px;
+width: 100%;
+height: 120px;
+object-fit: cover;
 }
-
 
 button.btn-close:active{
-    border: none !important;
-    box-shadow: none !important
+border: none !important;
+box-shadow: none !important
 }
 button.btn-close:focus{
-    border: none !important;
-    box-shadow: none !important
+border: none !important;
+box-shadow: none !important
 }
-
 
 #saveBanner{
-  background-color: var(--cor-verde-pastel) !important;
-  border: none;
-  box-shadow: none;
+background-color: var(--cor-verde-pastel) !important;
+border: none;
+box-shadow: none;
 }
 #modalBanner{
-  display: flex !important;
-  justify-content: space-between !important;
-  align-items: center !important;
-      font-family: "Poppins", sans-serif;
-    font-weight: bold;
+display: flex !important;
+justify-content: space-between !important;
+align-items: center !important;
+    font-family: "Poppins", sans-serif;
+  font-weight: bold;
+}
+
+/* ==========================================================================
+  ESTILOS ESPECÍFICOS PARA A PÁGINA DE ANÁLISE DE PETS
+  ========================================================================== */
+.btn-aprovar-pet {
+  background-color: var(--cor-verde-pastel);
+  border: none;
+  color: var(--cor-branca);
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.btn-aprovar-pet:hover:not(:disabled) {
+  background-color: #198754;
+  transform: translateY(-1px);
+}
+
+.btn-aprovar-pet:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pet-info {
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+/* Badge de contador na sidebar */
+.sidebar-sticky-wrapper .badge {
+  font-size: 0.7rem;
+  padding: 4px 8px;
+}
+
+/* Estilos para informações adicionais nos cards de análise */
+.pet-info strong {
+  color: var(--cor-cinza-texto);
+}
+
+/* Destaque para o status "Em Análise" */
+.status-badge.bg-warning {
+  background-color: var(--cor-laranja-pastel) !important;
+  color: var(--cor-branca) !important;
+}
+
+/* FADE-OUT NA REMOÇÃO */
+.fade-out {
+    opacity: 0;
+    transform: scale(0.95);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+/* Garantir que os cards tenham transição suave */
+.pet-card {
+    transition: opacity 0.4s ease, transform 0.4s ease;
 }
