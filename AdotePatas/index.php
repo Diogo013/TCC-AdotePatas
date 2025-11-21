@@ -459,7 +459,7 @@ if ($logado && $user_tipo == 'usuario') {
     <img src="images/index/logo-nome.svg" alt="logo da marca adote patas" class="img-fluid" width="150">
       <div class="text-center ms-3">
         <h1 class="titulo-direitos" style="color: var(--cor-vermelho-claro); font-weight: bold;">Conectando pets a lares cheios de amor.</h1>
-        <p style="color: var(--cor-cinza-texto);">© <?php echo date("Y") ?> Todos os direitos reservados </p>
+        <p style="color: var(--cor-cinza-texto);">Adote Patas © <?php echo date("Y") ?>. Todos os direitos reservados </p>
       </div>
   </section>
 

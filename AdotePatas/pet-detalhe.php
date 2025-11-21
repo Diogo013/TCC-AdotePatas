@@ -240,12 +240,12 @@ $sql = "SELECT
         <div class="detalhe-main-content">
             
             <div class="detalhe-fotos">
-                <div class="detalhe-foto-principal shadow-sm" style="border-radius: 20px">
-                    <img id="foto-principal-img" 
-                         src="<?php echo $foto_principal; ?>" 
-                         alt="Foto principal de <?php echo htmlspecialchars($pet['nome']); ?>"
-                         onerror="this.src='<?php echo $base_path; ?>images/perfil/teste.jpg';">
-                </div>
+<div class="detalhe-foto-principal shadow-sm clickable-image" style="border-radius: 20px; cursor: pointer;">
+    <img id="foto-principal-img" 
+         src="<?php echo $foto_principal; ?>" 
+         alt="Foto principal de <?php echo htmlspecialchars($pet['nome']); ?>"
+         onerror="this.src='<?php echo $base_path; ?>images/perfil/teste.jpg';">
+</div>
                 
                 <?php if (count($pet_fotos) > 1): // Só mostra thumbnails se tiver mais de 1 foto ?>
                 <div class="detalhe-thumbnails">
@@ -369,10 +369,71 @@ $sql = "SELECT
         <?php endif; ?>
 
     </main>
+    <!-- Modal para imagem ampliada -->
+<div id="imageModal" class="image-modal">
+    <span class="close-modal">&times;</span>
+    <img class="modal-content" id="modalImage">
+</div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     
     <script src="<?php echo $base_path; ?>assets/js/pages/index/offcanvas-fix.js"></script> 
+
+    <script>
+        // Modal de imagem ampliada
+const fotoPrincipal = document.querySelector('.detalhe-foto-principal');
+const modal = document.getElementById('imageModal');
+const modalImg = document.getElementById('modalImage');
+const closeModal = document.querySelector('.close-modal');
+
+if (fotoPrincipal && modal && modalImg) {
+    // Abrir modal ao clicar na imagem principal
+    fotoPrincipal.addEventListener('click', function() {
+        const imgSrc = document.getElementById('foto-principal-img').src;
+        modalImg.src = imgSrc;
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden'; // Previne scroll
+    });
+
+    // Fechar modal com o X
+    closeModal.addEventListener('click', function() {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    });
+
+    // Fechar modal clicando fora da imagem
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+    });
+
+    // Fechar com ESC key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.style.display === 'block') {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+    });
+}
+
+// Atualizar função mudarFotoPrincipal para funcionar com o modal
+function mudarFotoPrincipal(novaSrc, elementoClicado) {
+    const imgPrincipal = document.getElementById('foto-principal-img');
+    if (imgPrincipal) {
+        imgPrincipal.src = novaSrc;
+    }
+    
+    // Atualiza a classe 'active'
+    const thumbnails = document.querySelectorAll('.detalhe-thumbnails img');
+    thumbnails.forEach(img => img.classList.remove('active'));
+    
+    if (elementoClicado) {
+        elementoClicado.classList.add('active');
+    }
+}
+    </script>
 
         <script>
 

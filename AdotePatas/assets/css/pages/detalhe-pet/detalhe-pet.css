@@ -341,12 +341,102 @@
   color: var(--cor-vermelho) !important;
 }
 
+/* ==========================================================================
+   MODAL DE IMAGEM AMPLIADA
+   ========================================================================== */
+.image-modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(2px);
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 70%;
+    height: 70%;
+    object-fit: contain;
+    border-radius: 10px;
+}
+
+.close-modal {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    color: #fff;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 2001;
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    transition: color 0.3s ease;
+}
+
+.close-modal:hover {
+    color: var(--cor-vermelho);
+}
+
+/* Animações */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes zoomIn {
+    from { transform: translate(-50%, -50%) scale(0.8); }
+    to { transform: translate(-50%, -50%) scale(1); }
+}
+
+.modal-content {
+    animation: zoomIn 0.3s ease;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 90%;
+        height: 60%;
+    }
+    
+    .close-modal {
+        font-size: 30px;
+        top: 15px;
+        right: 20px;
+    }
+}
+
+@media (max-width: 576px) {
+    .modal-content {
+        width: 95%;
+        height: 50%;
+    }
+}
+
+.clickable-image {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.clickable-image:hover {
+    transform: scale(1.01);
+}
+
 /* Estilos para a nova galeria */
         .detalhe-foto-principal img {
             width: 100%;
             height: 450px; /* Altura fixa para a imagem principal */
             object-fit: cover; /* Garante que a imagem cubra a área */
             border-radius: 12px;
+            cursor: pointer;
         }
         .detalhe-thumbnails {
             display: grid;
