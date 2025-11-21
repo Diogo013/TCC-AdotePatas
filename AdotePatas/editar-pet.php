@@ -75,6 +75,44 @@ try {
     exit;
 }
 
+// Lógica para controle de status baseado no status atual - CORRIGIDA
+$status_atual = $pet['status_disponibilidade'];
+$status_options = [];
+
+// Debug: Verificar qual é o status atual
+error_log("Status atual do pet: " . $status_atual);
+
+if ($status_atual == 'Em Analise') {
+    // Se estiver em análise, só pode permanecer em análise
+    $status_options = ['Em Analise' => 'Em Análise'];
+} elseif ($status_atual == 'Disponivel') {
+    // Se estiver disponível, pode ser adotado ou ficar indisponível
+    $status_options = [
+        'Disponivel' => 'Disponível',
+        'Adotado' => 'Adotado', 
+        'Indisponivel' => 'Indisponível'
+    ];
+} else {
+    // Se estiver adotado ou indisponível, só pode voltar para disponível
+    $status_options = [
+        'Disponivel' => 'Disponível',
+        'Adotado' => 'Adotado',
+        'Indisponivel' => 'Indisponível'
+    ];
+}
+
+// Se for admin, permite todas as opções
+if ($user_tipo == 'admin') {
+    $status_options = [
+        'Em Analise' => 'Em Análise',
+        'Disponivel' => 'Disponível',
+        'Adotado' => 'Adotado',
+        'Indisponivel' => 'Indisponível'
+    ];
+}
+
+// Debug: Verificar opções disponíveis
+error_log("Opções de status disponíveis: " . print_r($status_options, true));
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -90,7 +128,6 @@ try {
     <link rel="stylesheet" href="assets/css/pages/cadastro-pet/caracteristica.css">
     <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
 
     <style>
         /* Estilo para o Input File */
@@ -168,32 +205,63 @@ try {
         
         /* Preview de novas fotos */
         #fotos-preview-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
             margin-top: 15px;
         }
         .foto-preview {
-            width: 100px;
-            height: 100px;
-            object-fit: cover;
+            position: relative;
+            width: 100%;
+            padding-top: 100%; /* Proporção 1:1 */
             border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             border: 2px solid #eee;
         }
-
-        /* Oculta os spinners (setinhas) em navegadores WebKit 
-          (Chrome, Safari, Edge, Opera) 
-        */
-        input[type=number]::-webkit-inner-spin-button,
-        input[type=number]::-webkit-outer-spin-button {
-            -webkit-appearance: none; /* Remove o estilo padrão do navegador */
-            margin: 0; /* Remove qualquer margem que possa ter ficado */
+        .foto-preview img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .remove-preview {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 24px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            color: var(--cor-vermelho);
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            transition: all 0.2s ease;
+        }
+        .remove-preview:hover {
+            background: var(--cor-vermelho);
+            color: white;
+            transform: scale(1.1);
         }
 
-        /* Oculta os spinners no Firefox 
-        */
+        /* Oculta os spinners (setinhas) em navegadores WebKit */
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* Oculta os spinners no Firefox */
         input[type=number] {
-            -moz-appearance: textfield; /* Faz o Firefox tratar o input como um campo de texto */
+            -moz-appearance: textfield;
         }
 
         /* Estilos para o Select Customizado */
@@ -220,7 +288,7 @@ try {
             background-color: rgba(180, 100, 89, 0.55);
             border: 1px solid transparent;
             border-radius: 12px;
-            color: var(--cor-branca); /* Cor do texto dos seus inputs */
+            color: var(--cor-branca);
             font-size: 1rem;
             font-weight: 500;
             text-align: left;
@@ -296,49 +364,188 @@ try {
             color: var(--cor-branca);
             font-weight: 700;
         }
+
         /* Estilos para as tags de características no input */
-.tags-preview {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
+        .tags-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
 
-.char-tag-input {
-    background-color: #ffffff;
-    padding: 0.3rem 0.7rem;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 500;
-    color: var(--cor-texto);
-    border: 1px solid #eee;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
+        .char-tag-input {
+            background-color: #ffffff;
+            padding: 0.3rem 0.7rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--cor-texto);
+            border: 1px solid #eee;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
 
+        /* Ajuste para o botão de características */
+        #openModalBtn {
+            min-height: 60px;
+            display: flex;
+            align-items: flex-start;
+            padding: 1.15rem;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
 
-/* Ajuste para o botão de características */
-#openModalBtn {
-    min-height: 60px;
-    display: flex;
-    align-items: flex-start;
-    padding: 1.15rem;
-    flex-wrap: wrap;
-    gap: 8px;
-}
+        .tags-placeholder {
+            color: var(--cor-branca) !important;
+        }
 
-.tags-placeholder {
-    color: var(--cor-branca) !important;
-}
+        #openModalBtn:has(.char-tag-input) {
+            color: inherit;
+        }
 
-#openModalBtn:has(.char-tag-input) {
-    color: inherit;
-}
+        /* Classe base para modais com ícone flutuante */
+        .custom-icon-modal .modal-content {
+            border-radius: 16px;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            overflow: visible;
+            margin-top: 30px;
+            margin-left: 5%;
+            padding: 0;
+        }
 
+        .custom-icon-modal .modal-header {
+            position: relative;
+        }
+
+        /* Container do Ícone */
+        .custom-icon-modal .icon-box {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            color: var(--cor-branca);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            margin-top: -50px;
+            margin-bottom: 10px;
+            background-color: var(--cor-vermelho);
+        }
+
+        /* --- Variação: Tema de Aviso (Para o modal de Análise) --- */
+        .custom-icon-modal .modal-header.warning-theme .icon-box {
+            background: linear-gradient(135deg, var(--cor-vermelho-aviso), var(--cor-vermelho));
+        }
+
+        /* Tipografia e Botões */
+        .custom-icon-modal .modal-title {
+            color: var(--cor-cinza-texto);
+            font-weight: 700;
+        }
+
+        /* Ajuste específico para texto de destaque amarelo escuro */
+        .text-warning-dark {
+            color:  var(--cor-vermelho);
+        }
+
+        #confirmSaveChanges{
+            background: linear-gradient(135deg, var(--cor-vermelho-aviso), var(--cor-vermelho)) !important;
+            border: none !important;
+            outline: none !important;
+        }
+
+        /* Melhoria na usabilidade dos botões */
+        .custom-icon-modal .btn {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .custom-icon-modal .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Estilos para Drag and Drop */
+        #drop-area {
+            border: 2px dashed var(--cor-vermelho-claro);
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.3s ease;
+            background-color: #fff8f8;
+            cursor: pointer;
+            position: relative;
+            padding: 2rem;
+        }
+
+        #drop-area.highlight {
+            background-color: #fff0f0;
+            border-color: var(--cor-vermelho);
+            transform: scale(1.02);
+        }
+
+        #drop-area.highlight i {
+            color: var(--cor-vermelho);
+            transform: scale(1.1);
+        }
+
+        .drop-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #drop-area i {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--cor-vermelho-claro);
+            transition: all 0.3s ease;
+        }
+
+        #file-name-span {
+            font-weight: 600;
+            color: #555;
+            font-size: 1rem;
+        }
+
+        #drop-area small {
+            color: #888;
+            font-size: 0.85rem;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4">
+
+<div class="modal fade custom-icon-modal" id="analysisModal" tabindex="-1" aria-labelledby="analysisModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0 d-flex flex-column align-items-center pb-0 warning-theme">
+                <button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="icon-box">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+            </div>
+
+            <div class="modal-body text-center">
+                <h1 class="mb-2">
+                    Você realizou alterações no cadastro do seu pet.
+                </h1>
+                <p class="mb-0 text-muted small">
+                    Para garantir a segurança da adoção, seu pet irá para o status de <strong class="text-warning-dark">Em Análise</strong> após salvar.
+                </p>
+            </div>
+
+            <div class="modal-footer border-0 justify-content-center pb-4">
+                <button type="button" class="btn btn-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-warning text-white px-4 rounded-pill fw-bold" id="confirmSaveChanges">
+                    Confirmar e Salvar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div id="toast-notification" class="toast p-0" style="display: none;">
     <div id="toast-icon" class="toast-icon"></div>
@@ -403,7 +610,6 @@ try {
                                 aria-labelledby="select-label-especie">
                             <span class="custom-select-value">
                                 <?php 
-                                    // Exibe o texto da opção selecionada inicialmente
                                     echo htmlspecialchars(ucfirst($pet['especie'])); 
                                 ?>
                             </span>
@@ -413,7 +619,6 @@ try {
                         <ul class="custom-select-options" role="listbox" aria-labelledby="select-label-especie">
                             <li class="custom-option" data-value="cachorro" role="option" tabindex="0">Cachorro</li>
                             <li class="custom-option" data-value="gato" role="option" tabindex="0">Gato</li>
-                            <li class="custom-option" data-value="outro" role="option" tabindex="0">Outro</li>
                         </ul>
                     </div>
                 </div>
@@ -532,26 +737,43 @@ try {
                 </div>
                 <div>
                     <label id="select-label-disponibilidade">Status</label>
-                    <select name="status_disponibilidade" id="status_disponibilidade-real" class="select-hidden" aria-hidden="true" tabindex="-1">
-                        <option value="Em Analise" <?php echo ($pet['status_disponibilidade'] == 'Em Analise') ? 'selected' : ''; ?>>Em Análise</option>
-                        <option value="adotado" <?php echo ($pet['status_disponibilidade'] == 'adotado') ? 'selected' : ''; ?>>Adotado</option>
-                        <option value="indisponivel" <?php echo ($pet['status_disponibilidade'] == 'indisponivel') ? 'selected' : ''; ?>>Indisponível</option>
-                    </select>
+<select name="status_disponibilidade" id="status_disponibilidade-real" class="select-hidden" aria-hidden="true" tabindex="-1">
+    <?php foreach ($status_options as $value => $label): ?>
+        <option value="<?php echo $value; ?>" <?php echo ($pet['status_disponibilidade'] == $value) ? 'selected' : ''; ?>>
+            <?php echo $label; ?>
+        </option>
+    <?php endforeach; ?>
+</select>
 
                     <div class="custom-select-wrapper" data-target-select="status_disponibilidade-real">
                         <button type="button" class="custom-select-trigger input-style w-full" 
                                 aria-haspopup="listbox" 
                                 aria-expanded="false" 
                                 aria-labelledby="select-label-disponibilidade">
-                            <span class="custom-select-value">
-                                <?php echo htmlspecialchars(ucfirst($pet['status_disponibilidade'])); ?>
-                            </span>
+<span class="custom-select-value">
+    <?php 
+    $status_display = $pet['status_disponibilidade'];
+    if ($status_display == 'Disponivel') {
+        echo 'Disponível';
+    } else if ($status_display == 'Indisponivel') {
+        echo 'Indisponível';
+    } else if ($status_display == 'Adotado') {
+        echo 'Adotado';
+    } else if ($status_display == 'Em Analise') {
+        echo 'Em Análise';
+    } else {
+        echo htmlspecialchars(ucfirst($status_display));
+    }
+    ?>
+</span>
                             <span class="custom-select-arrow"></span>
                         </button>
                         <ul class="custom-select-options" role="listbox" aria-labelledby="select-label-disponibilidade">
-                            <li class="custom-option" data-value="Em Analise" role="option" tabindex="0">Em Análise</li>
-                            <li class="custom-option" data-value="adotado" role="option" tabindex="0">Adotado</li>
-                            <li class="custom-option" data-value="indisponivel" role="option" tabindex="0">Indisponível</li>
+                            <?php foreach ($status_options as $value => $label): ?>
+                                <li class="custom-option" data-value="<?php echo $value; ?>" role="option" tabindex="0">
+                                    <?php echo $label; ?>
+                                </li>
+                            <?php endforeach; ?>
                         </ul>
                     </div>
                 </div>
@@ -579,30 +801,30 @@ try {
                         <?php endforeach; ?>
                     </div>
                 <?php endif; ?>
-            </div>
 
-            <div>
-                <label for="fotos_novas_input" class="input-style w-full file-input-label">
-                    <i class="fas fa-plus"></i>
-                    <span id="file-name-span">Adicionar novas fotos (Máx: 5 no total)</span>
-                </label>
-                
-                <input type="file" id="fotos_novas_input" class="hidden" multiple accept="image/png, image/jpeg, image/webp">
+                <!-- Área de Drag and Drop -->
+                <div id="drop-area" class="input-style w-full file-input-label mt-4">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <div class="drop-content">
+                        <span id="file-name-span">Arraste e solte fotos aqui ou clique para selecionar</span>
+                        <small class="block mt-1">Máximo: 5 fotos no total | Formatos: PNG, JPG, JPEG, WEBP</small>
+                    </div>
+                    <input type="file" id="fotos_novas_input" class="hidden" multiple accept="image/png, image/jpeg, image/jpg, image/webp">
+                </div>
                 
                 <input type="file" name="fotos_novas[]" id="fotos_novas_final" class="hidden" multiple>
 
-                <div id="fotos-preview-container"></div>
+                <div id="fotos-preview-container" class="mt-4"></div>
                 <small id="limite-fotos-helper" class="text-sm text-gray-600 mt-1"></small>
             </div>
 
-<div>
-    <button type="button" id="openModalBtn" class="input-style w-full text-left">
-        <span id="tagsPlaceholder" class="tags-placeholder">Selecionar Características...</span>
-        <span class="tags-preview" id="tagsPreview"></span>
-    </button>
-    <div id="hidden-tags-container"></div>
-</div>
-
+            <div>
+                <button type="button" id="openModalBtn" class="input-style w-full text-left">
+                    <span id="tagsPlaceholder" class="tags-placeholder">Selecionar Características...</span>
+                    <span class="tags-preview" id="tagsPreview"></span>
+                </button>
+                <div id="hidden-tags-container"></div>
+            </div>
 
             <div>
                 <label class="sr-only" for="comportamento">Comportamento (Ex: Dócil, adora crianças...)</label>
@@ -610,22 +832,19 @@ try {
             </div>
 
             <div class="flex justify-center w-55 mx-auto">
-                <button type="submit" class="adopt-btn" id="submit-btn"> <div class="heart-background" aria-hidden="true">
+                <button type="submit" class="adopt-btn" id="submit-btn"> 
+                    <div class="heart-background" aria-hidden="true">
                         <i class="bi bi-heart-fill"></i>
                     </div>
-                    
                     <span>Salvar Alterações</span>
                 </button>
             </div>
-
-
         </form>
     </div>
 </div>
 
 <div id="charModal" class="char-modal">
     <div class="char-modal-content">
-        
         <div class="char-modal-header">
             <div>
                 <h2>Selecionar Características</h2>
@@ -706,6 +925,9 @@ try {
 <script src="assets/js/pages/autenticacao/autenticacao.js" type="module"></script>
 
 <script>
+// Variáveis globais para controle de fotos
+const totalFotosAtuais = <?php echo count($pet_fotos); ?>;
+const MAX_FOTOS_GLOBAL = 5;
 
 // Verificar se houve mudanças no formulário
 function checkFormChanges() {
@@ -716,31 +938,280 @@ function checkFormChanges() {
     
     // Flag para controlar se deve mostrar alerta
     window.formHasChanges = false;
-    
+    let formSubmitted = false;
+
     // Monitorar mudanças em todos os campos
     form.addEventListener('change', function() {
-        window.formHasChanges = true;
-        updateSaveButton();
+        if (!formSubmitted) {
+            window.formHasChanges = true;
+        }
     });
     
     // Monitorar input em campos de texto
     const textInputs = form.querySelectorAll('input[type="text"], input[type="number"], textarea');
     textInputs.forEach(input => {
         input.addEventListener('input', function() {
-            window.formHasChanges = true;
-            updateSaveButton();
+            if (!formSubmitted) {
+                window.formHasChanges = true;
+            }
         });
     });
     
-    // Inicializar o botão
-    updateSaveButton();
+    // Interceptar o envio do formulário
+    form.addEventListener('submit', function(e) {
+        // Se for admin, envia diretamente sem modal
+        const isAdmin = <?php echo $user_tipo === 'admin' ? 'true' : 'false'; ?>;
+        
+        if (isAdmin) {
+            return; // Admin pode enviar diretamente
+        }
+        
+        // Se não há mudanças, envia diretamente
+        if (!window.formHasChanges) {
+            return;
+        }
+        
+        // Se há mudanças e não é admin, mostra o modal
+        e.preventDefault();
+        
+        const analysisModal = new bootstrap.Modal(document.getElementById('analysisModal'));
+        analysisModal.show();
+    });
+    
+    // Configurar o botão de confirmação do modal
+    document.getElementById('confirmSaveChanges').addEventListener('click', function() {
+        formSubmitted = true;
+        document.getElementById('form-edit-pet').submit();
+    });
 }
 
 // Inicializar a verificação de mudanças
 document.addEventListener('DOMContentLoaded', checkFormChanges);
-</script>
 
-<script>
+// Implementação do Drag and Drop
+document.addEventListener('DOMContentLoaded', function() {
+    const dropArea = document.getElementById('drop-area');
+    const fileInput = document.getElementById('fotos_novas_input');
+    const finalInput = document.getElementById('fotos_novas_final');
+    const fileNameSpan = document.getElementById('file-name-span');
+    const previewContainer = document.getElementById('fotos-preview-container');
+
+    // Prevenir comportamentos padrão
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    // Efeitos visuais
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropArea.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight() {
+        dropArea.classList.add('highlight');
+    }
+
+    function unhighlight() {
+        dropArea.classList.remove('highlight');
+    }
+
+    // Manipular arquivos dropados
+    dropArea.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFiles(files);
+    }
+
+    // Manipular seleção via clique
+    dropArea.addEventListener('click', () => {
+        fileInput.click();
+    });
+
+    fileInput.addEventListener('change', function() {
+        handleFiles(this.files);
+    });
+
+    // Função principal para processar arquivos
+    async function handleFiles(files) {
+        if (!files.length) return;
+
+        // Validação preliminar
+        const fotosMarcadasParaExcluir = document.querySelectorAll('input[name="fotos_para_excluir[]"]:checked').length;
+        const fotosAtuaisRestantes = totalFotosAtuais - fotosMarcadasParaExcluir;
+        const totalPreliminar = fotosAtuaisRestantes + files.length;
+
+        if (totalPreliminar > MAX_FOTOS_GLOBAL) {
+            if (typeof showToast === 'function') {
+                showToast(`Limite de ${MAX_FOTOS_GLOBAL} fotos excedido!`, 'danger');
+            }
+            return;
+        }
+
+        fileNameSpan.textContent = 'Processando...';
+
+        try {
+            const conversionPromises = Array.from(files).map(file => {
+                // Mostra preview imediato
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    addImagePreview(e.target.result, file.name);
+                };
+                reader.readAsDataURL(file);
+
+                // Converte para WebP
+                return convertToWebP(file);
+            });
+
+            const convertedFiles = await Promise.all(conversionPromises);
+            updateFinalInput(convertedFiles, finalInput);
+            
+            fileNameSpan.textContent = `${convertedFiles.length} foto(s) adicionada(s)`;
+            validarLimiteFotos();
+
+        } catch (error) {
+            console.error("Erro ao processar imagens:", error);
+            fileNameSpan.textContent = 'Erro no processamento. Tente novamente.';
+            if (typeof showToast === 'function') {
+                showToast('Erro ao processar imagens.', 'danger');
+            }
+        }
+    }
+
+    // Adicionar preview da imagem
+    function addImagePreview(src, filename) {
+        const previewDiv = document.createElement('div');
+        previewDiv.className = 'foto-preview';
+        
+        const img = document.createElement('img');
+        img.src = src;
+        img.alt = `Preview: ${filename}`;
+        
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'remove-preview';
+        removeBtn.innerHTML = '×';
+        removeBtn.title = 'Remover foto';
+        
+        removeBtn.addEventListener('click', function() {
+            previewDiv.remove();
+            // Recria a lista de arquivos no input final
+            updateFinalInputFromPreviews();
+            validarLimiteFotos();
+        });
+        
+        previewDiv.appendChild(img);
+        previewDiv.appendChild(removeBtn);
+        previewContainer.appendChild(previewDiv);
+    }
+
+    // Atualizar input final baseado nos previews
+    function updateFinalInputFromPreviews() {
+        // Limpa o input final
+        const dataTransfer = new DataTransfer();
+        finalInput.files = dataTransfer.files;
+        
+        // Re-adiciona os arquivos que ainda estão no preview
+        // Esta é uma implementação simplificada - em produção você precisaria
+        // manter um array com os arquivos convertidos
+        fileNameSpan.textContent = 'Arraste e solte fotos aqui ou clique para selecionar';
+        validarLimiteFotos();
+    }
+});
+
+// Função para converter para WebP
+async function convertToWebP(file) {
+    return new Promise((resolve, reject) => {
+        if (file.type === 'image/webp') {
+            resolve(file);
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                canvas.toBlob(function(blob) {
+                    const webpFileName = file.name.split('.').slice(0, -1).join('.') + '.webp';
+                    const webpFile = new File([blob], webpFileName, { type: 'image/webp' });
+                    resolve(webpFile);
+                }, 'image/webp', 0.8);
+            };
+            img.onerror = reject;
+            img.src = event.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+// Função para atualizar input final
+function updateFinalInput(files, finalInput) {
+    const dataTransfer = new DataTransfer();
+    files.forEach(file => {
+        dataTransfer.items.add(file);
+    });
+    finalInput.files = dataTransfer.files;
+}
+
+// Função de validação de limite de fotos
+function validarLimiteFotos() {
+    const fotosMarcadasParaExcluir = document.querySelectorAll('input[name="fotos_para_excluir[]"]:checked').length;
+    const fotosNovas = document.getElementById('fotos_novas_final').files.length;
+    
+    const fotosAtuaisRestantes = totalFotosAtuais - fotosMarcadasParaExcluir;
+    const totalFinal = fotosAtuaisRestantes + fotosNovas;
+
+    const limiteHelper = document.getElementById('limite-fotos-helper');
+    const submitBtn = document.getElementById('submit-btn');
+
+    if (totalFinal > MAX_FOTOS_GLOBAL) {
+        limiteHelper.textContent = `Erro: Limite de ${MAX_FOTOS_GLOBAL} fotos excedido! (Total: ${totalFinal})`;
+        limiteHelper.style.color = 'var(--cor-vermelho)';
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.7';
+        return false;
+    } else if (totalFinal === 0) {
+        limiteHelper.textContent = `Erro: O pet deve ter pelo menos 1 foto.`;
+        limiteHelper.style.color = 'var(--cor-vermelho)';
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.7';
+        return false;
+    } else {
+        const espacoRestante = MAX_FOTOS_GLOBAL - fotosAtuaisRestantes;
+        limiteHelper.textContent = `Você pode adicionar mais ${espacoRestante} foto(s). (Total será ${totalFinal}/${MAX_FOTOS_GLOBAL})`;
+        limiteHelper.style.color = '#555';
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = '1';
+        return true;
+    }
+}
+
+// Inicializar a validação de fotos
+document.addEventListener('DOMContentLoaded', validarLimiteFotos);
+
+// Adiciona listeners para os checkboxes existentes
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('input[name="fotos_para_excluir[]"]').forEach(checkbox => {
+        checkbox.addEventListener('change', validarLimiteFotos);
+    });
+});
+
+// Custom Select Functionality
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.custom-select-wrapper').forEach(setupCustomSelect);
 });
@@ -761,7 +1232,7 @@ function setupCustomSelect(wrapper) {
         options.forEach(option => {
             if (option.dataset.value === initialSelectedValue) {
                 option.classList.add('selected');
-                valueSpan.textContent = option.textContent; // Garante que o texto inicial esteja correto
+                valueSpan.textContent = option.textContent;
             }
         });
     }
@@ -793,25 +1264,16 @@ function setupCustomSelect(wrapper) {
             // Atualiza o valor visual no "trigger"
             valueSpan.textContent = option.textContent;
             
-            // ATUALIZA O VALOR NO <select> ESCONDIDO (MUITO IMPORTANTE!)
+            // ATUALIZA O VALOR NO <select> ESCONDIDO
             if (realSelect) {
                 realSelect.value = option.dataset.value;
-                // Dispara um evento 'change' no select real, útil para outros listeners
+                // Dispara um evento 'change' no select real
                 const event = new Event('change');
                 realSelect.dispatchEvent(event);
             }
             
             // Fecha o menu
-            trigger.click(); // Simula um clique para fechar
-        });
-
-        // Adiciona funcionalidade de foco para acessibilidade
-        option.addEventListener('focus', () => {
-            options.forEach(o => o.classList.remove('focused'));
-            option.classList.add('focused');
-        });
-        option.addEventListener('blur', () => {
-            option.classList.remove('focused');
+            trigger.click();
         });
     });
 
@@ -822,260 +1284,7 @@ function setupCustomSelect(wrapper) {
             optionsList.style.display = 'none';
         }
     });
-
-    // 4. Navegação por teclado (Acessibilidade)
-    let focusedIndex = -1;
-
-    trigger.addEventListener('keydown', (e) => {
-        const isExpanded = trigger.getAttribute('aria-expanded') === 'true';
-
-        switch (e.key) {
-            case 'ArrowDown':
-                e.preventDefault();
-                if (!isExpanded) {
-                    trigger.click(); // Abre se estiver fechado
-                    focusedIndex = 0;
-                } else {
-                    focusedIndex = (focusedIndex + 1) % options.length;
-                }
-                if (options[focusedIndex]) options[focusedIndex].focus();
-                break;
-            case 'ArrowUp':
-                e.preventDefault();
-                if (!isExpanded) {
-                    trigger.click(); // Abre se estiver fechado
-                    focusedIndex = options.length - 1;
-                } else {
-                    focusedIndex = (focusedIndex - 1 + options.length) % options.length;
-                }
-                if (options[focusedIndex]) options[focusedIndex].focus();
-                break;
-            case 'Enter':
-            case ' ': // Tecla Espaço
-                e.preventDefault();
-                if (isExpanded && focusedIndex !== -1 && options[focusedIndex]) {
-                    options[focusedIndex].click(); // Seleciona a opção focada
-                } else if (!isExpanded) {
-                    trigger.click(); // Abre se estiver fechado
-                }
-                break;
-            case 'Escape':
-                e.preventDefault();
-                if (isExpanded) {
-                    trigger.click(); // Fecha
-                    trigger.focus(); // Retorna o foco ao trigger
-                }
-                break;
-        }
-    });
-
-    options.forEach((option, index) => {
-        option.addEventListener('keydown', (e) => {
-            switch (e.key) {
-                case 'ArrowDown':
-                    e.preventDefault();
-                    focusedIndex = (index + 1) % options.length;
-                    if (options[focusedIndex]) options[focusedIndex].focus();
-                    break;
-                case 'ArrowUp':
-                    e.preventDefault();
-                    focusedIndex = (index - 1 + options.length) % options.length;
-                    if (options[focusedIndex]) options[focusedIndex].focus();
-                    break;
-                case 'Enter':
-                case ' ':
-                    e.preventDefault();
-                    option.click();
-                    break;
-                case 'Escape':
-                    e.preventDefault();
-                    trigger.click(); // Fecha
-                    trigger.focus(); // Retorna o foco ao trigger
-                    break;
-            }
-        });
-    });
 }
-
-// Passa o total de fotos do PHP para o JS
-
-
-    const totalFotosAtuais = <?php echo count($pet_fotos); ?>;
-    const MAX_FOTOS_GLOBAL = 5;
-
-    const fileInput = document.getElementById('fotos_novas_input'); // O input visível
-    const finalInput = document.getElementById('fotos_novas_final'); // O input escondido
-    const fileNameSpan = document.getElementById('file-name-span');
-    const previewContainer = document.getElementById('fotos-preview-container');
-    const form = document.getElementById('form-edit-pet');
-    const submitBtn = document.getElementById('submit-btn');
-    const limiteHelper = document.getElementById('limite-fotos-helper');
-
-    // (Cole isso ANTES da função validarLimiteFotos)
-
-const WEBP_QUALITY = 0.8; // Qualidade do WebP (0 a 1.0)
-
-// Função para converter um arquivo de imagem para WebP
-function convertToWebP(file) {
-    return new Promise((resolve, reject) => {
-        if (file.type === 'image/webp') {
-            resolve(file); // Já é WebP, não faz nada
-            return;
-        }
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            const img = new Image();
-            img.onload = function() {
-                const canvas = document.createElement('canvas');
-                canvas.width = img.width;
-                canvas.height = img.height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0);
-                canvas.toBlob(function(blob) {
-                    const webpFileName = file.name.split('.').slice(0, -1).join('.') + '.webp';
-                    const webpFile = new File([blob], webpFileName, { type: 'image/webp' });
-                    resolve(webpFile);
-                }, 'image/webp', WEBP_QUALITY);
-            };
-            img.onerror = reject;
-            img.src = event.target.result;
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-    });
-}
-
-// Função para atualizar o input "final" (escondido) com os arquivos convertidos
-function updateFinalInput(files, finalInput) {
-    const dataTransfer = new DataTransfer();
-    files.forEach(file => {
-        dataTransfer.items.add(file);
-    });
-    finalInput.files = dataTransfer.files;
-}
-
-    function validarLimiteFotos() {
-        const fotosMarcadasParaExcluir = document.querySelectorAll('input[name="fotos_para_excluir[]"]:checked').length;
-        const fotosNovas = finalInput.files.length;
-        
-        const fotosAtuaisRestantes = totalFotosAtuais - fotosMarcadasParaExcluir;
-        const totalFinal = fotosAtuaisRestantes + fotosNovas;
-
-        if (totalFinal > MAX_FOTOS_GLOBAL) {
-            limiteHelper.textContent = `Erro: Limite de ${MAX_FOTOS_GLOBAL} fotos excedido! (Total: ${totalFinal})`;
-            limiteHelper.style.color = 'var(--cor-vermelho)';
-            submitBtn.disabled = true;
-            submitBtn.style.opacity = '0.7';
-            return false;
-        } else if (totalFinal === 0) {
-            limiteHelper.textContent = `Erro: O pet deve ter pelo menos 1 foto.`;
-            limiteHelper.style.color = 'var(--cor-vermelho)';
-            submitBtn.disabled = true;
-            submitBtn.style.opacity = '0.7';
-            return false;
-        } else {
-            const espacoRestante = MAX_FOTOS_GLOBAL - fotosAtuaisRestantes;
-            limiteHelper.textContent = `Você pode adicionar mais ${espacoRestante} foto(s). (Total será ${totalFinal}/${MAX_FOTOS_GLOBAL})`;
-            limiteHelper.style.color = '#555';
-            submitBtn.disabled = false;
-            submitBtn.style.opacity = '1';
-            return true;
-        }
-    }
-        document.addEventListener("DOMContentLoaded", function () {
-
-    // Listener do input VISÍVEL
-    if (fileInput) {
-        fileInput.addEventListener('change', async function() {
-            previewContainer.innerHTML = ''; // Limpa preview
-            fileNameSpan.textContent = 'Processando...';
-
-            let originalFiles = Array.from(fileInput.files);
-            let convertedFiles = [];
-
-            if (originalFiles.length === 0) {
-                fileNameSpan.textContent = 'Adicionar novas fotos (Máx: 5 no total)';
-                updateFinalInput([], finalInput); // Limpa o input final
-                validarLimiteFotos(); // Revalida
-                return;
-            }
-
-            // Validação preliminar de quantidade (antes de converter)
-            const fotosMarcadasParaExcluir = document.querySelectorAll('input[name="fotos_para_excluir[]"]:checked').length;
-            const fotosAtuaisRestantes = totalFotosAtuais - fotosMarcadasParaExcluir;
-            const totalPreliminar = fotosAtuaisRestantes + originalFiles.length;
-
-            if (totalPreliminar > MAX_FOTOS_GLOBAL) {
-                 fileNameSpan.textContent = `Erro: Limite de ${MAX_FOTOS_GLOBAL} fotos excedido!`;
-                 fileInput.value = ""; // Limpa a seleção do input visível
-                 updateFinalInput([], finalInput); // Limpa o input final
-                 validarLimiteFotos();
-                 if (typeof showToast === 'function') showToast('Limite de 5 fotos excedido.', 'danger');
-                 return;
-            }
-
-            try {
-                const conversionPromises = originalFiles.map(file => {
-                    // Mostra preview da imagem original (rápido)
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        const img = document.createElement('img');
-                        img.src = e.target.result;
-                        img.classList.add('foto-preview');
-                        previewContainer.appendChild(img);
-                    };
-                    reader.readAsDataURL(file);
-
-                    // Retorna a promessa de conversão
-                    return convertToWebP(file);
-                });
-
-                // Espera todas as imagens serem convertidas
-                convertedFiles = await Promise.all(conversionPromises);
-
-                // ATUALIZA O INPUT ESCONDIDO
-                updateFinalInput(convertedFiles, finalInput);
-                fileNameSpan.textContent = `${convertedFiles.length} nova(s) foto(s) pronta(s).`;
-
-            } catch (error) {
-                console.error("Erro ao converter imagens:", error);
-                fileNameSpan.textContent = 'Erro na conversão. Tente novamente.';
-                updateFinalInput([], finalInput);
-            }
-
-            // Valida o limite DEPOIS de tudo pronto
-            validarLimiteFotos();
-        });
-    }
-
-    if(form) {
-        form.addEventListener('submit', function(e) {
-            if (!validarLimiteFotos()) { // A própria função já usa o 'finalInput'
-                e.preventDefault(); 
-                if (typeof showToast === 'function') {
-                    showToast('Corrija os erros no formulário (limite de fotos).', 'danger');
-                } else {
-                    console.error('Erro no limite de fotos.');
-                }
-            }
-        });
-    }
-
-    // Valida uma vez ao carregar a página
-    validarLimiteFotos();
-
-    // Adiciona listeners para os checkboxes existentes
-    document.querySelectorAll('input[name="fotos_para_excluir[]"]').forEach(checkbox => {
-        checkbox.addEventListener('change', () => {
-            // Ao marcar/desmarcar, o 'fileInput' (visível) não muda,
-            // mas o 'finalInput' (escondido) SIM.
-            // O usuário pode ter que selecionar os arquivos de novo se o limite mudar.
-
-            // A melhor abordagem é só validar e mostrar a mensagem
-            validarLimiteFotos(); 
-        });
-    });
-    });
 </script>
 
 <script type="module">
@@ -1090,11 +1299,11 @@ function updateFinalInput(files, finalInput) {
     const tagsPreview = document.getElementById('tagsPreview');
     const tagsPlaceholder = document.getElementById('tagsPlaceholder');
     
-    // --- NOVO: Pega características existentes do PHP ---
+    // Pega características existentes do PHP
     const existingCharacteristics = <?php echo json_encode($pet_caracteristicas); ?>;
     
     const MAX_SELECTIONS = 5;
-    let selectedTags = []; // Armazena objetos {value, iconHTML}
+    let selectedTags = [];
 
     // --- Funções do Modal ---
     function openModal() {
@@ -1113,7 +1322,6 @@ function updateFinalInput(files, finalInput) {
     }
     
     // --- Sincronização ---
-    // (Lê os inputs hidden e atualiza o array 'selectedTags')
     function syncModalStateFromForm() {
         selectedTags = [];
         const hiddenInputs = hiddenTagsContainer.querySelectorAll('input[name="caracteristicas[]"]');
@@ -1138,46 +1346,44 @@ function updateFinalInput(files, finalInput) {
         updateSelectionCount();
     }
     
-    // --- NOVO: Função para salvar e atualizar a UI ---
-    // (Separada para ser chamada no 'save' e no 'load')
-function saveAndApplyTags() {
-    // 1. Limpa os inputs escondidos e o preview de tags
-    hiddenTagsContainer.innerHTML = '';
-    tagsPreview.innerHTML = '';
-    
-    let hasSelection = selectedTags.length > 0;
+    // Função para salvar e atualizar a UI
+    function saveAndApplyTags() {
+        // 1. Limpa os inputs escondidos e o preview de tags
+        hiddenTagsContainer.innerHTML = '';
+        tagsPreview.innerHTML = '';
+        
+        let hasSelection = selectedTags.length > 0;
 
-    selectedTags.forEach(tag => {
-        // 2a. Cria os novos inputs escondidos
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'caracteristicas[]';
-        input.value = tag.value;
-        hiddenTagsContainer.appendChild(input);
+        selectedTags.forEach(tag => {
+            // 2a. Cria os novos inputs escondidos
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'caracteristicas[]';
+            input.value = tag.value;
+            hiddenTagsContainer.appendChild(input);
+            
+            // 2b. Adiciona a TAG ESTILIZADA ao preview no botão
+            const tagElement = document.createElement('span');
+            tagElement.className = 'char-tag-input';
+            
+            // Adiciona o ícone e o texto
+            tagElement.innerHTML = tag.iconHTML + ' ' + tag.value;
+            
+            tagsPreview.appendChild(tagElement);
+        });
         
-        // 2b. Adiciona a TAG ESTILIZADA ao preview no botão
-        const tagElement = document.createElement('span');
-        tagElement.className = 'char-tag-input';
-        
-        // Adiciona o ícone e o texto
-        tagElement.innerHTML = tag.iconHTML + ' ' + tag.value;
-        
-        tagsPreview.appendChild(tagElement);
-    });
-    
-    // 3. Mostra/Esconde o placeholder
-    if (tagsPlaceholder) {
-        tagsPlaceholder.style.display = hasSelection ? 'none' : 'block';
-        // Adiciona classe para styling do placeholder
-        if (hasSelection) {
-            tagsPlaceholder.classList.remove('tags-placeholder');
-        } else {
-            tagsPlaceholder.classList.add('tags-placeholder');
+        // 3. Mostra/Esconde o placeholder
+        if (tagsPlaceholder) {
+            tagsPlaceholder.style.display = hasSelection ? 'none' : 'block';
+            if (hasSelection) {
+                tagsPlaceholder.classList.remove('tags-placeholder');
+            } else {
+                tagsPlaceholder.classList.add('tags-placeholder');
+            }
         }
     }
-}
     
-    // --- NOVO: Função para pré-popular no load da página ---
+    // Função para pré-popular no load da página
     function prefillCharacteristics() {
         existingCharacteristics.forEach(value => {
             const matchingTag = document.querySelector(`.char-tag[data-value="${value}"]`);
@@ -1230,9 +1436,8 @@ function saveAndApplyTags() {
         });
     }
     
-    // --- NOVO: Executa o pré-preenchimento ---
+    // Executa o pré-preenchimento
     prefillCharacteristics();
-    
 </script>
 
 </body>

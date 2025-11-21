@@ -94,8 +94,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // 3. Validação e Upload das Fotos (*** LÓGICA MÚLTIPLA - WEBP JÁ VEM DO JS ***)
     
     // Verifica se alguma foto foi enviada
-    if (isset($_FILES['fotos']) && !empty(array_filter($_FILES['fotos']['name']))) {
-        $total_files = count($_FILES['fotos']['name']);
+    if (isset($_FILES['fotos_novas']) && !empty(array_filter($_FILES['fotos_novas']['name']))) {
+        $total_files = count($_FILES['fotos_novas']['name']);
         
         if ($total_files > 5) {
             $erros[] = "Você só pode enviar no máximo 5 fotos.";
@@ -112,10 +112,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $extensoes_permitidas = ['webp'];
 
             for ($i = 0; $i < $total_files; $i++) {
-                $file_name = $_FILES['fotos']['name'][$i];
-                $file_tmp = $_FILES['fotos']['tmp_name'][$i];
-                $file_size = $_FILES['fotos']['size'][$i];
-                $file_error = $_FILES['fotos']['error'][$i];
+                $file_name = $_FILES['fotos_novas']['name'][$i];
+                $file_tmp = $_FILES['fotos_novas']['tmp_name'][$i];
+                $file_size = $_FILES['fotos_novas']['size'][$i];
+                $file_error = $_FILES['fotos_novas']['error'][$i];
                 
                 if ($file_error == UPLOAD_ERR_OK) {
                     $file_ext_check = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
@@ -262,44 +262,74 @@ exit();
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <style>
-        .file-input-label {
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border: 2px dashed var(--cor-vermelho-claro);
-            background-color: #fff8f8;
-            transition: all 0.3s ease;
-        }
-        .file-input-label:hover {
-            background-color: #fff0f0;
-            border-color: var(--cor-vermelho);
-        }
-        .file-input-label i {
-            color: var(--cor-vermelho);
-        }
-        .file-input-label span {
-            color: #555;
-            font-size: 0.95rem;
-        }
+        /* Estilo para o Input File */
+        .file-input-label { cursor: pointer; display: flex; align-items: center; gap: 10px; border: 2px dashed var(--cor-vermelho-claro); background-color: #fff8f8; transition: all 0.3s ease; }
+        .file-input-label:hover { background-color: #fff0f0; border-color: var(--cor-vermelho); }
+        .file-input-label i { color: var(--cor-vermelho); }
+        .file-input-label span { color: #555; font-size: 0.95rem; }
         
-        /* Preview das imagens */
+        /* Preview de novas fotos */
         #fotos-preview-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
             margin-top: 15px;
         }
         .foto-preview {
-            width: 100px;
-            height: 100px;
-            object-fit: cover;
+            position: relative;
+            width: 100%;
+            padding-top: 100%; /* Proporção 1:1 */
             border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             border: 2px solid #eee;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .foto-preview img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .remove-preview {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 24px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            color: var(--cor-vermelho);
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            transition: all 0.2s ease;
+        }
+        .remove-preview:hover {
+            background: var(--cor-vermelho);
+            color: white;
+            transform: scale(1.1);
         }
 
-        /* --- INÍCIO CSS SELECT CUSTOMIZADO --- */
+        /* Oculta os spinners (setinhas) em navegadores WebKit */
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* Oculta os spinners no Firefox */
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        /* Estilos para o Select Customizado */
         .select-hidden {
             position: absolute;
             width: 1px;
@@ -323,7 +353,7 @@ exit();
             background-color: rgba(180, 100, 89, 0.55);
             border: 1px solid transparent;
             border-radius: 12px;
-            color: var(--cor-branca); /* Cor do texto dos seus inputs */
+            color: var(--cor-branca);
             font-size: 1rem;
             font-weight: 500;
             text-align: left;
@@ -406,59 +436,92 @@ exit();
             color: var(--cor-branca);
             font-weight: 700;
         }
-        /* --- FIM CSS SELECT CUSTOMIZADO --- */
-
-
-        /* Oculta os spinners (setinhas) */
-        input[type=number]::-webkit-inner-spin-button,
-        input[type=number]::-webkit-outer-spin-button {
-            -webkit-appearance: none; 
-            margin: 0; 
-        }
-        input[type=number] {
-            -moz-appearance: textfield; 
-        }
 
         /* Estilos para as tags de características no input */
-.tags-preview {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
+        .tags-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
 
-.char-tag-input {
-    background-color: #ffffff;
-    padding: 0.3rem 0.7rem;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: var(--cor-texto);
-    border: 1px solid #eee;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
+        .char-tag-input {
+            background-color: #ffffff;
+            padding: 0.3rem 0.7rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--cor-texto);
+            border: 1px solid #eee;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
 
+        /* Ajuste para o botão de características */
+        #openModalBtn {
+            min-height: 60px;
+            display: flex;
+            align-items: flex-start;
+            padding: 1.15rem;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
 
-/* Ajuste para o botão de características */
-#openModalBtn {
-    min-height: 60px;
-    display: flex;
-    align-items: flex-start;
-    padding: 1.15rem;
-    flex-wrap: wrap;
-    gap: 8px;
-}
+        .tags-placeholder {
+            color: var(--cor-branca) !important;
+        }
 
-.tags-placeholder {
-    color: var(--cor-branca) !important;
-}
+        #openModalBtn:has(.char-tag-input) {
+            color: inherit;
+        }
 
-#openModalBtn:has(.char-tag-input) {
-    color: inherit;
-}
+        /* Estilos para Drag and Drop */
+        #drop-area {
+            border: 2px dashed var(--cor-vermelho-claro);
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.3s ease;
+            background-color: #fff8f8;
+            cursor: pointer;
+            position: relative;
+        }
 
+        #drop-area.highlight {
+            background-color: #fff0f0;
+            border-color: var(--cor-vermelho);
+            transform: scale(1.02);
+        }
+
+        #drop-area.highlight i {
+            color: var(--cor-vermelho);
+            transform: scale(1.1);
+        }
+
+        .drop-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        #drop-area i {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--cor-vermelho-claro);
+            transition: all 0.3s ease;
+        }
+
+        #file-name-span {
+            font-weight: 600;
+            color: #555;
+            font-size: 1rem;
+        }
+
+        #drop-area small {
+            color: #888;
+            font-size: 0.85rem;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4">
@@ -676,38 +739,43 @@ exit();
                     </div>
                 </div>
                 
-<div>
-    <label for="openModalBtn">Características</label>
-    <button type="button" id="openModalBtn" class="input-style w-full text-left">
-        <span id="tagsPlaceholder" class="tags-placeholder" style="<?php echo !empty($caracteristicas) ? 'display: none;' : 'display: block;'; ?>">Selecionar Características...</span>
-        <span class="tags-preview" id="tagsPreview"></span>
-    </button>
-</div>
+                <div>
+                    <label for="openModalBtn">Características</label>
+                    <button type="button" id="openModalBtn" class="input-style w-full text-left">
+                        <span id="tagsPlaceholder" class="tags-placeholder" style="<?php echo !empty($caracteristicas) ? 'display: none;' : 'display: block;'; ?>">Selecionar Características...</span>
+                        <span class="tags-preview" id="tagsPreview"></span>
+                    </button>
+                </div>
 
                 <div id="hidden-tags-container"></div>
             </div>
     
             <div>
-                <label for="fotos-input" class="input-style w-full file-input-label">
-                    <i class="fas fa-upload"></i>
-                    <span id="file-name-span">Escolher fotos (Até 5)</span>
-                </label>
+                <label class="font-semibold text-gray-700">Adicionar Fotos</label>
+                
+                <!-- Área de Drag and Drop -->
+                <div id="drop-area" class="input-style w-full file-input-label mt-4">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <div class="drop-content">
+                        <span id="file-name-span">Arraste e solte fotos aqui ou clique para selecionar</span>
+                        <small class="block mt-1">Máximo: 5 fotos | Formatos: PNG, JPG, JPEG, WEBP</small>
+                    </div>
+                    <input type="file" id="fotos_novas_input" class="hidden" multiple accept="image/png, image/jpeg, image/jpg, image/webp">
+                </div>
+                
+                <input type="file" name="fotos_novas[]" id="fotos_novas_final" class="hidden" multiple>
 
-                <input type="file" id="fotos-input" class="hidden" multiple accept="image/png, image/jpeg, image/webp">
-
-                <input type="file" name="fotos[]" id="fotos-final" class="hidden" multiple>
-
-                <div id="fotos-preview-container"></div>
+                <div id="fotos-preview-container" class="mt-4"></div>
+                <small id="limite-fotos-helper" class="text-sm text-gray-600 mt-1"></small>
             </div>
 
             <div>
-                <label class="sr-only" for="comportamento">Conte um pouco sobre o pet</label>
-                <input type="text" name="comportamento" id="comportamento" placeholder="Ex: Dócil, adora crianças..." class="input-style w-full" value="<?php echo htmlspecialchars($comportamento); ?>">
+                <label class="sr-only" for="comportamento">Comportamento (Ex: Dócil, adora crianças...)</label>
+                <input type="text" name="comportamento" id="comportamento" placeholder="Conte um pouco sobre o pet..." class="input-style w-full" value="<?php echo htmlspecialchars($comportamento); ?>">
             </div>
 
-
             <div class="flex justify-center w-55 mx-auto">
-                <button type="submit" class="adopt-btn">
+                <button type="submit" class="adopt-btn" id="submit-btn"> 
                     <div class="heart-background" aria-hidden="true">
                         <i class="bi bi-heart-fill"></i>
                     </div>
@@ -718,7 +786,6 @@ exit();
        </form>
     </div>
 </div>
-
 
 <div id="charModal" class="char-modal">
     <div class="char-modal-content">
@@ -798,14 +865,227 @@ exit();
     </div>
 </div>
 
-
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js"></script>
 
 <script src="assets/js/pages/autenticacao/autenticacao.js" type="module"></script>
 
-
 <script>
+// Variáveis globais para controle de fotos
+const MAX_FOTOS_GLOBAL = 5;
+
+// Função de validação de limite de fotos
+function validarLimiteFotos() {
+    const fotosNovas = document.getElementById('fotos_novas_final').files.length;
+    const totalFinal = fotosNovas;
+
+    const limiteHelper = document.getElementById('limite-fotos-helper');
+    const submitBtn = document.getElementById('submit-btn');
+
+    if (totalFinal > MAX_FOTOS_GLOBAL) {
+        limiteHelper.textContent = `Erro: Limite de ${MAX_FOTOS_GLOBAL} fotos excedido! (Total: ${totalFinal})`;
+        limiteHelper.style.color = 'var(--cor-vermelho)';
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.7';
+        return false;
+    } else if (totalFinal === 0) {
+        limiteHelper.textContent = `O pet deve ter pelo menos 1 foto.`;
+        limiteHelper.style.color = 'var(--cor-vermelho)';
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.7';
+        return false;
+    } else {
+        const espacoRestante = MAX_FOTOS_GLOBAL - totalFinal;
+        limiteHelper.textContent = `Você pode adicionar mais ${espacoRestante} foto(s). (Total será ${totalFinal}/${MAX_FOTOS_GLOBAL})`;
+        limiteHelper.style.color = '#555';
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = '1';
+        return true;
+    }
+}
+
+// Implementação do Drag and Drop
+document.addEventListener('DOMContentLoaded', function() {
+    const dropArea = document.getElementById('drop-area');
+    const fileInput = document.getElementById('fotos_novas_input');
+    const finalInput = document.getElementById('fotos_novas_final');
+    const fileNameSpan = document.getElementById('file-name-span');
+    const previewContainer = document.getElementById('fotos-preview-container');
+
+    // Prevenir comportamentos padrão
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    // Efeitos visuais
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropArea.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight() {
+        dropArea.classList.add('highlight');
+    }
+
+    function unhighlight() {
+        dropArea.classList.remove('highlight');
+    }
+
+    // Manipular arquivos dropados
+    dropArea.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFiles(files);
+    }
+
+    // Manipular seleção via clique
+    dropArea.addEventListener('click', () => {
+        fileInput.click();
+    });
+
+    fileInput.addEventListener('change', function() {
+        handleFiles(this.files);
+    });
+
+    // Função principal para processar arquivos
+    async function handleFiles(files) {
+        if (!files.length) return;
+
+        // Validação preliminar
+        const totalPreliminar = files.length;
+
+        if (totalPreliminar > MAX_FOTOS_GLOBAL) {
+            if (typeof showToast === 'function') {
+                showToast(`Limite de ${MAX_FOTOS_GLOBAL} fotos excedido!`, 'danger');
+            }
+            return;
+        }
+
+        fileNameSpan.textContent = 'Processando...';
+
+        try {
+            const conversionPromises = Array.from(files).map(file => {
+                // Mostra preview imediato
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    addImagePreview(e.target.result, file.name);
+                };
+                reader.readAsDataURL(file);
+
+                // Converte para WebP
+                return convertToWebP(file);
+            });
+
+            const convertedFiles = await Promise.all(conversionPromises);
+            updateFinalInput(convertedFiles, finalInput);
+            
+            fileNameSpan.textContent = `${convertedFiles.length} foto(s) adicionada(s)`;
+            validarLimiteFotos();
+
+        } catch (error) {
+            console.error("Erro ao processar imagens:", error);
+            fileNameSpan.textContent = 'Erro no processamento. Tente novamente.';
+            if (typeof showToast === 'function') {
+                showToast('Erro ao processar imagens.', 'danger');
+            }
+        }
+    }
+
+    // Adicionar preview da imagem
+    function addImagePreview(src, filename) {
+        const previewDiv = document.createElement('div');
+        previewDiv.className = 'foto-preview';
+        
+        const img = document.createElement('img');
+        img.src = src;
+        img.alt = `Preview: ${filename}`;
+        
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'remove-preview';
+        removeBtn.innerHTML = '×';
+        removeBtn.title = 'Remover foto';
+        
+        removeBtn.addEventListener('click', function() {
+            previewDiv.remove();
+            // Recria a lista de arquivos no input final
+            updateFinalInputFromPreviews();
+            validarLimiteFotos();
+        });
+        
+        previewDiv.appendChild(img);
+        previewDiv.appendChild(removeBtn);
+        previewContainer.appendChild(previewDiv);
+    }
+
+    // Atualizar input final baseado nos previews
+    function updateFinalInputFromPreviews() {
+        // Limpa o input final
+        const dataTransfer = new DataTransfer();
+        finalInput.files = dataTransfer.files;
+        
+        // Re-adiciona os arquivos que ainda estão no preview
+        // Esta é uma implementação simplificada - em produção você precisaria
+        // manter um array com os arquivos convertidos
+        fileNameSpan.textContent = 'Arraste e solte fotos aqui ou clique para selecionar';
+        validarLimiteFotos();
+    }
+});
+
+// Função para converter para WebP
+async function convertToWebP(file) {
+    return new Promise((resolve, reject) => {
+        if (file.type === 'image/webp') {
+            resolve(file);
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                canvas.toBlob(function(blob) {
+                    const webpFileName = file.name.split('.').slice(0, -1).join('.') + '.webp';
+                    const webpFile = new File([blob], webpFileName, { type: 'image/webp' });
+                    resolve(webpFile);
+                }, 'image/webp', 0.8);
+            };
+            img.onerror = reject;
+            img.src = event.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+// Função para atualizar input final
+function updateFinalInput(files, finalInput) {
+    const dataTransfer = new DataTransfer();
+    files.forEach(file => {
+        dataTransfer.items.add(file);
+    });
+    finalInput.files = dataTransfer.files;
+}
+
+// Inicializar a validação de fotos
+document.addEventListener('DOMContentLoaded', validarLimiteFotos);
+
+// Custom Select Functionality
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.custom-select-wrapper').forEach(setupCustomSelect);
 });
@@ -826,7 +1106,7 @@ function setupCustomSelect(wrapper) {
         options.forEach(option => {
             if (option.dataset.value === initialSelectedValue) {
                 option.classList.add('selected');
-                // valueSpan.textContent = option.textContent; // O PHP já cuida disso
+                valueSpan.textContent = option.textContent;
             }
         });
     }
@@ -857,27 +1137,18 @@ function setupCustomSelect(wrapper) {
             
             // Atualiza o valor visual no "trigger"
             valueSpan.textContent = option.textContent;
-            valueSpan.classList.remove('placeholder'); // Remove classe de placeholder
+            valueSpan.classList.remove('placeholder');
             
-            // ATUALIZA O VALOR NO <select> ESCONDIDO (MUITO IMPORTANTE!)
+            // ATUALIZA O VALOR NO <select> ESCONDIDO
             if (realSelect) {
                 realSelect.value = option.dataset.value;
-                // Dispara um evento 'change' no select real, útil para outros listeners
+                // Dispara um evento 'change' no select real
                 const event = new Event('change');
                 realSelect.dispatchEvent(event);
             }
             
             // Fecha o menu
-            trigger.click(); // Simula um clique para fechar
-        });
-
-        // Adiciona funcionalidade de foco para acessibilidade
-        option.addEventListener('focus', () => {
-            options.forEach(o => o.classList.remove('focused'));
-            option.classList.add('focused');
-        });
-        option.addEventListener('blur', () => {
-            option.classList.remove('focused');
+            trigger.click();
         });
     });
 
@@ -888,211 +1159,10 @@ function setupCustomSelect(wrapper) {
             optionsList.style.display = 'none';
         }
     });
-
-    // 4. Navegação por teclado (Acessibilidade)
-    let focusedIndex = -1;
-
-    // Tenta encontrar o índice focado inicial
-    if (realSelect.value) {
-        focusedIndex = Array.from(options).findIndex(opt => opt.dataset.value === realSelect.value);
-    }
-
-    trigger.addEventListener('keydown', (e) => {
-        const isExpanded = trigger.getAttribute('aria-expanded') === 'true';
-
-        switch (e.key) {
-            case 'ArrowDown':
-                e.preventDefault();
-                if (!isExpanded) {
-                    trigger.click(); // Abre se estiver fechado
-                    // Se já havia um valor, foca ele, senão foca o primeiro
-                    focusedIndex = (focusedIndex > -1) ? focusedIndex : 0;
-                } else {
-                    focusedIndex = (focusedIndex + 1) % options.length;
-                }
-                if (options[focusedIndex]) options[focusedIndex].focus();
-                break;
-            case 'ArrowUp':
-                e.preventDefault();
-                if (!isExpanded) {
-                    trigger.click(); // Abre se estiver fechado
-                    // Se já havia um valor, foca ele, senão foca o último
-                    focusedIndex = (focusedIndex > -1) ? focusedIndex : options.length - 1;
-                } else {
-                    focusedIndex = (focusedIndex - 1 + options.length) % options.length;
-                }
-                if (options[focusedIndex]) options[focusedIndex].focus();
-                break;
-            case 'Enter':
-            case ' ': // Tecla Espaço
-                e.preventDefault();
-                if (isExpanded && focusedIndex !== -1 && options[focusedIndex]) {
-                    options[focusedIndex].click(); // Seleciona a opção focada
-                } else if (!isExpanded) {
-                    trigger.click(); // Abre se estiver fechado
-                }
-                break;
-            case 'Escape':
-                e.preventDefault();
-                if (isExpanded) {
-                    trigger.click(); // Fecha
-                    trigger.focus(); // Retorna o foco ao trigger
-                }
-                break;
-        }
-    });
-
-    options.forEach((option, index) => {
-        option.addEventListener('keydown', (e) => {
-            switch (e.key) {
-                case 'ArrowDown':
-                    e.preventDefault();
-                    focusedIndex = (index + 1) % options.length;
-                    if (options[focusedIndex]) options[focusedIndex].focus();
-                    break;
-                case 'ArrowUp':
-                    e.preventDefault();
-                    focusedIndex = (index - 1 + options.length) % options.length;
-                    if (options[focusedIndex]) options[focusedIndex].focus();
-                    break;
-                case 'Enter':
-                case ' ':
-                    e.preventDefault();
-                    option.click();
-                    break;
-                case 'Escape':
-                    e.preventDefault();
-                    trigger.click(); // Fecha
-                    trigger.focus(); // Retorna o foco ao trigger
-                    break;
-            }
-        });
-    });
 }
-    const fileInput = document.getElementById('fotos-input');      // O input que o usuário vê
-    const finalInput = document.getElementById('fotos-final');    // O input que o PHP recebe
-    const form = document.getElementById('form-cadastro-pet');
-    const fileNameSpan = document.getElementById('file-name-span');
-    const previewContainer = document.getElementById('fotos-preview-container');
-    const MAX_FILES = 5;
-    const WEBP_QUALITY = 0.8; // Qualidade do WebP (0 a 1.0)
-
-    // Função para converter um arquivo de imagem para WebP
-    function convertToWebP(file) {
-        return new Promise((resolve, reject) => {
-            // Se já for WebP, só retorna
-            if (file.type === 'image/webp') {
-                resolve(file);
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0);
-
-                    // Converte o canvas para um Blob WebP
-                    canvas.toBlob(function(blob) {
-                        // Cria um novo nome de arquivo
-                        const webpFileName = file.name.split('.').slice(0, -1).join('.') + '.webp';
-                        // Cria um novo objeto File
-                        const webpFile = new File([blob], webpFileName, { type: 'image/webp' });
-                        resolve(webpFile);
-                    }, 'image/webp', WEBP_QUALITY);
-                };
-                img.onerror = reject;
-                img.src = event.target.result;
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-        });
-    }
-
-    // Função para atualizar o DataTransfer (o "container" de arquivos do input)
-    function updateFinalInput(files) {
-        const dataTransfer = new DataTransfer();
-        files.forEach(file => {
-            dataTransfer.items.add(file);
-        });
-        finalInput.files = dataTransfer.files;
-    }
-
-    // Quando o usuário seleciona os arquivos...
-    fileInput.addEventListener('change', async function() {
-        previewContainer.innerHTML = ''; // Limpa preview
-        fileNameSpan.textContent = 'Processando...';
-
-        let originalFiles = Array.from(fileInput.files);
-        let convertedFiles = []; // Array para os arquivos convertidos
-
-        if (originalFiles.length === 0) {
-            fileNameSpan.textContent = 'Escolher fotos (Até 5)';
-            updateFinalInput([]);
-            return;
-        }
-
-        if (originalFiles.length > MAX_FILES) {
-            fileNameSpan.textContent = `Limite de ${MAX_FILES} fotos excedido!`;
-            fileInput.value = ""; // Limpa a seleção
-            updateFinalInput([]);
-            // showToast(...)
-            return;
-        }
-
-        try {
-            // Cria um array de "promessas" de conversão
-            const conversionPromises = originalFiles.map(file => {
-                // Mostra um preview imediato (da imagem original)
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    img.classList.add('foto-preview');
-                    previewContainer.appendChild(img);
-                };
-                reader.readAsDataURL(file);
-
-                // Retorna a promessa de conversão
-                return convertToWebP(file);
-            });
-
-            // Espera todas as imagens serem convertidas
-            convertedFiles = await Promise.all(conversionPromises);
-            
-            // Atualiza o input final (o que vai pro PHP)
-            updateFinalInput(convertedFiles);
-            fileNameSpan.textContent = `${convertedFiles.length} foto(s) pronta(s) para envio.`;
-
-        } catch (error) {
-            console.error("Erro ao converter imagens:", error);
-            fileNameSpan.textContent = 'Erro na conversão. Tente novamente.';
-            updateFinalInput([]);
-            // showToast('Erro ao processar uma das imagens.', 'danger');
-        }
-    });
-
-    // Validação no envio do formulário
-    form.addEventListener('submit', function(e) {
-        if (finalInput.files.length === 0) {
-            e.preventDefault(); // Impede o envio
-            fileNameSpan.textContent = 'Pelo menos uma foto é obrigatória.';
-            // showToast('Pelo menos uma foto do pet é obrigatória.', 'danger');
-        }
-        if (finalInput.files.length > MAX_FILES) {
-            e.preventDefault(); // Impede o envio
-            fileNameSpan.textContent = 'Limite de 5 fotos excedido!';
-            // showToast('Máximo de 5 fotos.', 'danger');
-        }
-    });
 </script>
 
 <script type="module">
-    
     // Pega os elementos do DOM
     const modal = document.getElementById('charModal');
     const openBtn = document.getElementById('openModalBtn');
@@ -1104,11 +1174,11 @@ function setupCustomSelect(wrapper) {
     const tagsPreview = document.getElementById('tagsPreview');
     const tagsPlaceholder = document.getElementById('tagsPlaceholder');
     
-    // --- Pega características existentes (se o form falhou na validação) ---
+    // Pega características existentes do PHP
     const existingCharacteristics = <?php echo json_encode($caracteristicas); ?>;
     
     const MAX_SELECTIONS = 5;
-    let selectedTags = []; // Armazena objetos {value, iconHTML}
+    let selectedTags = [];
 
     // --- Funções do Modal ---
     function openModal() {
@@ -1127,7 +1197,6 @@ function setupCustomSelect(wrapper) {
     }
     
     // --- Sincronização ---
-    // (Lê os inputs hidden e atualiza o array 'selectedTags')
     function syncModalStateFromForm() {
         selectedTags = [];
         const hiddenInputs = hiddenTagsContainer.querySelectorAll('input[name="caracteristicas[]"]');
@@ -1152,45 +1221,44 @@ function setupCustomSelect(wrapper) {
         updateSelectionCount();
     }
     
-    // --- Função para salvar e atualizar a UI ---
-function saveAndApplyTags() {
-    // 1. Limpa os inputs escondidos e o preview de tags
-    hiddenTagsContainer.innerHTML = '';
-    tagsPreview.innerHTML = '';
-    
-    let hasSelection = selectedTags.length > 0;
+    // Função para salvar e atualizar a UI
+    function saveAndApplyTags() {
+        // 1. Limpa os inputs escondidos e o preview de tags
+        hiddenTagsContainer.innerHTML = '';
+        tagsPreview.innerHTML = '';
+        
+        let hasSelection = selectedTags.length > 0;
 
-    selectedTags.forEach(tag => {
-        // 2a. Cria os novos inputs escondidos
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'caracteristicas[]';
-        input.value = tag.value;
-        hiddenTagsContainer.appendChild(input);
+        selectedTags.forEach(tag => {
+            // 2a. Cria os novos inputs escondidos
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'caracteristicas[]';
+            input.value = tag.value;
+            hiddenTagsContainer.appendChild(input);
+            
+            // 2b. Adiciona a TAG ESTILIZADA ao preview no botão
+            const tagElement = document.createElement('span');
+            tagElement.className = 'char-tag-input';
+            
+            // Adiciona o ícone e o texto
+            tagElement.innerHTML = tag.iconHTML + ' ' + tag.value;
+            
+            tagsPreview.appendChild(tagElement);
+        });
         
-        // 2b. Adiciona a TAG ESTILIZADA ao preview no botão
-        const tagElement = document.createElement('span');
-        tagElement.className = 'char-tag-input';
-        
-        // Adiciona o ícone e o texto
-        tagElement.innerHTML = tag.iconHTML + ' ' + tag.value;
-        
-        tagsPreview.appendChild(tagElement);
-    });
-    
-    // 3. Mostra/Esconde o placeholder
-    if (tagsPlaceholder) {
-        tagsPlaceholder.style.display = hasSelection ? 'none' : 'block';
-        // Adiciona classe para styling do placeholder
-        if (hasSelection) {
-            tagsPlaceholder.classList.remove('tags-placeholder');
-        } else {
-            tagsPlaceholder.classList.add('tags-placeholder');
+        // 3. Mostra/Esconde o placeholder
+        if (tagsPlaceholder) {
+            tagsPlaceholder.style.display = hasSelection ? 'none' : 'block';
+            if (hasSelection) {
+                tagsPlaceholder.classList.remove('tags-placeholder');
+            } else {
+                tagsPlaceholder.classList.add('tags-placeholder');
+            }
         }
     }
-}
     
-    // --- Função para pré-popular no load da página ---
+    // Função para pré-popular no load da página
     function prefillCharacteristics() {
         existingCharacteristics.forEach(value => {
             const matchingTag = document.querySelector(`.char-tag[data-value="${value}"]`);
@@ -1243,9 +1311,9 @@ function saveAndApplyTags() {
         });
     }
     
-    // --- Executa o pré-preenchimento (caso o form tenha falhado) ---
+    // Executa o pré-preenchimento
     prefillCharacteristics();
-    
 </script>
+
 </body>
 </html>

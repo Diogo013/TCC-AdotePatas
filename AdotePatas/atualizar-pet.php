@@ -7,8 +7,9 @@ include_once 'session.php';
 requerer_login();
 
 // Função para verificar se houve mudanças nos dados
+// Função para verificar se houve mudanças nos dados (exceto status)
 function houveMudancas($pet_atual, $novos_dados) {
-    // Comparar campos básicos
+    // Comparar campos básicos (excluindo status)
     $campos_para_comparar = [
         'nome', 'especie', 'sexo', 'idade', 'porte', 'raca', 'cor',
         'status_vacinacao', 'status_castracao', 'comportamento'
@@ -107,7 +108,6 @@ if (!$tem_permissao) {
     header('Location: perfil.php?page=meus-pets');
     exit;
 }
-
 // *** VERIFICAR SE HOUVE MUDANÇAS E DEFINIR STATUS ***
 $mudancas_detectadas = houveMudancas($pet_atual, [
     'nome' => $nome,
@@ -123,15 +123,25 @@ $mudancas_detectadas = houveMudancas($pet_atual, [
     'caracteristicas' => $caracteristicas
 ]);
 
-// Lógica de status
+// Lógica de status - CORRIGIDA
 if ($user_tipo == 'admin') {
     // Admin sempre usa o status do formulário
     $status_disponibilidade = $status_disponibilidade_form;
 } else {
-    // Usuário/ONG: se houve mudanças, vai para análise; senão, mantém status atual
-    if ($mudancas_detectadas) {
+    // Verifica se a única mudança foi no status
+    $status_mudou = ($pet_atual['status_disponibilidade'] != $status_disponibilidade_form);
+    $outras_mudancas = $mudancas_detectadas;
+    
+    // Se apenas o status mudou e não há outras alterações, permite a mudança
+    if ($status_mudou && !$outras_mudancas) {
+        $status_disponibilidade = $status_disponibilidade_form;
+    } 
+    // Se houve outras mudanças além do status, vai para análise
+    elseif ($outras_mudancas) {
         $status_disponibilidade = 'Em Analise';
-    } else {
+    }
+    // Se não houve mudanças, mantém o status atual
+    else {
         $status_disponibilidade = $pet_atual['status_disponibilidade'];
     }
 }

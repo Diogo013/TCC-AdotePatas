@@ -618,20 +618,42 @@ transition: all 0.3s ease;
     padding: 12px 25px;
   }
 }
-.modal-header{
-display: flex;
-flex-direction: column !important;
+ .modal-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .modal-header i {
+            width: 70px;
+            height: 70px;
+            background-color: var(--cor-vermelho);
+            border-radius: 50%;
+            color: var(--cor-branca);
+            font-size: 1.8rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: -70px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+/* Classes Utilitárias para Badges de Status */
+.badge-adotado {
+    background-color: var(--cor-verde-pastel) !important;
+    color: #ffffff;
 }
 
-.modal-header i{
-width: 70px;
-height: 70px;
-background-color: var(--cor-vermelho);
-border-radius: 50%;
-color: var(--cor-branca);
-font-size: 2rem;
-padding: 18px;
-margin-top: -70px;
+.badge-indisponivel {
+    background-color: var(--cor-cinza-indisponivel) !important;
+    color: #ffffff;
+    opacity: 0.8; /* Dá um leve efeito de "desativado" */
+}
+
+.badge-analise {
+    background-color: var(--cor-vermelho-aviso) !important;
+    color: #ffffff;
 }
 
 /* ==========================================================================

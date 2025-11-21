@@ -238,6 +238,7 @@ if (isset($_SESSION['toast_message'])) {
 } else {
     error_log("DEBUG perfil.php - Nenhuma toast message na sessão");
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -702,7 +703,18 @@ if (isset($_SESSION['toast_message'])) {
 
     <?php else: ?>
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4" id="petsGrid">
-            <?php foreach ($pets as $pet): ?>
+            <?php foreach ($pets as $pet): 
+                
+                // Lógica para determinar a cor do badge baseada no status
+$badgeClass = match ($pet['status_disponibilidade']) {
+    'Disponivel'   => 'bg-success',        // Verde padrão do Bootstrap (ou crie --cor-disponivel)
+    'Em Analise'   => 'badge-analise',     // Vermelho/Laranja de alerta
+    'Adotado'      => 'badge-adotado',     // O novo verde personalizado
+    'Indisponivel' => 'badge-indisponivel',// O novo cinza
+    default        => 'bg-secondary',      // Fallback (cinza padrão)
+};
+
+                ?>
             <div class="col">
                 <a style="text-decoration: none; color: var(--cor-cinza-texto)" href="pet-detalhe/<?php echo ($pet['id_pet']) ?>">
                     <div class="pet-card">
@@ -725,9 +737,9 @@ if (isset($_SESSION['toast_message'])) {
                                         </div>
                                         
                                         <div class="pet-card-actions d-flex justify-content-between align-items-center p-3 border-top">
-                                            <span class="badge bg-<?php echo ($pet['status_disponibilidade'] == 'disponivel') ? 'success' : 'secondary'; ?> status-badge">
-                                                <?php echo ucfirst($pet['status_disponibilidade']); ?>
-                                            </span>
+                                      <span class="badge <?php echo $badgeClass; ?> status-badge">
+    <?php echo $pet['status_disponibilidade']; ?>
+</span>
                                             <div class="action-buttons">
                                                 <a href="editar-pet.php?id=<?php echo $pet['id_pet']; ?>" class="btn btn-sm btn-outline-primary me-2" title="Editar Pet">
                                                     <i class="fa-solid fa-pencil"></i>
@@ -879,7 +891,7 @@ if (isset($_SESSION['toast_message'])) {
             <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header">
+                <div class="modal-header text-center mb-3">
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     <i class="fa-solid fa-trash"></i>
                     <h4 class="modal-title mt-3" id="confirmDeleteModalLabel">Confirmar Exclusão</h4>
