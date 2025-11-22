@@ -307,6 +307,7 @@ if (isset($_SESSION['toast_message'])) {
                 ?>
                     <main style="animation: fadeIn 0.8s ease-out;">
                         
+                        
                         <!-- TABELA DE USUÁRIOS -->
                         <div class="admin-table-card">
                             <h1 class="mb-4 fw-bold" style="color: var(--cor-rosa-escuro);"><i class="fa-solid fa-user-shield me-2"></i>Painel Administrativo</h1>
@@ -442,6 +443,14 @@ if (isset($_SESSION['toast_message'])) {
                                                     <i class="fa-solid fa-clock me-1"></i>Em Análise
                                                 </span>
                                                 <div class="action-buttons">
+                                                    <?php if (!empty($pet['carteira_vacinacao'])): ?>
+                                                    <a href="<?php echo htmlspecialchars($pet['carteira_vacinacao']); ?>" 
+                                                       target="_blank" 
+                                                       class="btn btn-sm btn-info text-white" 
+                                                       title="Ver Carteirinha de Vacinação">
+                                                       <i class="fas fa-file-medical"></i> Doc
+                                                    </a>
+                                                    <?php endif; ?>
                                                     <a href="editar-pet.php?id=<?php echo $pet['id_pet']; ?>" class="btn btn-sm btn-outline-primary me-2" title="Editar Pet"> <i class="fa-solid fa-pencil"></i> </a>
                                                     <button class="btn btn-sm btn-success btn-aprovar-pet" 
                                                             data-pet-id="<?php echo $pet['id_pet']; ?>"

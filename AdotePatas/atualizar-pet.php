@@ -61,7 +61,9 @@ $id_pet = $_POST['id_pet'] ?? null;
 $nome = trim($_POST['nome'] ?? '');
 $especie = trim($_POST['especie'] ?? '');
 $sexo = trim($_POST['sexo'] ?? '');
-$idade = trim($_POST['idade'] ?? '');
+$idade_valor = $_POST['idade_valor'] ?? '';
+$idade_unidade = $_POST['idade_unidade'] ?? 'anos';
+$idade_final = "$idade_valor $idade_unidade";
 $porte = trim($_POST['porte'] ?? '');
 $raca = trim($_POST['raca'] ?? 'Não definida');
 $cor = trim($_POST['cor'] ?? '');
@@ -157,6 +159,18 @@ if (!empty($erros)) {
 $novos_caminhos_salvos = [];
 $caminhos_para_excluir_fisico = [];
 
+// Upload de nova carteirinha (se houver)
+$novo_caminho_vacina = null;
+if (isset($_FILES['carteira_vacinacao']) && $_FILES['carteira_vacinacao']['error'] == UPLOAD_ERR_OK) {
+    $ext = strtolower(pathinfo($_FILES['carteira_vacinacao']['name'], PATHINFO_EXTENSION));
+    $nome_vacina = uniqid('vacina_update_') . '.' . $ext;
+    $destino = 'uploads/documentos/' . $nome_vacina;
+    
+    if (move_uploaded_file($_FILES['carteira_vacinacao']['tmp_name'], $destino)) {
+        $novo_caminho_vacina = $destino;
+    }
+}
+
 // 6. Iniciar Transação
 $conn->beginTransaction();
 
@@ -237,6 +251,9 @@ try {
         throw new Exception("O pet deve ter pelo menos 1 foto. Você excluiu todas e não adicionou nenhuma nova.");
     }
 
+    // Se tiver nova vacina, adiciona na query
+    
+
     // 10. ATUALIZAR DADOS DO PET
     $caracteristicas_json = json_encode($caracteristicas, JSON_UNESCAPED_UNICODE);
     
@@ -254,13 +271,17 @@ try {
                         comportamento = :comportamento, 
                         caracteristicas = :caracteristicas
                     WHERE id_pet = :id_pet";
+
+    if ($novo_caminho_vacina) {
+        $sql_update = str_replace("WHERE", ", carteira_vacinacao = :vacina WHERE", $sql_update);
+    }
     
     $stmt_update = $conn->prepare($sql_update);
     $stmt_update->execute([
         ':nome' => $nome,
         ':especie' => $especie,
         ':sexo' => $sexo,
-        ':idade' => $idade,
+        ':idade' => $idade_final,
         ':porte' => $porte,
         ':raca' => $raca,
         ':cor' => $cor,
@@ -283,6 +304,10 @@ try {
                 ':caminho_foto' => $caminho
             ]);
         }
+    }
+    // Adiciona o parâmetro da vacina se necessário
+    if ($novo_caminho_vacina) {
+        $params[':vacina'] = $novo_caminho_vacina;
     }
 
     // 12. COMMIT!

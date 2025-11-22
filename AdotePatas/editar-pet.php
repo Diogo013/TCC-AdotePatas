@@ -75,6 +75,10 @@ try {
     exit;
 }
 
+$idade_display = $pet['idade']; // Ex: "2 anos"
+$idade_valor_edit = intval($idade_display);
+$idade_unidade_edit = str_contains($idade_display, 'mes') ? 'meses' : 'anos';
+
 // Lógica para controle de status baseado no status atual - CORRIGIDA
 $status_atual = $pet['status_disponibilidade'];
 $status_options = [];
@@ -110,6 +114,7 @@ if ($user_tipo == 'admin') {
         'Indisponivel' => 'Indisponível'
     ];
 }
+
 
 // Debug: Verificar opções disponíveis
 error_log("Opções de status disponíveis: " . print_r($status_options, true));
@@ -582,16 +587,23 @@ error_log("Opções de status disponíveis: " . print_r($status_options, true));
             
             <input type="hidden" name="id_pet" value="<?php echo $pet['id_pet']; ?>">
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid gap-6">
                 <div>
                     <label for="nome">Nome do Pet</label>
                     <input type="text" name="nome" id="nome" placeholder="Nome do Pet" required class="input-style w-full"
                            value="<?php echo htmlspecialchars($pet['nome']); ?>">
                 </div>
+            </div>
+            <div class="grid gap-6 grid-cols-1 md:grid-cols-2">
                 <div>
-                    <label for="idade">Idade (anos)</label>
-                    <input type="number" name="idade" id="idade" placeholder="Idade (anos)" required min="0" class="input-style w-full"
-                           value="<?php echo htmlspecialchars($pet['idade']); ?>">
+                    <label>Idade</label>
+                    <div class="flex gap-2">
+                        <input type="number" name="idade_valor" value="<?php echo $idade_valor_edit; ?>" class="input-style flex-1">
+                        <select name="idade_unidade" class="input-style w-32">
+                            <option value="anos" <?php echo $idade_unidade_edit == 'anos' ? 'selected' : ''; ?>>Anos</option>
+                            <option value="meses" <?php echo $idade_unidade_edit == 'meses' ? 'selected' : ''; ?>>Meses</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -735,6 +747,7 @@ error_log("Opções de status disponíveis: " . print_r($status_options, true));
                         </ul>
                     </div>
                 </div>
+                
                 <div>
                     <label id="select-label-disponibilidade">Status</label>
 <select name="status_disponibilidade" id="status_disponibilidade-real" class="select-hidden" aria-hidden="true" tabindex="-1">
@@ -778,6 +791,27 @@ error_log("Opções de status disponíveis: " . print_r($status_options, true));
                     </div>
                 </div>
             </div>
+            <div class="border p-4 rounded-lg bg-gray-50">
+        <h4 class="font-bold text-gray-700 mb-2">Documentação Sanitária</h4>
+        
+        <?php if (!empty($pet['carteira_vacinacao'])): ?>
+            <div class="mb-3 flex items-center gap-3">
+                <i class="fas fa-check-circle text-green-500 text-xl"></i>
+                <div>
+                    <p class="text-sm font-semibold">Carteirinha enviada</p>
+                    <a href="<?php echo $pet['carteira_vacinacao']; ?>" target="_blank" class="text-blue-600 text-sm hover:underline">
+                        <i class="fas fa-eye"></i> Visualizar documento atual
+                    </a>
+                </div>
+            </div>
+        <?php else: ?>
+            <div class="text-red-500 text-sm mb-2"><i class="fas fa-exclamation-circle"></i> Pendente envio</div>
+        <?php endif; ?>
+
+        <label class="block text-sm font-medium text-gray-700">Atualizar Carteirinha (Opcional)</label>
+        <input type="file" name="carteira_vacinacao" class="input-style w-full mt-1" accept="image/*,.pdf">
+        <p class="text-xs text-gray-500 mt-1">Envie apenas se quiser substituir o arquivo atual.</p>
+    </div>
             
             <div>
                 <label class="font-semibold text-gray-700">Gerenciar Fotos</label>
