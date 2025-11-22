@@ -260,11 +260,21 @@ if ($conversa_id_ativa) {
                             $classe_msg = 'sent';
                         }
                         $data_msg = date('H:i, d/m/Y', strtotime($msg['data_envio']));
+                          $conteudoHtml = '';
+                        if ($msg['tipo_conteudo'] == 'imagem') {
+                            
+                        $conteudoHtml = '<div class="msg-image-container"><img src="' . $base_path . htmlspecialchars($msg['conteudo']) . '" class="img-fluid rounded" style="max-width: 250px; cursor: pointer;" onclick="window.open(this.src)"></div>';
+                        } elseif ($msg['tipo_conteudo'] == 'arquivo') {
+                            $nomeArquivo = $msg['arquivo_nome'] ?: 'Documento';
+                            $conteudoHtml = '<div class="msg-file-container p-2 bg-light rounded border d-flex align-items-center gap-2"><i class="fa-solid fa-file-lines text-danger text-xl"></i><a href="' . $base_path . htmlspecialchars($msg['conteudo']) . '" target="_blank" class="text-decoration-none text-dark text-break">' . htmlspecialchars($nomeArquivo) . '</a></div>';
+                        } else {
+                            $conteudoHtml = '<p class="mb-1">' . nl2br(htmlspecialchars($msg['conteudo'])) . '</p>';
+                        }
                     ?>
-                    <div class="message <?php echo $classe_msg; ?>">
-                        <p><?php echo nl2br(htmlspecialchars($msg['conteudo'])); ?></p>
+                     <div class="message <?php echo $classe_msg; ?>">
+                        <?php echo $conteudoHtml; ?>
                         <div class="date message-timestamp"><?php echo $data_msg; ?></div>
-                    </div>
+                    </div>  
                 <?php endforeach; ?>
             <?php endif; ?>
         </div>
@@ -347,18 +357,23 @@ if ($conversa_id_ativa) {
 
 <?php if ($conversa_ativa): ?>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+     document.addEventListener('DOMContentLoaded', function() {
         const chatMessages = document.getElementById('chat-messages-container');
         const messageInput = document.getElementById('chat-message-input');
         const sendBtn = document.getElementById('chat-send-btn');
         
-        // Variáveis do PHP
+        const docInput = document.getElementById('documentInput');
+        const mediaInput = document.getElementById('mediaInput');
+        const fileModalEl = document.getElementById('fileModal');
+        const fileModal = bootstrap.Modal.getOrCreateInstance(fileModalEl);
+
         const conversaId = <?php echo json_encode($conversa_id_ativa); ?>;
         const basePath = <?php echo json_encode($base_path); ?>;
-        const userId = <?php echo json_encode($user_id_logado); ?>;
-        const userTipo = <?php echo json_encode($user_tipo_logado); ?>;
         const postURL = basePath + 'mensagem.php';
+        const pollURL = basePath + 'buscar_mensagens.php';
         
+        let lastMessageId = <?php echo json_encode($ultimo_id_msg); ?>;
+
         // Configuração do WebSocket
         const wsScheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
         const wsHost = '<?php echo $_SERVER['SERVER_NAME']; ?>';
@@ -406,35 +421,82 @@ if ($conversa_id_ativa) {
             }
         }
 
-        function startPolling() {
-            console.log('Usando polling como fallback');
-            setInterval(pollMessages, 3000);
+        function convertToWebP(file) {
+            return new Promise((resolve, reject) => {
+                if (file.type === 'image/webp') {
+                    resolve(file);
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0);
+                        
+                        canvas.toBlob(function(blob) {
+                             if (blob) {
+                                const fileNameParts = file.name.split('.');
+                                fileNameParts.pop(); 
+                                const newFileName = fileNameParts.join('.') + '.webp';
+                                const webpFile = new File([blob], newFileName, { type: 'image/webp' });
+                                resolve(webpFile);
+                            } else {
+                                reject(new Error('Falha na conversão do Canvas para Blob'));
+                            }
+                        }, 'image/webp', 0.8);
+                    };
+                    img.onerror = reject;
+                    img.src = event.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
         }
 
         function scrollToBottom() {
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
+        scrollToBottom();
 
-        function addMessageToUI(text, side, timestamp = 'enviando...') {
-            const noMsgText = document.getElementById('no-messages-text');
-            if(noMsgText) noMsgText.remove();
+        function addMessageToUI(conteudo, side, timestamp = 'enviando...', tipo = 'texto', arquivoNome = '') {
+            const noMsg = document.getElementById('no-messages-text');
+            if(noMsg) noMsg.remove();
 
             const messageDiv = document.createElement('div');
             messageDiv.classList.add('message', side);
             
-            const p = document.createElement('p');
-            p.textContent = text;
+            let contentHtml = '';
+
+            if (tipo === 'imagem') {
+                const imgSrc = conteudo.startsWith('blob:') ? conteudo : basePath + conteudo;
+                contentHtml = `<div class="msg-image-container">
+                                <img src="${imgSrc}" alt="Imagem enviada" class="img-fluid rounded" style="max-width: 250px; cursor: pointer;" onclick="window.open(this.src)">
+                               </div>`;
+            } else if (tipo === 'arquivo') {
+                const fileLink = basePath + conteudo;
+                const nomeDisplay = arquivoNome || 'Documento';
+                contentHtml = `<div class="msg-file-container p-2 bg-light rounded border d-flex align-items-center gap-2">
+                                <i class="fa-solid fa-file-lines text-danger text-xl"></i>
+                                <a href="${fileLink}" target="_blank" class="text-decoration-none text-dark text-break">${nomeDisplay}</a>
+                               </div>`;
+            } else {
+                contentHtml = `<p class="mb-1">${conteudo}</p>`;
+            }
             
-            const timestampDiv = document.createElement('div');
-            timestampDiv.classList.add('date', 'message-timestamp');
-            timestampDiv.textContent = timestamp;
+            messageDiv.innerHTML = `
+                ${contentHtml}
+                <div class="date message-timestamp text-end" style="font-size: 0.75rem; opacity: 0.8;">${timestamp}</div>
+            `;
 
-            messageDiv.appendChild(p);
-            messageDiv.appendChild(timestampDiv);
             chatMessages.appendChild(messageDiv);
-
             scrollToBottom();
-            return timestampDiv;
+            
+            return messageDiv.querySelector('.date'); 
         }
 
         async function sendMessage() {
@@ -444,62 +506,109 @@ if ($conversa_id_ativa) {
             messageInput.value = '';
             messageInput.focus();
 
-            // Feedback visual imediato
             const timestampElement = addMessageToUI(conteudo, 'sent');
 
             try {
-                // Envia via AJAX para salvar no banco
                 const response = await fetch(postURL, {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+                    headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ conversa_id: conversaId, conteudo: conteudo })
                 });
-                const result = await response.json();
-
-                if (response.ok && result.success) {
-                    timestampElement.textContent = result.timestamp || 'enviado';
-                    
-                    // Envia via WebSocket para outros usuários
-                    if (ws && ws.readyState === WebSocket.OPEN) {
-                        ws.send(JSON.stringify({
-                            type: 'message',
-                            conversa_id: conversaId,
-                            mensagem: conteudo,
-                            user_id: userId,
-                            user_tipo: userTipo
-                        }));
-                    }
-                } else {
-                    timestampElement.textContent = 'Falha ao enviar';
+                // Opcional: Atualizar timestamp se tiver resposta
+            } catch (error) {
+                console.error('Erro envio texto:', error);
+                if (timestampElement) {
+                    timestampElement.textContent = 'Erro ao enviar';
                     timestampElement.style.color = 'red';
                 }
-            } catch (error) {
-                timestampElement.textContent = 'Erro de rede';
-                timestampElement.style.color = 'red';
             }
         }
 
-        // Event listeners
-        sendBtn.addEventListener('click', sendMessage);
-        messageInput.addEventListener('keydown', function(event) {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                sendMessage();
-            }
-        });
+        async function sendFile(fileInput) {
+            let file = fileInput.files[0];
+            if (!file) return;
 
-        // Polling como fallback (mantém sua lógica original)
-        let lastMessageId = <?php echo json_encode($ultimo_id_msg); ?>;
+            fileModal.hide();
+
+            if (file.type.startsWith('image/') && file.type !== 'image/gif') {
+                try {
+                    file = await convertToWebP(file);
+                } catch (err) {
+                    console.error("Erro na conversão WebP:", err);
+                    alert("Erro ao processar imagem. Tente novamente.");
+                    return;
+                }
+            }
+
+            // 1. UI Otimista
+            const tempUrl = URL.createObjectURL(file);
+            let tipoVisual = 'arquivo';
+            if (file.type.startsWith('image/')) tipoVisual = 'imagem';
+
+            // Captura o elemento de timestamp para atualizar depois
+            const timestampElement = addMessageToUI(tempUrl, 'sent', 'enviando...', tipoVisual, file.name);
+
+            // 2. Envio
+            const formData = new FormData();
+            formData.append('conversa_id', conversaId);
+            formData.append('arquivo', file);
+
+            try {
+                const response = await fetch(postURL, {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    // SUCESSO: Atualiza o status visual
+                    if (timestampElement) {
+                        timestampElement.textContent = result.timestamp || 'enviado agora';
+                    }
+                } else {
+                    // ERRO NO BACK-END (Ex: arquivo muito grande)
+                    if (timestampElement) {
+                        timestampElement.textContent = 'Falha';
+                        timestampElement.style.color = 'red';
+                    }
+                    alert('Erro: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Erro upload:', error);
+                if (timestampElement) {
+                    timestampElement.textContent = 'Erro rede';
+                    timestampElement.style.color = 'red';
+                }
+                alert('Erro de conexão no upload.');
+            }
+            
+            fileInput.value = '';
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+        });
+        
+        document.getElementById('documentBtn').addEventListener('click', () => docInput.click());
+        document.getElementById('mediaBtn').addEventListener('click', () => mediaInput.click());
 
         async function pollMessages() {
             try {
-                const response = await fetch(`${basePath}buscar-mensagens.php?conversa_id=${conversaId}&ultimo_id=${lastMessageId}`);
+                const url = `${pollURL}?conversa_id=${conversaId}&ultimo_id=${lastMessageId}`;
+                const response = await fetch(url);
                 const result = await response.json();
 
                 if (response.ok && result.success && result.messages.length > 0) {
                     result.messages.forEach(msg => {
                         if (!msg.sou_eu) {
-                            addMessageToUI(msg.conteudo, 'received', msg.data_formatada);
+                            addMessageToUI(
+                                msg.conteudo, 
+                                'received', 
+                                msg.data_formatada, 
+                                msg.tipo_conteudo, 
+                                msg.arquivo_nome
+                            );
                         }
                         if (msg.id_mensagem > lastMessageId) {
                             lastMessageId = msg.id_mensagem;
@@ -507,15 +616,11 @@ if ($conversa_id_ativa) {
                     });
                 }
             } catch (error) {
-                console.error("Erro no polling:", error);
             }
         }
-
-        // Inicia WebSocket (e polling como fallback)
         connectWebSocket();
-        
-        // Scroll inicial
-        scrollToBottom();
+
+        setInterval(pollMessages, 3000);
     });
 </script>
 <?php endif; ?>

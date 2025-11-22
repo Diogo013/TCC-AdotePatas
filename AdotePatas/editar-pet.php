@@ -71,7 +71,11 @@ try {
 }  catch (Exception $e) {
     $_SESSION['toast_message'] = $e->getMessage();
     $_SESSION['toast_type'] = 'danger';
-    header('Location: perfil?page=meus-pets');
+    if ($user_tipo == 'admin') {
+        header('Location: perfil?page=painel-admin');
+    } else {
+        header('Location: perfil?page=meus-pets');
+    }
     exit;
 }
 

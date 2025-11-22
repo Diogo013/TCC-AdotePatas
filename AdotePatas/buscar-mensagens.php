@@ -42,8 +42,7 @@ try {
         exit;
     }
 
-    // 4. Busca APENAS as mensagens novas (ID maior que o último que temos)
-    $sql = "SELECT id_mensagem, conteudo, data_envio, id_remetente_fk, tipo_remetente 
+    $sql = "SELECT id_mensagem, conteudo, data_envio, id_remetente_fk, tipo_remetente, tipo_conteudo, arquivo_nome
             FROM mensagem 
             WHERE id_conversa_fk = :id_conversa 
             AND id_mensagem > :ultimo_id 
@@ -54,10 +53,8 @@ try {
     
     $mensagens = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Formata a data para o padrão brasileiro antes de enviar
     foreach ($mensagens as &$msg) {
         $msg['data_formatada'] = date('H:i, d/m/Y', strtotime($msg['data_envio']));
-        // Flag para o front saber se a mensagem é "minha" ou "do outro"
         $msg['sou_eu'] = ($msg['id_remetente_fk'] == $user_id && $msg['tipo_remetente'] == $user_tipo);
     }
 

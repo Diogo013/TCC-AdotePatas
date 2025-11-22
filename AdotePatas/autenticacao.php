@@ -94,7 +94,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $active_tab = 'login';
             $email = $_POST['email'] ?? '';
             $senha = $_POST['senha'] ?? '';
-
+            
             if (empty($email) || empty($senha)) {
                 $mensagem_status = "Por favor, preencha o e-mail e a senha.";
                 $tipo_mensagem = 'danger';

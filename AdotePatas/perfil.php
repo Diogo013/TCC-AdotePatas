@@ -97,8 +97,20 @@ $todos_usuarios = [];
 $todas_ongs = [];
 $todos_pets = [];
 
+// Variáveis do Dashboard
+$total_users_count = 0;
+$total_ongs_count = 0;
+$total_pets_count = 0;
+$total_adocoes_count = 0;
+
 if ($user_tipo == 'admin' && $pagina == 'painel-admin') {
     try {
+        // --- 1. DASHBOARD COUNTS ---
+        $total_users_count = $conn->query("SELECT COUNT(*) FROM usuario")->fetchColumn();
+        $total_ongs_count = $conn->query("SELECT COUNT(*) FROM ong")->fetchColumn();
+        $total_pets_count = $conn->query("SELECT COUNT(*) FROM pet")->fetchColumn();
+        $total_adocoes_count = $conn->query("SELECT COUNT(*) FROM solicitacao")->fetchColumn();
+
         // Busca Usuários
         $stmt = $conn->query("SELECT * FROM usuario ORDER BY id_usuario DESC");
         $todos_usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -306,11 +318,116 @@ if (isset($_SESSION['toast_message'])) {
                         if ($user_tipo !== 'admin') { header("Location: login"); break; }
                 ?>
                     <main style="animation: fadeIn 0.8s ease-out;">
-                        
+                        <h1 class="mb-4 fw-bold" style="color: var(--cor-rosa-escuro);">
+                            <i class="fa-solid fa-user-shield me-2"></i>Painel Administrativo
+                        </h1>
+
+                    <!-- DASHBOARD CARDS (NOVO) -->
+                        <div class="row g-4 mb-4">
+                            <!-- Card Usuários -->
+                            <div class="col-md-3">
+                                <div class="card dashboard-card card-users p-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="text-uppercase mb-1">Usuários (PF)</h6>
+                                            <h2 class="mb-0 fw-bold"><?php echo $total_users_count; ?></h2>
+                                        </div>
+                                        <div class="dashboard-icon">
+                                            <i class="fa-solid fa-users"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Card ONGs -->
+                            <div class="col-md-3">
+                                <div class="card dashboard-card card-ongs p-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="text-uppercase mb-1">ONGs Parceiras</h6>
+                                            <h2 class="mb-0 fw-bold"><?php echo $total_ongs_count; ?></h2>
+                                        </div>
+                                        <div class="dashboard-icon">
+                                            <i class="fa-solid fa-building-ngo"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Card Pets -->
+                            <div class="col-md-3">
+                                <div class="card dashboard-card card-pets p-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="text-uppercase mb-1">Pets Cadastrados</h6>
+                                            <h2 class="mb-0 fw-bold"><?php echo $total_pets_count; ?></h2>
+                                        </div>
+                                        <div class="dashboard-icon">
+                                            <i class="fa-solid fa-paw"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Card Solicitações -->
+                            <div class="col-md-3">
+                                <div class="card dashboard-card card-solicitacoes p-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="text-uppercase mb-1">Adoções Iniciadas</h6>
+                                            <h2 class="mb-0 fw-bold"><?php echo $total_adocoes_count; ?></h2>
+                                        </div>
+                                        <div class="dashboard-icon">
+                                            <i class="fa-solid fa-heart"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- TABELA DE PETS -->
+                        <div class="admin-table-card">
+                            <h3 class="mb-3 text-secondary">Gerenciar Pets (<?php echo count($todos_pets); ?>)</h3>
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Nome</th>
+                                            <th>Dono</th>
+                                            <th>Status</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($todos_pets as $p): ?>
+                                        <tr>
+                                            <td>#<?php echo $p['id_pet']; ?></td>
+                                            <td><strong><?php echo htmlspecialchars($p['nome']); ?></strong></td>
+                                            <td>
+                                                <?php echo htmlspecialchars($p['dono_nome']); ?> 
+                                                <small class="text-muted">(<?php echo $p['tipo_dono']; ?>)</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-<?php echo ($p['status_disponibilidade'] == 'disponivel') ? 'success' : 'secondary'; ?>">
+                                                    <?php echo ucfirst($p['status_disponibilidade']); ?>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <a href="pet-detalhe/<?php echo $p['id_pet']; ?>" target="_blank" class="btn btn-sm btn-info text-white" title="Ver"><i class="fa-solid fa-eye"></i></a>
+                                                <!-- Reusa a página de editar pet, passando o ID -->
+                                                <a href="editar-pet.php?id=<?php echo $p['id_pet']; ?>" class="btn btn-sm btn-primary" title="Editar"><i class="fa-solid fa-pencil"></i></a>
+                                                <button onclick="confirmarExclusao('admin-acoes.php?acao=excluir_pet&id=<?php echo $p['id_pet']; ?>')" class="btn btn-sm btn-danger" title="Excluir"><i class="fa-solid fa-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
                         
                         <!-- TABELA DE USUÁRIOS -->
                         <div class="admin-table-card">
-                            <h1 class="mb-4 fw-bold" style="color: var(--cor-rosa-escuro);"><i class="fa-solid fa-user-shield me-2"></i>Painel Administrativo</h1>
                             <h3 class="mb-3 text-secondary">Gerenciar Usuários (<?php echo count($todos_usuarios); ?>)</h3>
                             <div class="table-responsive">
                                 <table class="table table-hover align-middle">
