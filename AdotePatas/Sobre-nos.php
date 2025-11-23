@@ -217,23 +217,23 @@ if ($logado) {
     <button class="team-prev" aria-label="Anterior">&larr;</button>
     <div class="team-track" id="teamTrack">
       <div class="team-item">
-        <img class="team-avatar" src="./images/index/" alt="Cristian Lira">
+        <img class="team-avatar" src="./images/sobre/cris.jpg" alt="Cristian Lira">
         <div class="team-name">Cristian Lira</div>
       </div>
       <div class="team-item">
-        <img class="team-avatar" src="./images/index/" alt="Diogo Rodrigues">
+        <img class="team-avatar" src="./images/sobre/diogo.jpg" alt="Diogo Rodrigues">
         <div class="team-name">Diogo Rodrigues</div>
       </div>
       <div class="team-item">
-        <img class="team-avatar" src="./images/index/" alt="Marcella Rossinoli">
+        <img class="team-avatar" src="./images/sobre/marcella.jpg" alt="Marcella Rossinoli">
         <div class="team-name">Marcella Rossinoli</div>
       </div>
       <div class="team-item">
-        <img class="team-avatar" src="./images/index/" alt="Inácio Andrade">
+        <img class="team-avatar" src="./images/sobre/inacio.jpg" alt="Inácio Andrade">
         <div class="team-name">Inácio Andrade</div>
       </div>
       <div class="team-item">
-        <img class="team-avatar" src="./images/index/" alt="Giulia Baptista">
+        <img class="team-avatar" src="./images/sobre/giulia.png" alt="Giulia Baptista">
         <div class="team-name">Giulia Baptista</div>
       </div>
     </div>
