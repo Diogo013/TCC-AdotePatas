@@ -6,7 +6,6 @@ include_once 'session.php';
 // 2. Garantir que o usuário está logado
 requerer_login();
 
-// Função para verificar se houve mudanças nos dados
 // Função para verificar se houve mudanças nos dados (exceto status)
 function houveMudancas($pet_atual, $novos_dados) {
     // Comparar campos básicos (excluindo status)
@@ -31,6 +30,21 @@ function houveMudancas($pet_atual, $novos_dados) {
         return true;
     }
     
+    // Comparar alergias
+    $alergias_atuais = json_decode($pet_atual['alergias'] ?? '[]', true);
+    $alergias_novas = $novos_dados['alergias'] ?? [];
+    sort($alergias_atuais);
+    sort($alergias_novas);
+    
+    if ($alergias_atuais != $alergias_novas) {
+        return true;
+    }
+    
+    // Comparar medicação
+    if ($pet_atual['medicacao'] != $novos_dados['medicacao']) {
+        return true;
+    }
+    
     // Verificar se há fotos novas
     if (!empty($_FILES['fotos_novas']['name'][0])) {
         return true;
@@ -38,6 +52,11 @@ function houveMudancas($pet_atual, $novos_dados) {
     
     // Verificar se há fotos marcadas para exclusão
     if (!empty($_POST['fotos_para_excluir'])) {
+        return true;
+    }
+    
+    // Verificar se há nova carteirinha de vacinação
+    if (isset($_FILES['carteira_vacinacao']) && $_FILES['carteira_vacinacao']['error'] == UPLOAD_ERR_OK) {
         return true;
     }
     
@@ -72,6 +91,8 @@ $status_castracao = trim($_POST['status_castracao'] ?? '');
 $status_disponibilidade_form = trim($_POST['status_disponibilidade'] ?? 'disponivel');
 $comportamento = trim($_POST['comportamento'] ?? '');
 $caracteristicas = $_POST['caracteristicas'] ?? [];
+$alergias = $_POST['alergias'] ?? [];
+$medicacao = trim($_POST['medicacao'] ?? '');
 
 // Dados das fotos
 $fotos_para_excluir = $_POST['fotos_para_excluir'] ?? [];
@@ -84,6 +105,16 @@ $MAX_FOTOS_GLOBAL = 5;
 if (empty($id_pet)) $erros[] = "ID do pet perdido.";
 if (empty($nome)) $erros[] = "O campo 'Nome' é obrigatório.";
 if (count($caracteristicas) > 5) $erros[] = "Você só pode selecionar até 5 características.";
+
+// Validação da idade - apenas números
+if (!empty($idade_valor) && !is_numeric($idade_valor)) {
+    $erros[] = "A idade deve conter apenas números.";
+}
+
+// Validação de idade máxima em meses
+if ($idade_unidade == 'meses' && $idade_valor > 11) {
+    $erros[] = "A idade em meses não pode ser maior que 11. Para idades maiores, selecione 'Anos'.";
+}
 
 // Buscar dados atuais do pet para comparação
 $sql_check = "SELECT * FROM pet WHERE id_pet = :id_pet";
@@ -110,22 +141,25 @@ if (!$tem_permissao) {
     header('Location: perfil.php?page=meus-pets');
     exit;
 }
+
 // *** VERIFICAR SE HOUVE MUDANÇAS E DEFINIR STATUS ***
 $mudancas_detectadas = houveMudancas($pet_atual, [
     'nome' => $nome,
     'especie' => $especie,
     'sexo' => $sexo,
-    'idade' => $idade,
+    'idade' => $idade_final,
     'porte' => $porte,
     'raca' => $raca,
     'cor' => $cor,
     'status_vacinacao' => $status_vacinacao,
     'status_castracao' => $status_castracao,
     'comportamento' => $comportamento,
-    'caracteristicas' => $caracteristicas
+    'caracteristicas' => $caracteristicas,
+    'alergias' => $alergias,
+    'medicacao' => $medicacao
 ]);
 
-// Lógica de status - CORRIGIDA
+// Lógica de status
 if ($user_tipo == 'admin') {
     // Admin sempre usa o status do formulário
     $status_disponibilidade = $status_disponibilidade_form;
@@ -162,13 +196,32 @@ $caminhos_para_excluir_fisico = [];
 // Upload de nova carteirinha (se houver)
 $novo_caminho_vacina = null;
 if (isset($_FILES['carteira_vacinacao']) && $_FILES['carteira_vacinacao']['error'] == UPLOAD_ERR_OK) {
-    $ext = strtolower(pathinfo($_FILES['carteira_vacinacao']['name'], PATHINFO_EXTENSION));
-    $nome_vacina = uniqid('vacina_update_') . '.' . $ext;
-    $destino = 'uploads/documentos/' . $nome_vacina;
+    $vacina_file = $_FILES['carteira_vacinacao'];
+    $ext = strtolower(pathinfo($vacina_file['name'], PATHINFO_EXTENSION));
+    $allowed_vacina = ['jpg', 'jpeg', 'png', 'pdf', 'webp'];
     
-    if (move_uploaded_file($_FILES['carteira_vacinacao']['tmp_name'], $destino)) {
-        $novo_caminho_vacina = $destino;
+    if (!in_array($ext, $allowed_vacina)) {
+        $erros[] = "Formato da carteirinha inválido. Use JPG, PNG, WEBP ou PDF.";
+    } else {
+        $upload_dir_vacina = 'uploads/documentos/';
+        if (!is_dir($upload_dir_vacina)) mkdir($upload_dir_vacina, 0755, true);
+        
+        $nome_vacina = uniqid('vacina_update_') . '.' . $ext;
+        $caminho_vacina = $upload_dir_vacina . $nome_vacina;
+        
+        if (!move_uploaded_file($vacina_file['tmp_name'], $caminho_vacina)) {
+            $erros[] = "Erro ao salvar carteirinha de vacinação.";
+        } else {
+            $novo_caminho_vacina = $caminho_vacina;
+        }
     }
+}
+
+if (!empty($erros)) {
+    $_SESSION['toast_message'] = $erros[0];
+    $_SESSION['toast_type'] = 'danger';
+    header('Location: editar-pet.php?id=' . $id_pet);
+    exit;
 }
 
 // 6. Iniciar Transação
@@ -251,12 +304,15 @@ try {
         throw new Exception("O pet deve ter pelo menos 1 foto. Você excluiu todas e não adicionou nenhuma nova.");
     }
 
-    // Se tiver nova vacina, adiciona na query
-    
-
-    // 10. ATUALIZAR DADOS DO PET
+    // 10. PROCESSAR ALERGIAS E MEDICAÇÃO
+    $alergias_limpas = array_filter($alergias, function($alergia) {
+        return !empty(trim($alergia));
+    });
+    $alergias_json = !empty($alergias_limpas) ? json_encode($alergias_limpas, JSON_UNESCAPED_UNICODE) : null;
+    $medicacao_limpa = !empty(trim($medicacao)) ? trim($medicacao) : null;
     $caracteristicas_json = json_encode($caracteristicas, JSON_UNESCAPED_UNICODE);
     
+    // 11. ATUALIZAR DADOS DO PET
     $sql_update = "UPDATE pet SET 
                         nome = :nome, 
                         especie = :especie, 
@@ -269,15 +325,18 @@ try {
                         status_castracao = :status_castracao, 
                         status_disponibilidade = :status_disponibilidade, 
                         comportamento = :comportamento, 
-                        caracteristicas = :caracteristicas
-                    WHERE id_pet = :id_pet";
+                        caracteristicas = :caracteristicas,
+                        alergias = :alergias,
+                        medicacao = :medicacao";
 
+    // Adiciona o campo da carteira de vacinação se houver nova
     if ($novo_caminho_vacina) {
-        $sql_update = str_replace("WHERE", ", carteira_vacinacao = :vacina WHERE", $sql_update);
+        $sql_update .= ", carteira_vacinacao = :carteira_vacinacao";
     }
-    
-    $stmt_update = $conn->prepare($sql_update);
-    $stmt_update->execute([
+
+    $sql_update .= " WHERE id_pet = :id_pet";
+
+    $params = [
         ':nome' => $nome,
         ':especie' => $especie,
         ':sexo' => $sexo,
@@ -290,10 +349,20 @@ try {
         ':status_disponibilidade' => $status_disponibilidade,
         ':comportamento' => $comportamento,
         ':caracteristicas' => $caracteristicas_json,
+        ':alergias' => $alergias_json,
+        ':medicacao' => $medicacao_limpa,
         ':id_pet' => $id_pet
-    ]);
+    ];
 
-    // 11. INSERIR NOVAS FOTOS NO BANCO
+    // Adiciona o parâmetro da vacina se necessário
+    if ($novo_caminho_vacina) {
+        $params[':carteira_vacinacao'] = $novo_caminho_vacina;
+    }
+
+    $stmt_update = $conn->prepare($sql_update);
+    $stmt_update->execute($params);
+
+    // 12. INSERIR NOVAS FOTOS NO BANCO
     if (!empty($novos_caminhos_salvos)) {
         $sql_foto_insert = "INSERT INTO pet_fotos (id_pet_fk, caminho_foto) VALUES (:id_pet_fk, :caminho_foto)";
         $stmt_foto_insert = $conn->prepare($sql_foto_insert);
@@ -305,22 +374,23 @@ try {
             ]);
         }
     }
-    // Adiciona o parâmetro da vacina se necessário
-    if ($novo_caminho_vacina) {
-        $params[':vacina'] = $novo_caminho_vacina;
-    }
 
-    // 12. COMMIT!
+    // 13. COMMIT!
     $conn->commit();
 
-    // 13. Apagar arquivos físicos marcados para exclusão
+    // 14. Apagar arquivos físicos marcados para exclusão
     foreach ($caminhos_para_excluir_fisico as $caminho) {
         if (file_exists($caminho)) {
             @unlink($caminho);
         }
     }
 
-    // 14. Redireciona de volta com sucesso
+    // Se houve upload de nova carteirinha, apaga a antiga
+    if ($novo_caminho_vacina && !empty($pet_atual['carteira_vacinacao']) && file_exists($pet_atual['carteira_vacinacao'])) {
+        @unlink($pet_atual['carteira_vacinacao']);
+    }
+
+    // 15. Redireciona de volta com sucesso
     $_SESSION['toast_message'] = "Pet atualizado com sucesso!";
     $_SESSION['toast_type'] = 'success';
     
@@ -332,7 +402,7 @@ try {
     exit;
 
 } catch (Exception $e) {
-    // 15. Se deu erro, ROLLBACK
+    // 16. Se deu erro, ROLLBACK
     $conn->rollBack();
     
     // Apaga qualquer arquivo novo que tenha sido salvo no servidor
@@ -341,6 +411,11 @@ try {
             @unlink($caminho);
         }
     }
+    
+    // Apaga a nova carteirinha se foi salva
+    if ($novo_caminho_vacina && file_exists($novo_caminho_vacina)) {
+        @unlink($novo_caminho_vacina);
+    }
 
     // Redireciona de volta para a edição com o erro
     $_SESSION['toast_message'] = $e->getMessage();
@@ -348,4 +423,3 @@ try {
     header('Location: editar-pet.php?id=' . $id_pet);
     exit;
 }
-?>

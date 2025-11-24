@@ -67,6 +67,10 @@ try {
     $pet_fotos = $stmt_fotos->fetchAll(PDO::FETCH_ASSOC);
 
     $pet_caracteristicas = json_decode($pet['caracteristicas'] ?? '[]', true);
+    
+    // Carregar alergias e medicação do banco
+    $alergias = json_decode($pet['alergias'] ?? '[]', true);
+    $medicacao = $pet['medicacao'] ?? '';
 
 }  catch (Exception $e) {
     $_SESSION['toast_message'] = $e->getMessage();
@@ -79,29 +83,25 @@ try {
     exit;
 }
 
-$idade_display = $pet['idade']; // Ex: "2 anos"
-$idade_valor_edit = intval($idade_display);
-$idade_unidade_edit = str_contains($idade_display, 'mes') ? 'meses' : 'anos';
+// Processar idade
+$idade_display = $pet['idade'];
+preg_match('/(\d+)\s*(ano|mes)/', $idade_display, $matches);
+$idade_valor_edit = $matches[1] ?? '';
+$idade_unidade_edit = isset($matches[2]) ? ($matches[2] == 'ano' ? 'anos' : 'meses') : 'anos';
 
-// Lógica para controle de status baseado no status atual - CORRIGIDA
+// Lógica para controle de status baseado no status atual
 $status_atual = $pet['status_disponibilidade'];
 $status_options = [];
 
-// Debug: Verificar qual é o status atual
-error_log("Status atual do pet: " . $status_atual);
-
 if ($status_atual == 'Em Analise') {
-    // Se estiver em análise, só pode permanecer em análise
     $status_options = ['Em Analise' => 'Em Análise'];
 } elseif ($status_atual == 'Disponivel') {
-    // Se estiver disponível, pode ser adotado ou ficar indisponível
     $status_options = [
         'Disponivel' => 'Disponível',
         'Adotado' => 'Adotado', 
         'Indisponivel' => 'Indisponível'
     ];
 } else {
-    // Se estiver adotado ou indisponível, só pode voltar para disponível
     $status_options = [
         'Disponivel' => 'Disponível',
         'Adotado' => 'Adotado',
@@ -118,10 +118,6 @@ if ($user_tipo == 'admin') {
         'Indisponivel' => 'Indisponível'
     ];
 }
-
-
-// Debug: Verificar opções disponíveis
-error_log("Opções de status disponíveis: " . print_r($status_options, true));
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -139,141 +135,180 @@ error_log("Opções de status disponíveis: " . print_r($status_options, true));
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <style>
-        /* Estilo para o Input File */
-        .file-input-label { cursor: pointer; display: flex; align-items: center; gap: 10px; border: 2px dashed var(--cor-vermelho-claro); background-color: #fff8f8; transition: all 0.3s ease; }
-        .file-input-label:hover { background-color: #fff0f0; border-color: var(--cor-vermelho); }
-        .file-input-label i { color: var(--cor-vermelho); }
-        .file-input-label span { color: #555; font-size: 0.95rem; }
-        
-        /* Galeria de fotos atuais */
-        .fotos-atuais-grid {
+        :root {
+            --cor-vermelho: #B46459;
+            --cor-vermelho-claro: #d68a80;
+            --cor-rosa-claro: #f8f0ef;
+            --cor-rosa-escuro: #e8c4c0;
+            --cor-branca: #ffffff;
+            --cor-texto: #333333;
+        }
+
+        /* Estilos para os campos alinhados */
+        .form-row-3 {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            gap: 15px;
-            margin-top: 10px;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1.5rem;
+            align-items: end;
         }
-        .foto-atual-item {
-            position: relative;
-            width: 100%;
-            padding-top: 100%; /* Mantém a proporção 1:1 */
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+        @media (max-width: 768px) {
+            .form-row-3 {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
         }
-        .foto-atual-item img {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        /* Checkbox de exclusão (escondido) */
-        .foto-atual-item input[type="checkbox"] {
-            display: none;
-        }
-        /* Botão de exclusão (Label estilizado) */
-        .delete-foto-btn {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            width: 28px;
-            height: 28px;
-            background-color: rgba(255, 255, 255, 0.9);
-            color: var(--cor-vermelho);
-            border: none;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-            line-height: 1;
-        }
-        .delete-foto-btn:hover {
-            background-color: var(--cor-vermelho);
-            color: white;
-            transform: scale(1.1);
-        }
-        /* Estilo quando a foto está marcada para exclusão */
-        .foto-atual-item input[type="checkbox"]:checked + img {
-            opacity: 0.4;
-            filter: grayscale(1);
-        }
-        .foto-atual-item input[type="checkbox"]:checked ~ .delete-foto-btn {
-            background-color: var(--cor-vermelho);
-            color: white;
-            transform: rotate(45deg);
-        }
-        .delete-foto-btn::before {
-            content: '\00D7'; /* Símbolo de multiplicação (X) */
-        }
-        
-        /* Preview de novas fotos */
-        #fotos-preview-container {
+
+        .age-input-group {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
-        }
-        .foto-preview {
-            position: relative;
-            width: 100%;
-            padding-top: 100%; /* Proporção 1:1 */
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            border: 2px solid #eee;
-        }
-        .foto-preview img {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .remove-preview {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            width: 24px;
-            height: 24px;
-            background: rgba(255, 255, 255, 0.9);
-            border: none;
-            border-radius: 50%;
-            color: var(--cor-vermelho);
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
+            grid-template-columns: 1fr 120px;
+            gap: 8px;
             align-items: center;
-            justify-content: center;
-            line-height: 1;
-            transition: all 0.2s ease;
         }
-        .remove-preview:hover {
-            background: var(--cor-vermelho);
-            color: white;
+
+        @media (max-width: 768px) {
+            .age-input-group {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Estilo para mensagens de erro */
+        .error-message {
+            color: #dc2626;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: block;
+        }
+
+        .input-error {
+            border-color: #dc2626 !important;
+            background-color: #fef2f2 !important;
+        }
+
+        /* Estilo para o campo de arquivos com drag & drop */
+        .file-drop-area {
+            border: 2px dashed var(--cor-vermelho-claro);
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: var(--cor-rosa-claro);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .file-drop-area:hover, .file-drop-area.dragover {
+            background: #fff0f0;
+            border-color: var(--cor-vermelho);
+            transform: translateY(-2px);
+        }
+
+        .file-drop-area i {
+            font-size: 3rem;
+            color: var(--cor-vermelho-claro);
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .file-drop-area.dragover i {
+            color: var(--cor-vermelho);
             transform: scale(1.1);
         }
 
-        /* Oculta os spinners (setinhas) em navegadores WebKit */
+        .file-info {
+            font-weight: 600;
+            color: var(--cor-texto);
+            margin-bottom: 0.5rem;
+        }
+
+        .file-hint {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Campos dinâmicos para alergias e medicação */
+        .dynamic-field {
+            margin-top: 1rem;
+            padding: 1.5rem;
+            background: var(--cor-rosa-claro);
+            border-radius: 12px;
+        }
+
+        .dynamic-field h4 {
+            color: var(--cor-vermelho);
+            margin-bottom: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .alergia-input-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            align-items: center;
+        }
+
+        .alergia-input {
+            flex: 1;
+        }
+
+        .btn-add-alergia {
+            background: var(--cor-vermelho);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-add-alergia:hover {
+            background: var(--cor-vermelho-claro);
+            transform: translateY(-1px);
+        }
+
+        .btn-remove-alergia {
+            background: var(--cor-vermelho);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .btn-remove-alergia:hover {
+            background: #b91c1c;
+            transform: scale(1.1);
+        }
+
+        .medicacao-input {
+            width: 100%;
+        }
+
+        /* Oculta os spinners nos inputs number */
         input[type=number]::-webkit-inner-spin-button,
         input[type=number]::-webkit-outer-spin-button {
             -webkit-appearance: none;
             margin: 0;
         }
 
-        /* Oculta os spinners no Firefox */
         input[type=number] {
             -moz-appearance: textfield;
         }
 
-        /* Estilos para o Select Customizado */
+        /* Estilos para selects customizados */
         .select-hidden {
             position: absolute;
             width: 1px;
@@ -316,6 +351,12 @@ error_log("Opções de status disponíveis: " . print_r($status_options, true));
             border-color:  rgba(255, 255, 255, 0.6);
             outline: none; 
         }
+        
+        .custom-select-value.placeholder {
+            color: var(--cor-branca);
+            background-color: transparent;
+            opacity: 0.8;
+        }
 
         .custom-select-arrow {
             width: 10px;
@@ -334,7 +375,7 @@ error_log("Opções de status disponíveis: " . print_r($status_options, true));
 
         .custom-select-options {
             position: absolute;
-            top: calc(100% + 4px); 
+            top: calc(100% + 4px);
             left: 0;
             right: 0;
             z-index: 10;
@@ -346,9 +387,9 @@ error_log("Opções de status disponíveis: " . print_r($status_options, true));
             list-style: none;
             margin: 0;
             overflow-y: auto;
-            max-height: 200px; 
-            display: none; 
-            -webkit-overflow-scrolling: touch; 
+            max-height: 200px;
+            display: none;
+            -webkit-overflow-scrolling: touch;
         }
 
         .custom-option {
@@ -374,7 +415,16 @@ error_log("Opções de status disponíveis: " . print_r($status_options, true));
             font-weight: 700;
         }
 
-        /* Estilos para as tags de características no input */
+        /* Estilo customizado para o select de idade */
+        .age-unit-custom {
+            width: 100%;
+        }
+
+        .age-unit-custom .custom-select-trigger {
+            height: 100%;
+            min-height: 54px;
+        }
+
         .tags-preview {
             display: flex;
             flex-wrap: wrap;
@@ -387,7 +437,7 @@ error_log("Opções de status disponíveis: " . print_r($status_options, true));
             border-radius: 20px;
             font-size: 0.8rem;
             font-weight: 500;
-            color: var(--cor-texto);
+            color: var(--cor-vermelho);
             border: 1px solid #eee;
             display: inline-flex;
             align-items: center;
@@ -395,7 +445,6 @@ error_log("Opções de status disponíveis: " . print_r($status_options, true));
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        /* Ajuste para o botão de características */
         #openModalBtn {
             min-height: 60px;
             display: flex;
@@ -413,7 +462,143 @@ error_log("Opções de status disponíveis: " . print_r($status_options, true));
             color: inherit;
         }
 
-        /* Classe base para modais com ícone flutuante */
+        /* Estilos para preview de fotos */
+        #fotos-preview-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .foto-preview {
+            position: relative;
+            width: 100%;
+            padding-top: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 2px solid #eee;
+        }
+
+        .foto-preview img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .remove-preview {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 24px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            color: var(--cor-vermelho);
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            transition: all 0.2s ease;
+        }
+
+        .remove-preview:hover {
+            background: var(--cor-vermelho);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        /* Estilo para visualização de arquivo de vacinação */
+        .vacina-view {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: var(--cor-rosa-claro);
+            border-radius: 8px;
+            color: var(--cor-vermelho);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: 1px solid var(--cor-rosa-escuro);
+        }
+
+        .vacina-view:hover {
+            background: var(--cor-rosa-escuro);
+            color: var(--cor-vermelho);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(180, 100, 89, 0.1);
+        }
+
+        /* Galeria de fotos atuais */
+        .fotos-atuais-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .foto-atual-item {
+            position: relative;
+            width: 100%;
+            padding-top: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .foto-atual-item img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .delete-foto-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 28px;
+            height: 28px;
+            background-color: rgba(255, 255, 255, 0.9);
+            color: var(--cor-vermelho);
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            line-height: 1;
+        }
+        .delete-foto-btn:hover {
+            background-color: var(--cor-vermelho);
+            color: white;
+            transform: scale(1.1);
+        }
+        .foto-atual-item input[type="checkbox"]:checked + img {
+            opacity: 0.4;
+            filter: grayscale(1);
+        }
+        .foto-atual-item input[type="checkbox"]:checked ~ .delete-foto-btn {
+            background-color: var(--cor-vermelho);
+            color: white;
+            transform: rotate(45deg);
+        }
+        .delete-foto-btn::before {
+            content: '\00D7';
+        }
+
+        /* Modal styles */
         .custom-icon-modal .modal-content {
             border-radius: 16px;
             border: none;
@@ -428,7 +613,6 @@ error_log("Opções de status disponíveis: " . print_r($status_options, true));
             position: relative;
         }
 
-        /* Container do Ícone */
         .custom-icon-modal .icon-box {
             width: 80px;
             height: 80px;
@@ -444,18 +628,15 @@ error_log("Opções de status disponíveis: " . print_r($status_options, true));
             background-color: var(--cor-vermelho);
         }
 
-        /* --- Variação: Tema de Aviso (Para o modal de Análise) --- */
         .custom-icon-modal .modal-header.warning-theme .icon-box {
             background: linear-gradient(135deg, var(--cor-vermelho-aviso), var(--cor-vermelho));
         }
 
-        /* Tipografia e Botões */
         .custom-icon-modal .modal-title {
             color: var(--cor-cinza-texto);
             font-weight: 700;
         }
 
-        /* Ajuste específico para texto de destaque amarelo escuro */
         .text-warning-dark {
             color:  var(--cor-vermelho);
         }
@@ -466,7 +647,6 @@ error_log("Opções de status disponíveis: " . print_r($status_options, true));
             outline: none !important;
         }
 
-        /* Melhoria na usabilidade dos botões */
         .custom-icon-modal .btn {
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
@@ -476,53 +656,62 @@ error_log("Opções de status disponíveis: " . print_r($status_options, true));
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
-        /* Estilos para Drag and Drop */
-        #drop-area {
-            border: 2px dashed var(--cor-vermelho-claro);
-            border-radius: 12px;
-            text-align: center;
-            transition: all 0.3s ease;
-            background-color: #fff8f8;
-            cursor: pointer;
-            position: relative;
-            padding: 2rem;
-        }
+        /* Estilos para a seção de vacinação */
+#upload-vacina-area .file-drop-area {
+    border: 2px dashed var(--cor-vermelho);
+    background: var(--cor-rosa-claro);
+}
 
-        #drop-area.highlight {
-            background-color: #fff0f0;
-            border-color: var(--cor-vermelho);
-            transform: scale(1.02);
-        }
+#upload-vacina-area .file-drop-area:hover {
+    border-color: var(--cor-vermelho-claro);
+    background: #fff0f0;
+}
 
-        #drop-area.highlight i {
-            color: var(--cor-vermelho);
-            transform: scale(1.1);
-        }
+/* Preview da carteirinha */
+.vacina-preview {
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: 8px;
+    border: 2px solid #e5e7eb;
+}
 
-        .drop-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-        }
+.vacina-preview.pdf {
+    width: 150px;
+    height: 200px;
+    background: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed #d1d5db;
+}
 
-        #drop-area i {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            color: var(--cor-vermelho-claro);
-            transition: all 0.3s ease;
-        }
+.vacina-preview.pdf i {
+    font-size: 3rem;
+    color: #dc2626;
+    margin-bottom: 0.5rem;
+}
 
-        #file-name-span {
-            font-weight: 600;
-            color: #555;
-            font-size: 1rem;
-        }
+.btn-remove-preview {
+    background: var(--cor-vermelho);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 0.5rem;
+}
 
-        #drop-area small {
-            color: #888;
-            font-size: 0.85rem;
-        }
+.btn-remove-preview:hover {
+    background: #b91c1c;
+}
+
+/* Ajuste para campo de cor quando vacinado */
+.cor-full-width {
+    grid-column: 1 / -1;
+}
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4">
@@ -537,11 +726,11 @@ error_log("Opções de status disponíveis: " . print_r($status_options, true));
                 </div>
             </div>
 
-            <div class="modal-body text-center">
+            <div class="modal-body fs-4 text-center">
                 <h1 class="mb-2">
                     Você realizou alterações no cadastro do seu pet.
                 </h1>
-                <p class="mb-0 text-muted small">
+                <p class="mb-0 fs-6 text-muted">
                     Para garantir a segurança da adoção, seu pet irá para o status de <strong class="text-warning-dark">Em Análise</strong> após salvar.
                 </p>
             </div>
@@ -598,23 +787,53 @@ error_log("Opções de status disponíveis: " . print_r($status_options, true));
                            value="<?php echo htmlspecialchars($pet['nome']); ?>">
                 </div>
             </div>
-            <div class="grid gap-6 grid-cols-1 md:grid-cols-2">
+
+            <!-- NOVO LAYOUT: Idade, Espécie e Sexo na mesma linha -->
+            <div class="form-row-3">
+                <!-- Idade Aproximada -->
                 <div>
-                    <label>Idade</label>
-                    <div class="flex gap-2">
-                        <input type="number" name="idade_valor" value="<?php echo $idade_valor_edit; ?>" class="input-style flex-1">
-                        <select name="idade_unidade" class="input-style w-32">
-                            <option value="anos" <?php echo $idade_unidade_edit == 'anos' ? 'selected' : ''; ?>>Anos</option>
-                            <option value="meses" <?php echo $idade_unidade_edit == 'meses' ? 'selected' : ''; ?>>Meses</option>
+                    <label>Idade Aproximada</label>
+                    <div class="age-input-group">
+                        <input 
+                            type="number" 
+                            name="idade_valor" 
+                            placeholder="Ex: 2" 
+                            required 
+                            min="1" 
+                            max="11"
+                            class="input-style age-value" 
+                            value="<?php echo $idade_valor_edit; ?>"
+                        >
+                        <select name="idade_unidade" id="idade_unidade-real" required class="select-hidden" aria-hidden="true" tabindex="-1">
+                            <option value="anos" <?= $idade_unidade_edit == 'anos' ? 'selected' : '' ?>>Anos</option>
+                            <option value="meses" <?= $idade_unidade_edit == 'meses' ? 'selected' : '' ?>>Meses</option>
                         </select>
+
+                        <div class="custom-select-wrapper age-unit-custom" data-target-select="idade_unidade-real">
+                            <button type="button" class="custom-select-trigger input-style w-full" 
+                                    aria-haspopup="listbox" 
+                                    aria-expanded="false">
+                                <span class="custom-select-value <?php echo empty($idade_unidade_edit) ? 'placeholder' : ''; ?>">
+                                    <?php 
+                                        if ($idade_unidade_edit == 'anos') echo 'Anos';
+                                        elseif ($idade_unidade_edit == 'meses') echo 'Meses';
+                                        else echo 'Unidade';
+                                    ?>
+                                </span>
+                                <span class="custom-select-arrow"></span>
+                            </button>
+                            <ul class="custom-select-options" role="listbox">
+                                <li class="custom-option" data-value="anos" role="option" tabindex="0">Anos</li>
+                                <li class="custom-option" data-value="meses" role="option" tabindex="0">Meses</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Espécie -->
                 <div>
                     <label id="select-label-especie">Espécie</label>
-                    <select name="especie" id="especie-real" class="select-hidden" aria-hidden="true" tabindex="-1">
+                    <select name="especie" id="especie-real" required class="select-hidden" aria-hidden="true" tabindex="-1">
                         <option value="cachorro" <?php echo ($pet['especie'] == 'cachorro') ? 'selected' : ''; ?>>Cachorro</option>
                         <option value="gato" <?php echo ($pet['especie'] == 'gato') ? 'selected' : ''; ?>>Gato</option>
                     </select>
@@ -624,23 +843,26 @@ error_log("Opções de status disponíveis: " . print_r($status_options, true));
                                 aria-haspopup="listbox" 
                                 aria-expanded="false" 
                                 aria-labelledby="select-label-especie">
-                            <span class="custom-select-value">
+                            <span class="custom-select-value <?php echo empty($pet['especie']) ? 'placeholder' : ''; ?>">
                                 <?php 
-                                    echo htmlspecialchars(ucfirst($pet['especie'])); 
+                                    if ($pet['especie'] == 'cachorro') echo 'Cachorro';
+                                    elseif ($pet['especie'] == 'gato') echo 'Gato';
+                                    else echo 'Espécie';
                                 ?>
                             </span>
                             <span class="custom-select-arrow"></span>
                         </button>
-                        
                         <ul class="custom-select-options" role="listbox" aria-labelledby="select-label-especie">
                             <li class="custom-option" data-value="cachorro" role="option" tabindex="0">Cachorro</li>
                             <li class="custom-option" data-value="gato" role="option" tabindex="0">Gato</li>
                         </ul>
                     </div>
                 </div>
+
+                <!-- Sexo -->
                 <div>
                     <label id="select-label-sexo">Sexo</label>
-                    <select name="sexo" id="sexo-real" class="select-hidden" aria-hidden="true" tabindex="-1">
+                    <select name="sexo" id="sexo-real" required class="select-hidden" aria-hidden="true" tabindex="-1">
                         <option value="macho" <?php echo ($pet['sexo'] == 'macho') ? 'selected' : ''; ?>>Macho</option>
                         <option value="femea" <?php echo ($pet['sexo'] == 'femea') ? 'selected' : ''; ?>>Fêmea</option>
                     </select>
@@ -650,8 +872,12 @@ error_log("Opções de status disponíveis: " . print_r($status_options, true));
                                 aria-haspopup="listbox" 
                                 aria-expanded="false" 
                                 aria-labelledby="select-label-sexo">
-                            <span class="custom-select-value">
-                                <?php echo htmlspecialchars(ucfirst($pet['sexo'])); ?>
+                            <span class="custom-select-value <?php echo empty($pet['sexo']) ? 'placeholder' : ''; ?>">
+                                <?php 
+                                    if ($pet['sexo'] == 'macho') echo 'Macho';
+                                    elseif ($pet['sexo'] == 'femea') echo 'Fêmea';
+                                    else echo 'Gênero';
+                                ?>
                             </span>
                             <span class="custom-select-arrow"></span>
                         </button>
@@ -663,10 +889,11 @@ error_log("Opções de status disponíveis: " . print_r($status_options, true));
                 </div>
             </div>
 
+            <!-- Resto dos campos mantidos -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label id="select-label-porte">Porte</label>
-                    <select name="porte" id="porte-real" class="select-hidden" aria-hidden="true" tabindex="-1">
+                    <select name="porte" id="porte-real" required class="select-hidden" aria-hidden="true" tabindex="-1">
                         <option value="pequeno" <?php echo ($pet['porte'] == 'pequeno') ? 'selected' : ''; ?>>Pequeno</option>
                         <option value="medio" <?php echo ($pet['porte'] == 'medio') ? 'selected' : ''; ?>>Médio</option>
                         <option value="grande" <?php echo ($pet['porte'] == 'grande') ? 'selected' : ''; ?>>Grande</option>
@@ -677,8 +904,13 @@ error_log("Opções de status disponíveis: " . print_r($status_options, true));
                                 aria-haspopup="listbox" 
                                 aria-expanded="false" 
                                 aria-labelledby="select-label-porte">
-                            <span class="custom-select-value">
-                                <?php echo htmlspecialchars(ucfirst($pet['porte'])); ?>
+                            <span class="custom-select-value <?php echo empty($pet['porte']) ? 'placeholder' : ''; ?>">
+                                <?php 
+                                    if ($pet['porte'] == 'pequeno') echo 'Pequeno';
+                                    elseif ($pet['porte'] == 'medio') echo 'Médio';
+                                    elseif ($pet['porte'] == 'grande') echo 'Grande';
+                                    else echo 'Porte';
+                                ?>
                             </span>
                             <span class="custom-select-arrow"></span>
                         </button>
@@ -696,52 +928,83 @@ error_log("Opções de status disponíveis: " . print_r($status_options, true));
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label for="cor">Cor</label>
-                    <input type="text" name="cor" id="cor" placeholder="Cor (Ex: Caramelo)" class="input-style w-full"
-                           value="<?php echo htmlspecialchars($pet['cor']); ?>">
-                </div>
-                <div>
-                    <label id="select-label-vacinacao">Vacinado?</label>
-                    <select name="status_vacinacao" id="status_vacinacao-real" class="select-hidden" aria-hidden="true" tabindex="-1">
-                        <option value="sim" <?php echo ($pet['status_vacinacao'] == 'sim') ? 'selected' : ''; ?>>Sim</option>
-                        <option value="nao" <?php echo ($pet['status_vacinacao'] == 'nao') ? 'selected' : ''; ?>>Não</option>
-                    </select>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="cor-vacinacao-container">
+    <div>
+        <label for="cor">Cor</label>
+        <input type="text" name="cor" id="cor" placeholder="Cor (Ex: Caramelo)" class="input-style w-full"
+               value="<?php echo htmlspecialchars($pet['cor']); ?>">
+    </div>
+    
+    <!-- Campo Vacinado? -->
+    <div id="vacinacao-field">
+        <label id="select-label-vacinacao">Vacinado?</label>
+        <?php if ($pet['status_vacinacao'] == 'sim'): ?>
+            <!-- Se já for vacinado, mostra apenas "Sim" e desabilita -->
+            <select name="status_vacinacao" id="status_vacinacao-real" required class="select-hidden" aria-hidden="true" tabindex="-1" disabled>
+                <option value="sim" selected>Sim</option>
+            </select>
 
-                    <div class="custom-select-wrapper" data-target-select="status_vacinacao-real">
-                        <button type="button" class="custom-select-trigger input-style w-full" 
-                                aria-haspopup="listbox" 
-                                aria-expanded="false" 
-                                aria-labelledby="select-label-vacinacao">
-                            <span class="custom-select-value">
-                                <?php echo htmlspecialchars(ucfirst($pet['status_vacinacao'])); ?>
-                            </span>
-                            <span class="custom-select-arrow"></span>
-                        </button>
-                        <ul class="custom-select-options" role="listbox" aria-labelledby="select-label-vacinacao">
-                            <li class="custom-option" data-value="sim" role="option" tabindex="0">Sim</li>
-                            <li class="custom-option" data-value="nao" role="option" tabindex="0">Não</li>
-                        </ul>
-                    </div>
-                </div>
+            <div class="custom-select-wrapper" data-target-select="status_vacinacao-real">
+                <button type="button" class="custom-select-trigger input-style w-full" disabled style="background-color: rgba(180, 100, 89, 0.35);">
+                    <span class="custom-select-value">Sim</span>
+                    <span class="custom-select-arrow" style="opacity: 0.5;"></span>
+                </button>
+                <ul class="custom-select-options" role="listbox" aria-labelledby="select-label-vacinacao" style="display: none;">
+                    <li class="custom-option selected" data-value="sim" role="option" tabindex="0">Sim</li>
+                </ul>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Input hidden para garantir que o valor seja enviado -->
+            <input type="hidden" name="status_vacinacao" value="sim">
+        <?php else: ?>
+            <!-- Se não for vacinado, permite escolher -->
+            <select name="status_vacinacao" id="status_vacinacao-real" required class="select-hidden" aria-hidden="true" tabindex="-1">
+                <option value="sim" <?php echo ($pet['status_vacinacao'] == 'sim') ? 'selected' : ''; ?>>Sim</option>
+                <option value="nao" <?php echo ($pet['status_vacinacao'] == 'nao') ? 'selected' : ''; ?>>Não</option>
+            </select>
+
+            <div class="custom-select-wrapper" data-target-select="status_vacinacao-real">
+                <button type="button" class="custom-select-trigger input-style w-full" 
+                        aria-haspopup="listbox" 
+                        aria-expanded="false" 
+                        aria-labelledby="select-label-vacinacao">
+                    <span class="custom-select-value <?php echo empty($pet['status_vacinacao']) ? 'placeholder' : ''; ?>">
+                        <?php 
+                            if ($pet['status_vacinacao'] == 'sim') echo 'Sim';
+                            elseif ($pet['status_vacinacao'] == 'nao') echo 'Não';
+                            else echo 'Vacinado?';
+                        ?>
+                    </span>
+                    <span class="custom-select-arrow"></span>
+                </button>
+                <ul class="custom-select-options" role="listbox" aria-labelledby="select-label-vacinacao">
+                    <li class="custom-option" data-value="sim" role="option" tabindex="0">Sim</li>
+                    <li class="custom-option" data-value="nao" role="option" tabindex="0">Não</li>
+                </ul>
+            </div>
+        <?php endif; ?>
+    </div>
+</div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6"> 
                 <div>
                     <label id="select-label-castracao">Castrado?</label>
-                    <select name="status_castracao" id="status_castracao-real" class="select-hidden" aria-hidden="true" tabindex="-1">
+                    <select name="status_castracao" id="status_castracao-real" required class="select-hidden" aria-hidden="true" tabindex="-1">
                         <option value="sim" <?php echo ($pet['status_castracao'] == 'sim') ? 'selected' : ''; ?>>Sim</option>
                         <option value="nao" <?php echo ($pet['status_castracao'] == 'nao') ? 'selected' : ''; ?>>Não</option>
                     </select>
-
+                    
                     <div class="custom-select-wrapper" data-target-select="status_castracao-real">
                         <button type="button" class="custom-select-trigger input-style w-full" 
                                 aria-haspopup="listbox" 
                                 aria-expanded="false" 
                                 aria-labelledby="select-label-castracao">
-                            <span class="custom-select-value">
-                                <?php echo htmlspecialchars(ucfirst($pet['status_castracao'])); ?>
+                            <span class="custom-select-value <?php echo empty($pet['status_castracao']) ? 'placeholder' : ''; ?>">
+                                <?php 
+                                    if ($pet['status_castracao'] == 'sim') echo 'Sim';
+                                    elseif ($pet['status_castracao'] == 'nao') echo 'Não';
+                                    else echo 'Castrado?';
+                                ?>
                             </span>
                             <span class="custom-select-arrow"></span>
                         </button>
@@ -751,38 +1014,38 @@ error_log("Opções de status disponíveis: " . print_r($status_options, true));
                         </ul>
                     </div>
                 </div>
-                
-                <div>
+
+                                <div>
                     <label id="select-label-disponibilidade">Status</label>
-<select name="status_disponibilidade" id="status_disponibilidade-real" class="select-hidden" aria-hidden="true" tabindex="-1">
-    <?php foreach ($status_options as $value => $label): ?>
-        <option value="<?php echo $value; ?>" <?php echo ($pet['status_disponibilidade'] == $value) ? 'selected' : ''; ?>>
-            <?php echo $label; ?>
-        </option>
-    <?php endforeach; ?>
-</select>
+                    <select name="status_disponibilidade" id="status_disponibilidade-real" class="select-hidden" aria-hidden="true" tabindex="-1">
+                        <?php foreach ($status_options as $value => $label): ?>
+                            <option value="<?php echo $value; ?>" <?php echo ($pet['status_disponibilidade'] == $value) ? 'selected' : ''; ?>>
+                                <?php echo $label; ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
 
                     <div class="custom-select-wrapper" data-target-select="status_disponibilidade-real">
                         <button type="button" class="custom-select-trigger input-style w-full" 
                                 aria-haspopup="listbox" 
                                 aria-expanded="false" 
                                 aria-labelledby="select-label-disponibilidade">
-<span class="custom-select-value">
-    <?php 
-    $status_display = $pet['status_disponibilidade'];
-    if ($status_display == 'Disponivel') {
-        echo 'Disponível';
-    } else if ($status_display == 'Indisponivel') {
-        echo 'Indisponível';
-    } else if ($status_display == 'Adotado') {
-        echo 'Adotado';
-    } else if ($status_display == 'Em Analise') {
-        echo 'Em Análise';
-    } else {
-        echo htmlspecialchars(ucfirst($status_display));
-    }
-    ?>
-</span>
+                            <span class="custom-select-value">
+                                <?php 
+                                $status_display = $pet['status_disponibilidade'];
+                                if ($status_display == 'Disponivel') {
+                                    echo 'Disponível';
+                                } else if ($status_display == 'Indisponivel') {
+                                    echo 'Indisponível';
+                                } else if ($status_display == 'Adotado') {
+                                    echo 'Adotado';
+                                } else if ($status_display == 'Em Analise') {
+                                    echo 'Em Análise';
+                                } else {
+                                    echo htmlspecialchars(ucfirst($status_display));
+                                }
+                                ?>
+                            </span>
                             <span class="custom-select-arrow"></span>
                         </button>
                         <ul class="custom-select-options" role="listbox" aria-labelledby="select-label-disponibilidade">
@@ -794,29 +1057,66 @@ error_log("Opções de status disponíveis: " . print_r($status_options, true));
                         </ul>
                     </div>
                 </div>
+
             </div>
-            <div class="border p-4 rounded-lg bg-gray-50">
-        <h4 class="font-bold text-gray-700 mb-2">Documentação Sanitária</h4>
-        
+
+            <hr class="border-gray-200 my-4">
+
+            
+<!-- SEÇÃO DE VACINAÇÃO MODIFICADA -->
+<div class="grid gap-4 mt-2 grid-cols-1 md:grid-cols-1" id="vacinacao-section">
+    <h3 class="text-lg font-bold text-gray-700">Documentação de Vacinação</h3>
+    
+    <!-- Área que aparece apenas quando o pet É VACINADO -->
+    <div id="vacinado-content" style="display: <?php echo ($pet['status_vacinacao'] == 'sim') ? 'block' : 'none'; ?>;">
         <?php if (!empty($pet['carteira_vacinacao'])): ?>
-            <div class="mb-3 flex items-center gap-3">
-                <i class="fas fa-check-circle text-green-500 text-xl"></i>
-                <div>
-                    <p class="text-sm font-semibold">Carteirinha enviada</p>
-                    <a href="<?php echo $pet['carteira_vacinacao']; ?>" target="_blank" class="text-blue-600 text-sm hover:underline">
-                        <i class="fas fa-eye"></i> Visualizar documento atual
-                    </a>
+            <div class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div class="flex items-center gap-3 mb-3">
+                    <i class="fas fa-check-circle text-green-500 text-xl"></i>
+                    <div class="flex-1">
+                        <p class="text-sm font-semibold text-green-800">Carteirinha de vacinação enviada</p>
+                        <div class="flex flex-wrap gap-3 mt-2">
+                            <a href="<?php echo $pet['carteira_vacinacao']; ?>" target="_blank" class="vacina-view">
+                                <i class="fas fa-eye"></i> Visualizar carteirinha atual
+                            </a>
+                            <button type="button" id="replace-vacina-btn" class="vacina-view bg-blue-600 hover:bg-blue-700">
+                                <i class="fas fa-sync-alt"></i> Alterar carteirinha
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         <?php else: ?>
-            <div class="text-red-500 text-sm mb-2"><i class="fas fa-exclamation-circle"></i> Pendente envio</div>
+            <div class="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-book-medical fs-4"></i>
+                    <p class="text-sm font-semibold text-yellow-800">Nenhuma carteirinha enviada. Adicione a carteirinha de vacinação.</p>
+                </div>
+            </div>
         <?php endif; ?>
-
-        <label class="block text-sm font-medium text-gray-700">Atualizar Carteirinha (Opcional)</label>
-        <input type="file" name="carteira_vacinacao" class="input-style w-full mt-1" accept="image/*,.pdf">
-        <p class="text-xs text-gray-500 mt-1">Envie apenas se quiser substituir o arquivo atual.</p>
+        
+        <!-- Campo de upload da carteirinha (sempre visível quando vacinado) -->
+        <div class="mt-4" id="upload-vacina-area" style="display: <?php echo empty($pet['carteira_vacinacao']) ? 'block' : 'none'; ?>;">
+            <label class="font-semibold text-gray-700 mb-1 block">Carteirinha de Vacinação <span class="text-red-500">*</span></label>
+            <div id="drop-area-vacina" class="file-drop-area">
+                <i class="fas fa-file-medical"></i>
+                <div class="file-info" id="file-name-vacina">Arraste e solte o arquivo aqui ou clique para selecionar</div>
+                <div class="file-hint">Formatos aceitos: JPG, PNG, PDF, WEBP</div>
+                <input type="file" name="carteira_vacinacao" id="file_vacina" class="hidden" accept="image/*,.pdf" <?php echo ($pet['status_vacinacao'] == 'sim' && empty($pet['carteira_vacinacao'])) ? 'required' : ''; ?>>
+            </div>
+            <p class="text-sm text-red-500 mt-1">Arquivo obrigatório para pets vacinados.</p>
+        </div>
     </div>
-            
+
+    <!-- Mensagem quando NÃO É VACINADO -->
+    <div id="nao-vacinado-content" style="display: <?php echo ($pet['status_vacinacao'] == 'nao') ? 'block' : 'none'; ?>;">
+        <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg text-center">
+            <i class="fas fa-info-circle text-blue-500 text-xl mb-2"></i>
+            <p class="text-sm text-blue-800">O pet não é vacinado. As opções de carteirinha ficarão disponíveis quando marcar como vacinado.</p>
+        </div>
+    </div>
+</div>
+
             <div>
                 <label class="font-semibold text-gray-700">Gerenciar Fotos</label>
                 <?php if (empty($pet_fotos)): ?>
@@ -840,13 +1140,11 @@ error_log("Opções de status disponíveis: " . print_r($status_options, true));
                     </div>
                 <?php endif; ?>
 
-                <!-- Área de Drag and Drop -->
-                <div id="drop-area" class="input-style w-full file-input-label mt-4">
+                <!-- Área de Drag and Drop para novas fotos -->
+                <div id="drop-area" class="file-drop-area mt-4">
                     <i class="fas fa-cloud-upload-alt"></i>
-                    <div class="drop-content">
-                        <span id="file-name-span">Arraste e solte fotos aqui ou clique para selecionar</span>
-                        <small class="block mt-1">Máximo: 5 fotos no total | Formatos: PNG, JPG, JPEG, WEBP</small>
-                    </div>
+                    <div class="file-info" id="file-name-span">Arraste e solte fotos aqui ou clique para selecionar</div>
+                    <div class="file-hint">Máximo: 5 fotos | Formatos: PNG, JPG, JPEG, WEBP</div>
                     <input type="file" id="fotos_novas_input" class="hidden" multiple accept="image/png, image/jpeg, image/jpg, image/webp">
                 </div>
                 
@@ -856,17 +1154,42 @@ error_log("Opções de status disponíveis: " . print_r($status_options, true));
                 <small id="limite-fotos-helper" class="text-sm text-gray-600 mt-1"></small>
             </div>
 
+       <!-- CAMPOS DINÂMICOS PARA CARACTERÍSTICAS ESPECIAIS -->
+<div id="dynamic-fields-container">
+    <!-- Alergias (aparece quando selecionar característica "Alergia") -->
+    <div id="alergia-field" class="dynamic-field" style="display: <?php echo (in_array('Alergia', $pet_caracteristicas)) ? 'block' : 'none'; ?>;">
+        <h4><i class="fas fa-allergies"></i> Alergias do Pet</h4>
+        <div id="alergias-container">
+            <!-- Inputs de alergia serão adicionados aqui dinamicamente -->
+        </div>
+        <button type="button" id="add-alergia-btn" class="btn-add-alergia">
+            <i class="fas fa-plus"></i> Adicionar Alergia
+        </button>
+    </div>
+
+    <!-- Medicação (aparece quando selecionar característica "Medicação") -->
+    <div id="medicacao-field" class="dynamic-field" style="display: <?php echo (in_array('Medicação', $pet_caracteristicas)) ? 'block' : 'none'; ?>;">
+        <h4><i class="fas fa-pills"></i> Medicação do Pet</h4>
+        <input type="text" name="medicacao" id="medicacao_input" placeholder="Nome da medicação que o pet toma" 
+               class="input-style medicacao-input" value="<?php echo htmlspecialchars($medicacao); ?>">
+    </div>
+</div>
+
+            <hr class="border-gray-200 my-4">
+                
             <div>
+                <label for="openModalBtn" class="sr-only">Características</label>
                 <button type="button" id="openModalBtn" class="input-style w-full text-left">
                     <span id="tagsPlaceholder" class="tags-placeholder">Selecionar Características...</span>
                     <span class="tags-preview" id="tagsPreview"></span>
                 </button>
-                <div id="hidden-tags-container"></div>
             </div>
+
+            <div id="hidden-tags-container"></div>
 
             <div>
                 <label class="sr-only" for="comportamento">Comportamento (Ex: Dócil, adora crianças...)</label>
-                <input type="text" name="comportamento" value="<?php echo htmlspecialchars($pet['comportamento']); ?>" id="comportamento" rows="4" placeholder="Conte um pouco sobre o pet..." class="input-style w-full"></input>
+                <input type="text" name="comportamento" id="comportamento" placeholder="Conte um pouco sobre o pet..." class="input-style w-full" value="<?php echo htmlspecialchars($pet['comportamento']); ?>">
             </div>
 
             <div class="flex justify-center w-55 mx-auto">
@@ -881,6 +1204,7 @@ error_log("Opções de status disponíveis: " . print_r($status_options, true));
     </div>
 </div>
 
+<!-- Modal de Características -->
 <div id="charModal" class="char-modal">
     <div class="char-modal-content">
         <div class="char-modal-header">
@@ -892,6 +1216,7 @@ error_log("Opções de status disponíveis: " . print_r($status_options, true));
         </div>
 
         <div class="char-modal-body">
+            <!-- Conteúdo do modal mantido igual ao cadastrar-pet.php -->
             <h3>Temperamento</h3>
             <div class="char-tags-container">
                 <span class="char-tag" data-color="laranja" data-value="Dócil"><i class="fa-solid fa-face-smile"></i> Dócil <i class="fas fa-check"></i></span>
@@ -950,7 +1275,7 @@ error_log("Opções de status disponíveis: " . print_r($status_options, true));
                 <span class="char-tag" data-color="rosa" data-value="1ª Adoção"><i class="fa-solid fa-star"></i> 1ª Adoção <i class="fas fa-check"></i></span>
             </div>
         </div>
-
+        
         <div class="char-modal-footer">
             <button type="button" class="btn btn-cancelar" id="cancelModalBtn">Cancelar</button>
             <button type="button" class="btn btn-salvar" id="saveModalBtn">Salvar Seleção (0/5)</button>
@@ -1023,10 +1348,391 @@ function checkFormChanges() {
     });
 }
 
+// Mostrar campos dinâmicos baseado nas características existentes
+function showDynamicFieldsBasedOnCharacteristics() {
+    const hasAlergia = <?php echo (in_array('Alergia', $pet_caracteristicas)) ? 'true' : 'false'; ?>;
+    const hasMedicacao = <?php echo (in_array('Medicação', $pet_caracteristicas)) ? 'true' : 'false'; ?>;
+    
+    if (hasAlergia) {
+        document.getElementById('alergia-field').style.display = 'block';
+    }
+    
+    if (hasMedicacao) {
+        document.getElementById('medicacao-field').style.display = 'block';
+    }
+}
+
+// Chamar a função quando a página carregar
+document.addEventListener('DOMContentLoaded', showDynamicFieldsBasedOnCharacteristics);
+
 // Inicializar a verificação de mudanças
 document.addEventListener('DOMContentLoaded', checkFormChanges);
 
-// Implementação do Drag and Drop
+// VALIDAÇÃO DA IDADE
+document.addEventListener('DOMContentLoaded', function() {
+    const idadeValorInput = document.querySelector('input[name="idade_valor"]');
+    const idadeUnidadeSelect = document.getElementById('idade_unidade-real');
+    
+    // Validação para aceitar apenas números
+    idadeValorInput.addEventListener('input', function() {
+        // Remove qualquer caractere não numérico
+        this.value = this.value.replace(/[^0-9]/g, '');
+        
+        // Validação específica para meses
+        if (idadeUnidadeSelect.value === 'meses' && this.value > 11) {
+            this.value = 11;
+            if (typeof showToast === 'function') {
+                showToast('A idade em meses não pode ser maior que 11.', 'warning');
+            }
+        }
+    });
+});
+
+// DRAG & DROP PARA CARTEIRINHA DE VACINAÇÃO
+document.addEventListener('DOMContentLoaded', function() {
+    const dropAreaVacina = document.getElementById('drop-area-vacina');
+    const fileInputVacina = document.getElementById('file_vacina');
+    const fileNameVacina = document.getElementById('file-name-vacina');
+    const previewVacina = document.getElementById('preview-vacina');
+
+    // Prevenir comportamentos padrão
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropAreaVacina.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    // Efeitos visuais
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropAreaVacina.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropAreaVacina.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight() {
+        dropAreaVacina.classList.add('dragover');
+    }
+
+    function unhighlight() {
+        dropAreaVacina.classList.remove('dragover');
+    }
+
+    // Manipular arquivos dropados
+    dropAreaVacina.addEventListener('drop', handleDropVacina, false);
+
+    function handleDropVacina(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFilesVacina(files);
+    }
+
+    // Manipular seleção via clique
+    dropAreaVacina.addEventListener('click', () => {
+        fileInputVacina.click();
+    });
+
+    fileInputVacina.addEventListener('change', function() {
+        handleFilesVacina(this.files);
+    });
+
+    function handleFilesVacina(files) {
+        if (files.length) {
+            const file = files[0];
+            // Validação do tipo de arquivo
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf'];
+            if (!allowedTypes.includes(file.type)) {
+                if (typeof showToast === 'function') {
+                    showToast('Formato de arquivo não permitido. Use JPG, PNG, WEBP ou PDF.', 'danger');
+                }
+                return;
+            }
+            
+            // Atualiza a interface
+            fileNameVacina.textContent = file.name;
+            previewVacina.textContent = 'Arquivo selecionado: ' + file.name;
+            previewVacina.style.color = 'green';
+            
+            // Atualiza o input file
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            fileInputVacina.files = dataTransfer.files;
+        }
+    }
+});
+
+// CONTROLE DA VACINAÇÃO
+document.addEventListener('DOMContentLoaded', function() {
+    const statusVacinacaoReal = document.getElementById('status_vacinacao-real');
+    const vacinadoContent = document.getElementById('vacinado-content');
+    const naoVacinadoContent = document.getElementById('nao-vacinado-content');
+    const fileInputVacina = document.getElementById('file_vacina');
+    const replaceVacinaBtn = document.getElementById('replace-vacina-btn');
+    const uploadVacinaArea = document.getElementById('upload-vacina-area');
+
+    // Função para toggle da seção de vacinação
+    function toggleVacinacaoSection() {
+        const isVacinado = statusVacinacaoReal ? statusVacinacaoReal.value === 'sim' : <?php echo $pet['status_vacinacao'] == 'sim' ? 'true' : 'false'; ?>;
+
+        // Mostra/oculta conteúdos
+        if (vacinadoContent) vacinadoContent.style.display = isVacinado ? 'block' : 'none';
+        if (naoVacinadoContent) naoVacinadoContent.style.display = isVacinado ? 'none' : 'block';
+
+        // Se for vacinado e não tem carteirinha, torna o campo obrigatório
+        if (fileInputVacina) {
+            if (isVacinado && !<?php echo !empty($pet['carteira_vacinacao']) ? 'true' : 'false'; ?>) {
+                fileInputVacina.required = true;
+            } else {
+                fileInputVacina.required = false;
+            }
+        }
+    }
+
+    // Botão para substituir carteirinha
+    if (replaceVacinaBtn && uploadVacinaArea) {
+        replaceVacinaBtn.addEventListener('click', function() {
+            uploadVacinaArea.style.display = 'block';
+            this.style.display = 'none';
+            if (fileInputVacina) {
+                fileInputVacina.required = true;
+            }
+        });
+    }
+
+    // Inicializar estado
+    toggleVacinacaoSection();
+
+    // Observar mudanças no select de vacinação (apenas se não estiver desabilitado)
+    if (statusVacinacaoReal && !statusVacinacaoReal.disabled) {
+        statusVacinacaoReal.addEventListener('change', function() {
+            toggleVacinacaoSection();
+            
+            // Se mudou para "Sim", torna o campo obrigatório
+            if (fileInputVacina && this.value === 'sim') {
+                fileInputVacina.required = true;
+            }
+            
+            // Disparar evento de mudança no formulário
+            if (typeof window.formHasChanges !== 'undefined') {
+                window.formHasChanges = true;
+            }
+        });
+    }
+
+    // Validação do formulário para carteirinha obrigatória
+    const form = document.getElementById('form-edit-pet');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const isVacinado = statusVacinacaoReal ? statusVacinacaoReal.value === 'sim' : <?php echo $pet['status_vacinacao'] == 'sim' ? 'true' : 'false'; ?>;
+            const hasCarteirinha = <?php echo !empty($pet['carteira_vacinacao']) ? 'true' : 'false'; ?>;
+            const fileSelected = fileInputVacina && fileInputVacina.files.length > 0;
+            
+            // Se é vacinado, não tem carteirinha atual e não selecionou novo arquivo
+            if (isVacinado && !hasCarteirinha && !fileSelected) {
+                e.preventDefault();
+                if (typeof showToast === 'function') {
+                    showToast('Por favor, envie a carteirinha de vacinação, pois o pet é vacinado.', 'danger');
+                }
+                // Rola até a seção de vacinação
+                document.getElementById('vacinacao-section').scrollIntoView({ 
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+            }
+        });
+    }
+});
+
+// DRAG & DROP SIMPLIFICADO PARA CARTEIRINHA (SEM PREVIEW)
+document.addEventListener('DOMContentLoaded', function() {
+    const dropAreaVacina = document.getElementById('drop-area-vacina');
+    const fileInputVacina = document.getElementById('file_vacina');
+    const fileNameVacina = document.getElementById('file-name-vacina');
+
+    if (!dropAreaVacina || !fileInputVacina) return;
+
+    // Prevenir comportamentos padrão
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropAreaVacina.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    // Efeitos visuais
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropAreaVacina.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropAreaVacina.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight() {
+        dropAreaVacina.classList.add('dragover');
+    }
+
+    function unhighlight() {
+        dropAreaVacina.classList.remove('dragover');
+    }
+
+    // Manipular arquivos dropados
+    dropAreaVacina.addEventListener('drop', handleDropVacina, false);
+
+    function handleDropVacina(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFilesVacina(files);
+    }
+
+    // Manipular seleção via clique
+    dropAreaVacina.addEventListener('click', () => {
+        fileInputVacina.click();
+    });
+
+    fileInputVacina.addEventListener('change', function() {
+        handleFilesVacina(this.files);
+    });
+
+    function handleFilesVacina(files) {
+        if (files.length) {
+            const file = files[0];
+            // Validação do tipo de arquivo
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf'];
+            if (!allowedTypes.includes(file.type)) {
+                if (typeof showToast === 'function') {
+                    showToast('Formato de arquivo não permitido. Use JPG, PNG, WEBP ou PDF.', 'danger');
+                }
+                return;
+            }
+            
+            // Validação do tamanho do arquivo (opcional: 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                if (typeof showToast === 'function') {
+                    showToast('Arquivo muito grande. Tamanho máximo: 5MB.', 'danger');
+                }
+                return;
+            }
+            
+            // Atualiza a interface
+            fileNameVacina.textContent = file.name;
+            fileNameVacina.style.color = 'green';
+            
+            // Atualiza o input file
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            fileInputVacina.files = dataTransfer.files;
+
+            // Disparar evento de mudança no formulário
+            if (typeof window.formHasChanges !== 'undefined') {
+                window.formHasChanges = true;
+            }
+        }
+    }
+});
+
+// CAMPOS DINÂMICOS PARA ALERGIAS E MEDICAÇÃO
+document.addEventListener('DOMContentLoaded', function() {
+    const alergiaField = document.getElementById('alergia-field');
+    const medicacaoField = document.getElementById('medicacao-field');
+    const alergiasContainer = document.getElementById('alergias-container');
+    const addAlergiaBtn = document.getElementById('add-alergia-btn');
+    
+    // Preencher alergias existentes do PHP
+    const alergiasExistentes = <?php echo json_encode($alergias); ?>;
+    if (alergiasExistentes.length > 0 && alergiasExistentes[0] !== '') {
+        alergiasExistentes.forEach((alergia, index) => {
+            if (alergia.trim() !== '') {
+                addAlergiaInput(alergia);
+            }
+        });
+    } else {
+        // Adiciona um input vazio por padrão
+        addAlergiaInput('');
+    }
+    
+    // Função para adicionar input de alergia
+    function addAlergiaInput(value = '') {
+        const inputGroup = document.createElement('div');
+        inputGroup.className = 'alergia-input-group';
+        
+        const inputId = `alergia_${Date.now()}`;
+        inputGroup.innerHTML = `
+            <input type="text" name="alergias[]" value="${value}" 
+                   placeholder="Nome da alergia" class="input-style alergia-input" id="${inputId}">
+            <button type="button" class="btn-remove-alergia" ${alergiasContainer.children.length === 0 ? 'disabled' : ''}>
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        alergiasContainer.appendChild(inputGroup);
+        
+        // Atualiza estado dos botões de remover
+        updateRemoveButtons();
+        
+        // Foca no novo input
+        document.getElementById(inputId).focus();
+    }
+    
+    // Atualizar estado dos botões de remover
+    function updateRemoveButtons() {
+        const removeButtons = alergiasContainer.querySelectorAll('.btn-remove-alergia');
+        removeButtons.forEach((btn, index) => {
+            btn.disabled = (index === 0 && removeButtons.length === 1);
+        });
+    }
+    
+    // Event listener para adicionar alergia
+    addAlergiaBtn.addEventListener('click', () => {
+        addAlergiaInput();
+    });
+    
+    // Event listener para remover alergia (delegação de evento)
+    alergiasContainer.addEventListener('click', function(e) {
+        if (e.target.closest('.btn-remove-alergia')) {
+            const inputGroup = e.target.closest('.alergia-input-group');
+            if (inputGroup && alergiasContainer.children.length > 1) {
+                inputGroup.remove();
+                updateRemoveButtons();
+            }
+        }
+    });
+    
+    // Mostrar/ocultar campos baseado nas características selecionadas
+    function toggleDynamicFields(selectedTags) {
+        const hasAlergia = selectedTags.some(tag => tag.value === 'Alergia');
+        const hasMedicacao = selectedTags.some(tag => tag.value === 'Medicação');
+        
+        // Alergia
+        if (hasAlergia) {
+            alergiaField.style.display = 'block';
+        } else {
+            alergiaField.style.display = 'none';
+            // Limpa os inputs de alergia, mas mantém um vazio
+            alergiasContainer.innerHTML = '';
+            addAlergiaInput('');
+        }
+        
+        // Medicação
+        if (hasMedicacao) {
+            medicacaoField.style.display = 'block';
+        } else {
+            medicacaoField.style.display = 'none';
+            document.getElementById('medicacao_input').value = '';
+        }
+    }
+    
+    // Expor a função globalmente para o modal de características
+    window.toggleDynamicFields = toggleDynamicFields;
+});
+
+// Implementação do Drag and Drop para Fotos
 document.addEventListener('DOMContentLoaded', function() {
     const dropArea = document.getElementById('drop-area');
     const fileInput = document.getElementById('fotos_novas_input');
@@ -1055,11 +1761,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function highlight() {
-        dropArea.classList.add('highlight');
+        dropArea.classList.add('dragover');
     }
 
     function unhighlight() {
-        dropArea.classList.remove('highlight');
+        dropArea.classList.remove('dragover');
     }
 
     // Manipular arquivos dropados
@@ -1085,9 +1791,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!files.length) return;
 
         // Validação preliminar
-        const fotosMarcadasParaExcluir = document.querySelectorAll('input[name="fotos_para_excluir[]"]:checked').length;
-        const fotosAtuaisRestantes = totalFotosAtuais - fotosMarcadasParaExcluir;
-        const totalPreliminar = fotosAtuaisRestantes + files.length;
+        const totalPreliminar = files.length;
 
         if (totalPreliminar > MAX_FOTOS_GLOBAL) {
             if (typeof showToast === 'function') {
@@ -1160,8 +1864,6 @@ document.addEventListener('DOMContentLoaded', function() {
         finalInput.files = dataTransfer.files;
         
         // Re-adiciona os arquivos que ainda estão no preview
-        // Esta é uma implementação simplificada - em produção você precisaria
-        // manter um array com os arquivos convertidos
         fileNameSpan.textContent = 'Arraste e solte fotos aqui ou clique para selecionar';
         validarLimiteFotos();
     }
@@ -1301,6 +2003,7 @@ function setupCustomSelect(wrapper) {
             
             // Atualiza o valor visual no "trigger"
             valueSpan.textContent = option.textContent;
+            valueSpan.classList.remove('placeholder');
             
             // ATUALIZA O VALOR NO <select> ESCONDIDO
             if (realSelect) {
@@ -1311,7 +2014,8 @@ function setupCustomSelect(wrapper) {
             }
             
             // Fecha o menu
-            trigger.click();
+            trigger.setAttribute('aria-expanded', 'false');
+            optionsList.style.display = 'none';
         });
     });
 
@@ -1419,22 +2123,32 @@ function setupCustomSelect(wrapper) {
                 tagsPlaceholder.classList.add('tags-placeholder');
             }
         }
+        
+        // 4. Atualiza campos dinâmicos (alergia e medicação)
+        if (typeof toggleDynamicFields === 'function') {
+            toggleDynamicFields(selectedTags);
+        }
     }
     
-    // Função para pré-popular no load da página
-    function prefillCharacteristics() {
-        existingCharacteristics.forEach(value => {
-            const matchingTag = document.querySelector(`.char-tag[data-value="${value}"]`);
-            if (matchingTag) {
-                const iconHTML = matchingTag.querySelector('i:first-child').outerHTML;
-                if (selectedTags.length < MAX_SELECTIONS) {
-                    selectedTags.push({ value: value, iconHTML: iconHTML });
-                }
+   // Função para pré-popular no load da página
+function prefillCharacteristics() {
+    existingCharacteristics.forEach(value => {
+        const matchingTag = document.querySelector(`.char-tag[data-value="${value}"]`);
+        if (matchingTag) {
+            const iconHTML = matchingTag.querySelector('i:first-child').outerHTML;
+            if (selectedTags.length < MAX_SELECTIONS) {
+                selectedTags.push({ value: value, iconHTML: iconHTML });
             }
-        });
-        // Aplica as tags carregadas
-        saveAndApplyTags();
+        }
+    });
+    // Aplica as tags carregadas
+    saveAndApplyTags();
+    
+    // MOSTRAR CAMPOS DINÂMICOS BASEADO NAS CARACTERÍSTICAS EXISTENTES
+    if (typeof toggleDynamicFields === 'function') {
+        toggleDynamicFields(selectedTags);
     }
+}
 
     // --- Event Handlers ---
     if (openBtn) openBtn.addEventListener('click', openModal);

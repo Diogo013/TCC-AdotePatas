@@ -16,8 +16,8 @@ unset($_SESSION['tipo_mensagem']);
 // --- INICIALIZA VARIÁVEIS ---
 $nome = $_SESSION['form_data']['nome'] ?? '';
 $especie = $_SESSION['form_data']['especie'] ?? '';
-$idade_valor = $_SESSION['form_data']['idade_valor'] ?? ''; // Separado
-$idade_unidade = $_SESSION['form_data']['idade_unidade'] ?? 'anos'; // Separado
+$idade_valor = $_SESSION['form_data']['idade_valor'] ?? '';
+$idade_unidade = $_SESSION['form_data']['idade_unidade'] ?? 'anos';
 $porte = $_SESSION['form_data']['porte'] ?? '';
 $sexo = $_SESSION['form_data']['sexo'] ?? ''; 
 $raca = $_SESSION['form_data']['raca'] ?? '';
@@ -26,12 +26,13 @@ $status_vacinacao = $_SESSION['form_data']['status_vacinacao'] ?? '';
 $status_castracao = $_SESSION['form_data']['status_castracao'] ?? '';
 $comportamento = $_SESSION['form_data']['comportamento'] ?? '';
 $caracteristicas = $_SESSION['form_data']['caracteristicas'] ?? [];
+$alergias = $_SESSION['form_data']['alergias'] ?? [''];
+$medicacao = $_SESSION['form_data']['medicacao'] ?? '';
 
 unset($_SESSION['form_data']);
 
 // --- PROCESSAMENTO (POST) ---
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-
     // 1. Coleta de dados
     $nome = trim($_POST['nome'] ?? '');
     $especie = trim($_POST['especie'] ?? '');
@@ -39,7 +40,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Tratamento da Idade Composta
     $idade_valor = trim($_POST['idade_valor'] ?? '');
     $idade_unidade = trim($_POST['idade_unidade'] ?? 'anos');
-    $idade_final = "$idade_valor $idade_unidade"; // Ex: "3 meses" ou "2 anos"
+    $idade_final = "$idade_valor $idade_unidade";
 
     $porte = trim($_POST['porte'] ?? '');
     $sexo = trim($_POST['sexo'] ?? '');
@@ -49,6 +50,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $status_castracao = trim($_POST['status_castracao'] ?? '');
     $comportamento = trim($_POST['comportamento'] ?? '');
     $caracteristicas = $_POST['caracteristicas'] ?? [];
+    $alergias = $_POST['alergias'] ?? [];
+    $medicacao = trim($_POST['medicacao'] ?? '');
     
     // Novas validações
     $amamentacao_completa = isset($_POST['amamentacao_completa']);
@@ -62,17 +65,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $caminho_vacina = null;
 
     // 2. Validações
-    if (empty($nome)) $erros[] = "O campo 'Nome' é obrigatório.";
-    if (empty($idade_valor)) $erros[] = "Informe o valor da idade.";
+    if (empty($nome)) $erros['nome'] = "O campo 'Nome' é obrigatório.";
+    if (empty($idade_valor)) $erros['idade'] = "Informe o valor da idade.";
+    
+    // Validação da idade - apenas números
+    if (!empty($idade_valor) && !is_numeric($idade_valor)) {
+        $erros['idade'] = "A idade deve conter apenas números.";
+    }
+    
+    // Validação de idade máxima em meses
+    if ($idade_unidade == 'meses' && $idade_valor > 11) {
+        $erros['idade'] = "A idade em meses não pode ser maior que 11. Para idades maiores, selecione 'Anos'.";
+    }
     
     // Validação de Amamentação (Regra de Negócio)
     if (!$amamentacao_completa) {
-        $erros[] = "O pet não pode ser cadastrado se não tiver concluído a amamentação.";
+        $erros['amamentacao'] = "O pet não pode ser cadastrado se não tiver concluído a amamentação.";
     }
 
-    // Validação de Upload da Carteirinha (Obrigatório)
+// Validação de Upload da Carteirinha (Obrigatório apenas se vacinado)
+if ($status_vacinacao === 'sim') {
     if (!isset($_FILES['carteira_vacinacao']) || $_FILES['carteira_vacinacao']['error'] != UPLOAD_ERR_OK) {
-        $erros[] = "É obrigatório enviar a foto ou PDF da carteirinha de vacinação para comprovação.";
+        $erros['carteira_vacinacao'] = "É obrigatório enviar a foto ou PDF da carteirinha de vacinação para comprovação, pois o pet foi marcado como vacinado.";
     } else {
         // Processar Carteirinha
         $vacina_file = $_FILES['carteira_vacinacao'];
@@ -80,7 +94,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $allowed_vacina = ['jpg', 'jpeg', 'png', 'pdf', 'webp'];
         
         if (!in_array($ext, $allowed_vacina)) {
-            $erros[] = "Formato da carteirinha inválido. Use JPG, PNG ou PDF.";
+            $erros['carteira_vacinacao'] = "Formato da carteirinha inválido. Use JPG, PNG, WEBP ou PDF.";
         } else {
             $upload_dir_vacina = 'uploads/documentos/';
             if (!is_dir($upload_dir_vacina)) mkdir($upload_dir_vacina, 0755, true);
@@ -89,16 +103,39 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $caminho_vacina = $upload_dir_vacina . $nome_vacina;
             
             if (!move_uploaded_file($vacina_file['tmp_name'], $caminho_vacina)) {
-                $erros[] = "Erro ao salvar carteirinha de vacinação.";
+                $erros['carteira_vacinacao'] = "Erro ao salvar carteirinha de vacinação.";
             }
         }
     }
-
+} else {
+    // Se não for vacinado, não é obrigatório enviar carteirinha
+    // Mas se enviou, processa normalmente (opcional)
+    if (isset($_FILES['carteira_vacinacao']) && $_FILES['carteira_vacinacao']['error'] == UPLOAD_ERR_OK) {
+        $vacina_file = $_FILES['carteira_vacinacao'];
+        $ext = strtolower(pathinfo($vacina_file['name'], PATHINFO_EXTENSION));
+        $allowed_vacina = ['jpg', 'jpeg', 'png', 'pdf', 'webp'];
+        
+        if (!in_array($ext, $allowed_vacina)) {
+            $erros['carteira_vacinacao'] = "Formato da carteirinha inválido. Use JPG, PNG, WEBP ou PDF.";
+        } else {
+            $upload_dir_vacina = 'uploads/documentos/';
+            if (!is_dir($upload_dir_vacina)) mkdir($upload_dir_vacina, 0755, true);
+            
+            $nome_vacina = uniqid('vacina_') . '.' . $ext;
+            $caminho_vacina = $upload_dir_vacina . $nome_vacina;
+            
+            if (!move_uploaded_file($vacina_file['tmp_name'], $caminho_vacina)) {
+                $erros['carteira_vacinacao'] = "Erro ao salvar carteirinha de vacinação.";
+            }
+        }
+    } else {
+        $caminho_vacina = null; // Não é vacinado e não enviou arquivo
+    }
+}
     // Validação das Fotos do Pet
     if (isset($_FILES['fotos_novas']) && !empty(array_filter($_FILES['fotos_novas']['name']))) {
-        // (Lógica de fotos mantida igual ao anterior...)
         $total_files = count($_FILES['fotos_novas']['name']);
-        if ($total_files > 5) $erros[] = "Máximo 5 fotos.";
+        if ($total_files > 5) $erros['fotos'] = "Máximo 5 fotos.";
         
         $upload_dir = 'uploads/pets/';
         if (!is_dir($upload_dir)) mkdir($upload_dir, 0755, true);
@@ -106,23 +143,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         for ($i = 0; $i < $total_files; $i++) {
             if ($_FILES['fotos_novas']['error'][$i] == UPLOAD_ERR_OK) {
                 $tmp_name = $_FILES['fotos_novas']['tmp_name'][$i];
-                $name = uniqid() . '.webp'; // Assumindo que o JS converte ou aceitamos webp
+                $name = uniqid() . '.webp';
                 if (move_uploaded_file($tmp_name, $upload_dir . $name)) {
                     $fotos_salvas_paths[] = $upload_dir . $name;
                 }
             }
         }
     } else {
-        $erros[] = "Pelo menos uma foto do pet é obrigatória.";
+        $erros['fotos'] = "Pelo menos uma foto do pet é obrigatória.";
     }
 
     // 3. Inserção
     if (!empty($erros)) {
-        $_SESSION['mensagem_status'] = $erros[0];
+        $_SESSION['erros_form'] = $erros;
+        $_SESSION['mensagem_status'] = "Por favor, corrija os erros abaixo.";
         $_SESSION['tipo_mensagem'] = 'danger';
-        // Limpa arquivos se deu erro
-        if ($caminho_vacina && file_exists($caminho_vacina)) @unlink($caminho_vacina);
-        foreach ($fotos_salvas_paths as $p) if (file_exists($p)) @unlink($p);
         header("Location: cadastrar-pet.php");
         exit;
     } else {
@@ -131,28 +166,39 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             
             $id_usuario_fk = ($tipo_usuario_logado == 'usuario') ? $id_usuario_logado : null;
             $id_ong_fk = ($tipo_usuario_logado == 'ong') ? $id_usuario_logado : null;
-            $caracteristicas_json = json_encode($caracteristicas, JSON_UNESCAPED_UNICODE);
-
-            $sql = "INSERT INTO pet (nome, especie, sexo, idade, porte, raca, cor, status_vacinacao, status_castracao, comportamento, id_usuario_fk, id_ong_fk, status_disponibilidade, caracteristicas, carteira_vacinacao) 
-                    VALUES (:nome, :especie, :sexo, :idade, :porte, :raca, :cor, :status_vacinacao, :status_castracao, :comportamento, :id_usuario_fk, :id_ong_fk, 'Em Analise', :caracteristicas, :carteira_vacinacao)";
             
-            $stmt = $conn->prepare($sql);
-            $stmt->execute([
-                ':nome' => $nome,
-                ':especie' => $especie,
-                ':sexo' => $sexo,
-                ':idade' => $idade_final, // Agora salva como string (ex: "2 meses")
-                ':porte' => $porte,
-                ':raca' => $raca,
-                ':cor' => $cor,
-                ':status_vacinacao' => $status_vacinacao,
-                ':status_castracao' => $status_castracao,
-                ':comportamento' => $comportamento,
-                ':id_usuario_fk' => $id_usuario_fk,
-                ':id_ong_fk' => $id_ong_fk,
-                ':caracteristicas' => $caracteristicas_json,
-                ':carteira_vacinacao' => $caminho_vacina // Salva o caminho do arquivo
-            ]);
+            // Processamento das características
+            $caracteristicas_json = json_encode($caracteristicas, JSON_UNESCAPED_UNICODE);
+            
+            // Processamento de alergias e medicação
+            $alergias_limpas = array_filter($alergias, function($alergia) {
+                return !empty(trim($alergia));
+            });
+            $alergias_json = !empty($alergias_limpas) ? json_encode($alergias_limpas, JSON_UNESCAPED_UNICODE) : null;
+            $medicacao_limpa = !empty(trim($medicacao)) ? trim($medicacao) : null;
+
+$sql = "INSERT INTO pet (nome, especie, sexo, idade, porte, raca, cor, status_vacinacao, status_castracao, comportamento, id_usuario_fk, id_ong_fk, status_disponibilidade, caracteristicas, carteira_vacinacao, alergias, medicacao) 
+        VALUES (:nome, :especie, :sexo, :idade, :porte, :raca, :cor, :status_vacinacao, :status_castracao, :comportamento, :id_usuario_fk, :id_ong_fk, 'Em Analise', :caracteristicas, :carteira_vacinacao, :alergias, :medicacao)";
+
+$stmt = $conn->prepare($sql);
+$stmt->execute([
+    ':nome' => $nome,
+    ':especie' => $especie,
+    ':sexo' => $sexo,
+    ':idade' => $idade_final,
+    ':porte' => $porte,
+    ':raca' => $raca,
+    ':cor' => $cor,
+    ':status_vacinacao' => $status_vacinacao,
+    ':status_castracao' => $status_castracao,
+    ':comportamento' => $comportamento,
+    ':id_usuario_fk' => $id_usuario_fk,
+    ':id_ong_fk' => $id_ong_fk,
+    ':caracteristicas' => $caracteristicas_json,
+    ':carteira_vacinacao' => $caminho_vacina, 
+    ':alergias' => $alergias_json,
+    ':medicacao' => $medicacao_limpa
+]);
             
             $id_pet = $conn->lastInsertId();
 
@@ -164,6 +210,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             $conn->commit();
             unset($_SESSION['form_data']);
+            unset($_SESSION['erros_form']);
             $_SESSION['toast_message'] = "Pet cadastrado! Aguardando análise da carteirinha de vacinação.";
             $_SESSION['toast_type'] = 'success';
             header("Location: perfil?page=meus-pets");
@@ -171,7 +218,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         } catch (PDOException $e) {
             $conn->rollBack();
-            // Limpeza de arquivos...
+            // Limpeza de arquivos em caso de erro
+            if ($caminho_vacina && file_exists($caminho_vacina)) @unlink($caminho_vacina);
+            foreach ($fotos_salvas_paths as $p) if (file_exists($p)) @unlink($p);
+            
             $_SESSION['mensagem_status'] = "Erro no banco: " . $e->getMessage();
             $_SESSION['tipo_mensagem'] = 'danger';
             header("Location: cadastrar-pet.php");
@@ -179,6 +229,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     }
 }
+
+// Carrega erros da sessão para exibição
+$erros_form = $_SESSION['erros_form'] ?? [];
+unset($_SESSION['erros_form']);
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -192,77 +246,222 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link rel="icon" type="image/png" href="images/global/Logo-AdotePatas.png"/>
     <link rel="stylesheet" href="assets/css/pages/cadastro-pet/caracteristica.css">
     <link rel="stylesheet" href="assets/css/pages/autenticacao/autenticacao.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <style>
-        /* Estilo para o Input File */
-        .file-input-label { cursor: pointer; display: flex; align-items: center; gap: 10px; border: 2px dashed var(--cor-vermelho-claro); background-color: #fff8f8; transition: all 0.3s ease; }
-        .file-input-label:hover { background-color: #fff0f0; border-color: var(--cor-vermelho); }
-        .file-input-label i { color: var(--cor-vermelho); }
-        .file-input-label span { color: #555; font-size: 0.95rem; }
-        
-        /* Preview de novas fotos */
-        #fotos-preview-container {
+        :root {
+            --cor-vermelho: #B46459;
+            --cor-vermelho-claro: #d68a80;
+            --cor-rosa-claro: #f8f0ef;
+            --cor-rosa-escuro: #e8c4c0;
+            --cor-branca: #ffffff;
+            --cor-texto: #333333;
+        }
+
+        /* Estilos para os campos alinhados */
+        .form-row-3 {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1.5rem;
+            align-items: end;
         }
-        .foto-preview {
-            position: relative;
-            width: 100%;
-            padding-top: 100%; /* Proporção 1:1 */
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            border: 2px solid #eee;
+
+        @media (max-width: 768px) {
+            .form-row-3 {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
         }
-        .foto-preview img {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .remove-preview {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            width: 24px;
-            height: 24px;
-            background: rgba(255, 255, 255, 0.9);
-            border: none;
-            border-radius: 50%;
-            color: var(--cor-vermelho);
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
+
+        .age-input-group {
+            display: grid;
+            grid-template-columns: 1fr 120px;
+            gap: 8px;
             align-items: center;
-            justify-content: center;
-            line-height: 1;
-            transition: all 0.2s ease;
         }
-        .remove-preview:hover {
-            background: var(--cor-vermelho);
-            color: white;
+
+        @media (max-width: 768px) {
+            .age-input-group {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Estilo para mensagens de erro */
+        .error-message {
+            color: #dc2626;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: block;
+        }
+
+        .input-error {
+            border-color: #dc2626 !important;
+            background-color: #fef2f2 !important;
+        }
+
+        /* Estilo para o campo de arquivos com drag & drop */
+        .file-drop-area {
+            border: 2px dashed var(--cor-vermelho-claro);
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: var(--cor-rosa-claro);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .file-drop-area:hover, .file-drop-area.dragover {
+            background: #fff0f0;
+            border-color: var(--cor-vermelho);
+            transform: translateY(-2px);
+        }
+
+        .file-drop-area i {
+            font-size: 3rem;
+            color: var(--cor-vermelho-claro);
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .file-drop-area.dragover i {
+            color: var(--cor-vermelho);
             transform: scale(1.1);
         }
 
-        /* Oculta os spinners (setinhas) em navegadores WebKit */
+        .file-info {
+            font-weight: 600;
+            color: var(--cor-texto);
+            margin-bottom: 0.5rem;
+        }
+
+        .file-hint {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Estilo checkbox amamentação melhorado */
+        .amamentacao-checkbox {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #fff8f8, #ffecec);
+            border-radius: 16px;
+            border: 2px solid #ffe0e0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .amamentacao-checkbox:hover {
+            border-color: var(--cor-vermelho-claro);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(180, 100, 89, 0.1);
+        }
+
+        .amamentacao-checkbox input[type="checkbox"] {
+            width: 24px;
+            height: 24px;
+            margin-top: 0.25rem;
+            accent-color: var(--cor-vermelho);
+            flex-shrink: 0;
+        }
+
+        .amamentacao-checkbox label {
+            font-weight: 600;
+            color: var(--cor-texto);
+            line-height: 1.5;
+            cursor: pointer;
+        }
+
+        .amamentacao-checkbox .required {
+            color: var(--cor-vermelho);
+            font-weight: 700;
+        }
+
+        /* Campos dinâmicos para alergias e medicação */
+        .dynamic-field {
+            margin-top: 1rem;
+            padding: 1.5rem;
+            background: var(--cor-rosa-claro);
+            border-radius: 12px;
+        }
+
+        .dynamic-field h4 {
+            color: var(--cor-vermelho);
+            margin-bottom: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .alergia-input-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            align-items: center;
+        }
+
+        .alergia-input {
+            flex: 1;
+        }
+
+        .btn-add-alergia {
+            background: var(--cor-vermelho);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-add-alergia:hover {
+            background: var(--cor-vermelho-claro);
+            transform: translateY(-1px);
+        }
+
+        .btn-remove-alergia {
+            background: var(--cor-vermelho);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .btn-remove-alergia:hover {
+            background: #b91c1c;
+            transform: scale(1.1);
+        }
+
+        .medicacao-input {
+            width: 100%;
+        }
+
+        /* Oculta os spinners nos inputs number */
         input[type=number]::-webkit-inner-spin-button,
         input[type=number]::-webkit-outer-spin-button {
             -webkit-appearance: none;
             margin: 0;
         }
 
-        /* Oculta os spinners no Firefox */
         input[type=number] {
             -moz-appearance: textfield;
         }
 
-        /* Estilos para o Select Customizado */
+        /* Estilos para selects customizados */
         .select-hidden {
             position: absolute;
             width: 1px;
@@ -306,18 +505,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             outline: none; 
         }
         
-        /* Ajuste de cor para placeholder */
         .custom-select-value.placeholder {
             color: var(--cor-branca);
             background-color: transparent;
-            opacity: 0.8; /* Um pouco mais claro para indicar que é placeholder */
+            opacity: 0.8;
         }
 
         .custom-select-arrow {
             width: 10px;
             height: 10px;
-            border-right: 2px solid var(--cor-vermelho); /* Cor da seta */
-            border-bottom: 2px solid var(--cor-vermelho); /* Cor da seta */
+            border-right: 2px solid var(--cor-vermelho);
+            border-bottom: 2px solid var(--cor-vermelho);
             transform: rotate(45deg);
             transition: transform 0.3s ease;
             pointer-events: none; 
@@ -330,7 +528,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         .custom-select-options {
             position: absolute;
-            top: calc(100% + 4px); 
+            top: calc(100% + 4px);
             left: 0;
             right: 0;
             z-index: 10;
@@ -342,9 +540,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             list-style: none;
             margin: 0;
             overflow-y: auto;
-            max-height: 200px; 
-            display: none; 
-            -webkit-overflow-scrolling: touch; 
+            max-height: 200px;
+            display: none;
+            -webkit-overflow-scrolling: touch;
         }
 
         .custom-option {
@@ -370,7 +568,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             font-weight: 700;
         }
 
-        /* Estilos para as tags de características no input */
+        /* Estilo customizado para o select de idade */
+        .age-unit-custom {
+            width: 100%;
+        }
+
+        .age-unit-custom .custom-select-trigger {
+            height: 100%;
+            min-height: 54px;
+        }
+
         .tags-preview {
             display: flex;
             flex-wrap: wrap;
@@ -383,7 +590,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             border-radius: 20px;
             font-size: 0.8rem;
             font-weight: 500;
-            color: var(--cor-texto);
+            color: var(--cor-vermelho);
             border: 1px solid #eee;
             display: inline-flex;
             align-items: center;
@@ -391,7 +598,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        /* Ajuste para o botão de características */
         #openModalBtn {
             min-height: 60px;
             display: flex;
@@ -409,80 +615,69 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             color: inherit;
         }
 
-        /* Estilos para Drag and Drop */
-        #drop-area {
-            border: 2px dashed var(--cor-vermelho-claro);
-            border-radius: 12px;
-            text-align: center;
-            transition: all 0.3s ease;
-            background-color: #fff8f8;
-            cursor: pointer;
+        /* Estilos para preview de fotos */
+        #fotos-preview-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .foto-preview {
             position: relative;
+            width: 100%;
+            padding-top: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 2px solid #eee;
         }
 
-        #drop-area.highlight {
-            background-color: #fff0f0;
-            border-color: var(--cor-vermelho);
-            transform: scale(1.02);
+        .foto-preview img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
-        #drop-area.highlight i {
+        .remove-preview {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 24px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
             color: var(--cor-vermelho);
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            transition: all 0.2s ease;
+        }
+
+        .remove-preview:hover {
+            background: var(--cor-vermelho);
+            color: white;
             transform: scale(1.1);
         }
 
-        .drop-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-        }
+        /* Estilos para a seção de vacinação */
+#vacinacao-section .file-drop-area {
+    border: 2px dashed var(--cor-vermelho);
+    background: var(--cor-rosa-claro);
+}
 
-        #drop-area i {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            color: var(--cor-vermelho-claro);
-            transition: all 0.3s ease;
-        }
-
-        #file-name-span {
-            font-weight: 600;
-            color: #555;
-            font-size: 1rem;
-        }
-
-        #drop-area small {
-            color: #888;
-            font-size: 0.85rem;
-        }
-        /* Estilos para o Input File */
-        .file-input-label { cursor: pointer; display: flex; align-items: center; gap: 10px; border: 2px dashed var(--cor-vermelho-claro); background-color: #fff8f8; transition: all 0.3s ease; }
-        .file-input-label:hover { background-color: #fff0f0; border-color: var(--cor-vermelho); }
-        .file-input-label i { color: var(--cor-vermelho); }
-        
-        /* Input de Idade Composto */
-        .age-input-group {
-            display: flex;
-            gap: 10px;
-        }
-        .age-value { flex: 1; }
-        .age-unit { width: 120px; }
-
-        /* Estilo Checkbox Amamentação */
-        .checkbox-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px;
-            background: #fff8f8;
-            border-radius: 8px;
-            border: 1px solid #ffecec;
-        }
-        .checkbox-wrapper input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            accent-color: var(--cor-vermelho);
-        }
+#vacinacao-section .file-drop-area:hover {
+    border-color: var(--cor-vermelho-claro);
+    background: #fff0f0;
+}
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4">
@@ -519,10 +714,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <div class="container-card w-full p-6 sm:p-10 rounded-3xl shadow-xl">
         
         <?php if (!empty($mensagem_status)): ?>
-            <div id="php-data" 
-                 data-message="<?php echo htmlspecialchars($mensagem_status); ?>" 
-                 data-type="<?php echo htmlspecialchars($tipo_mensagem); ?>" 
-                 style="display: none;">
+            <div class="alert alert-<?php echo $tipo_mensagem; ?> mb-4">
+                <?php echo htmlspecialchars($mensagem_status); ?>
             </div>
         <?php endif; ?>
 
@@ -531,24 +724,61 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="grid gap-6">
                 <div>
                     <label for="nome">Nome do Pet</label>
-                    <input type="text" name="nome" id="nome" placeholder="Nome do Pet" required class="input-style w-full"
+                    <input type="text" name="nome" id="nome" placeholder="Nome do Pet" required 
+                           class="input-style w-full <?php echo isset($erros_form['nome']) ? 'input-error' : ''; ?>"
                            value="<?php echo htmlspecialchars($nome); ?>">
-                </div>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label>Idade Aproximada</label>
-                    <div class="age-input-group">
-                        <input type="number" name="idade_valor" placeholder="Ex: 2" required min="0" class="input-style age-value" value="<?php echo htmlspecialchars($idade_valor); ?>">
-                        <select name="idade_unidade" class="input-style age-unit">
-                            <option value="anos" <?php echo ($idade_unidade == 'anos') ? 'selected' : ''; ?>>Anos</option>
-                            <option value="meses" <?php echo ($idade_unidade == 'meses') ? 'selected' : ''; ?>>Meses</option>
-                        </select>
-                    </div>
+                    <?php if (isset($erros_form['nome'])): ?>
+                        <span class="error-message"><?php echo htmlspecialchars($erros_form['nome']); ?></span>
+                    <?php endif; ?>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- NOVO LAYOUT: Idade, Espécie e Sexo na mesma linha -->
+            <div class="form-row-3">
+                <!-- Idade Aproximada -->
+                <div>
+                    <label>Idade Aproximada</label>
+                    <div class="age-input-group">
+                        <input 
+                            type="number" 
+                            name="idade_valor" 
+                            placeholder="Ex: 2" 
+                            required 
+                            min="1" 
+                            max="11"
+                            class="input-style age-value <?php echo isset($erros_form['idade']) ? 'input-error' : ''; ?>" 
+                            value="<?php echo htmlspecialchars($idade_valor); ?>"
+                        >
+                        <select name="idade_unidade" id="idade_unidade-real" required class="select-hidden" aria-hidden="true" tabindex="-1">
+                            <option value="anos" <?= $idade_unidade == 'anos' ? 'selected' : '' ?>>Anos</option>
+                            <option value="meses" <?= $idade_unidade == 'meses' ? 'selected' : '' ?>>Meses</option>
+                        </select>
+
+                        <div class="custom-select-wrapper age-unit-custom" data-target-select="idade_unidade-real">
+                            <button type="button" class="custom-select-trigger input-style w-full" 
+                                    aria-haspopup="listbox" 
+                                    aria-expanded="false">
+                                <span class="custom-select-value <?php echo empty($idade_unidade) ? 'placeholder' : ''; ?>">
+                                    <?php 
+                                        if ($idade_unidade == 'anos') echo 'Anos';
+                                        elseif ($idade_unidade == 'meses') echo 'Meses';
+                                        else echo 'Unidade';
+                                    ?>
+                                </span>
+                                <span class="custom-select-arrow"></span>
+                            </button>
+                            <ul class="custom-select-options" role="listbox">
+                                <li class="custom-option" data-value="anos" role="option" tabindex="0">Anos</li>
+                                <li class="custom-option" data-value="meses" role="option" tabindex="0">Meses</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <?php if (isset($erros_form['idade'])): ?>
+                        <span class="error-message"><?php echo htmlspecialchars($erros_form['idade']); ?></span>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Espécie -->
                 <div>
                     <label id="select-label-especie">Espécie</label>
                     <select name="especie" id="especie-real" required class="select-hidden" aria-hidden="true" tabindex="-1">
@@ -565,7 +795,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 <?php 
                                     if ($especie == 'cachorro') echo 'Cachorro';
                                     elseif ($especie == 'gato') echo 'Gato';
-                                    else echo 'Espécie'; // Placeholder
+                                    else echo 'Espécie';
                                 ?>
                             </span>
                             <span class="custom-select-arrow"></span>
@@ -576,6 +806,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </ul>
                     </div>
                 </div>
+
+                <!-- Sexo -->
                 <div>
                     <label id="select-label-sexo">Sexo</label>
                     <select name="sexo" id="sexo-real" required class="select-hidden" aria-hidden="true" tabindex="-1">
@@ -592,7 +824,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 <?php 
                                     if ($sexo == 'macho') echo 'Macho';
                                     elseif ($sexo == 'femea') echo 'Fêmea';
-                                    else echo 'Gênero'; // Placeholder
+                                    else echo 'Gênero';
                                 ?>
                             </span>
                             <span class="custom-select-arrow"></span>
@@ -605,6 +837,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
             </div>
 
+            <!-- Resto dos campos mantidos -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label id="select-label-porte">Porte</label>
@@ -624,7 +857,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                     if ($porte == 'pequeno') echo 'Pequeno';
                                     elseif ($porte == 'medio') echo 'Médio';
                                     elseif ($porte == 'grande') echo 'Grande';
-                                    else echo 'Porte'; // Placeholder
+                                    else echo 'Porte';
                                 ?>
                             </span>
                             <span class="custom-select-arrow"></span>
@@ -665,7 +898,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                  <?php 
                                     if ($status_vacinacao == 'sim') echo 'Sim';
                                     elseif ($status_vacinacao == 'nao') echo 'Não';
-                                    else echo 'Vacinado?'; // Placeholder
+                                    else echo 'Vacinado?';
                                 ?>
                             </span>
                             <span class="custom-select-arrow"></span>
@@ -678,7 +911,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid gap-6"> 
                 <div>
                     <label id="select-label-castracao">Castrado?</label>
                     <select name="status_castracao" id="status_castracao-real" required class="select-hidden" aria-hidden="true" tabindex="-1">
@@ -695,7 +928,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 <?php 
                                     if ($status_castracao == 'sim') echo 'Sim';
                                     elseif ($status_castracao == 'nao') echo 'Não';
-                                    else echo 'Castrado?'; // Placeholder
+                                    else echo 'Castrado?';
                                 ?>
                             </span>
                             <span class="custom-select-arrow"></span>
@@ -706,56 +939,77 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </ul>
                     </div>
                 </div>
-
-            <hr class="border-gray-200 my-4">
-            <div class="grid gap-4 mt-2 grid-cols-1 md:grid-cols-1">
-            <h3 class="text-lg font-bold text-gray-700 mb-3">Requisitos de Saúde</h3>
-            
-            <!-- 1. Amamentação Completa -->
-            <div class="checkbox-wrapper">
-                <input type="checkbox" name="amamentacao_completa" id="check_amamentacao" required>
-                <label for="check_amamentacao" class="text-sm text-gray-600 cursor-pointer">
-                    Declaro que o pet já completou o período de amamentação (desmame) e já come ração sólida/pastosa. 
-                    <span class="text-red-500">* Obrigatório</span>
-                </label>
             </div>
 
+            <hr class="border-gray-200 my-4">
             
-            <!-- 2. Carteirinha de Vacinação -->
+<!-- REQUISITOS DE SAÚDE - MELHORADO -->
+<div class="grid gap-4 mt-2 grid-cols-1 md:grid-cols-1">
+    <h3 class="text-lg font-bold text-gray-700">Requisitos de Saúde</h3>
+    
+    <!-- 1. Amamentação Completa - ESTILIZADO -->
+    <div class="amamentacao-checkbox <?php echo isset($erros_form['amamentacao']) ? 'input-error' : ''; ?>">
+        <input type="checkbox" name="amamentacao_completa" id="check_amamentacao" required
+               <?php echo isset($_POST['amamentacao_completa']) ? 'checked' : ''; ?>>
+        <label for="check_amamentacao">
+            Declaro que o pet já completou o período de amamentação (desmame) e já come ração sólida/pastosa. 
+            <span class="required">* Obrigatório</span>
+        </label>
+    </div>
+    <?php if (isset($erros_form['amamentacao'])): ?>
+        <span class="error-message"><?php echo htmlspecialchars($erros_form['amamentacao']); ?></span>
+    <?php endif; ?>
+
+    <!-- 2. Carteirinha de Vacinação - COMPORTAMENTO DINÂMICO -->
+    <div id="vacinacao-section" class="mt-4">
+        <h4 class="font-semibold text-gray-700 mb-3">Documentação de Vacinação</h4>
+        
+        <!-- Área que aparece apenas quando o pet É VACINADO -->
+        <div id="vacinado-content" style="display: <?php echo ($status_vacinacao == 'sim') ? 'block' : 'none'; ?>;">
+            <div class="mb-4 p-4 rounded-lg" style="background-color: rgba(98, 142, 109, 0.8);">
+                <div class="flex items-center gap-3" style="color: var(--cor-branca); !important">
+                    <i class="fa-solid fa-syringe fs-4"></i>
+                    <div>
+                        <p class="text-sm font-semibold">Pet vacinado</p>
+                        <p class="text-sm text-informacao">É obrigatório enviar a carteirinha de vacinação para comprovação.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Campo de upload da carteirinha (obrigatório quando vacinado) -->
             <div class="mt-4">
-                <label class="font-semibold text-gray-700 mb-1 block">Comprovante de Vacinação (Carteirinha)</label>
-                <label for="file_vacina" class="input-style w-full file-input-label">
-                    <i class="fas fa-file-medical text-xl"></i>
-                    <span class="text-sm">Clique para enviar foto ou PDF da carteirinha</span>
-                </label>
-                <input type="file" name="carteira_vacinacao" id="file_vacina" class="hidden" accept="image/*,.pdf" required>
-                <div id="preview-vacina" class="text-sm text-gray-500 mt-1 ml-2">Nenhum arquivo selecionado.</div>
+                <label class="font-semibold text-gray-700 mb-1 block">Carteirinha de Vacinação <span class="text-red-600">*</span></label>
+                <div id="drop-area-vacina" class="file-drop-area <?php echo isset($erros_form['carteira_vacinacao']) ? 'input-error' : ''; ?>">
+                    <i class="fas fa-file-medical"></i>
+                    <div class="file-info" id="file-name-vacina">Arraste e solte o arquivo aqui ou clique para selecionar</div>
+                    <div class="file-hint">Formatos aceitos: JPG, PNG, PDF, WEBP</div>
+                    <input type="file" name="carteira_vacinacao" id="file_vacina" class="hidden" accept="image/*,.pdf">
+                </div>
+                <div id="preview-vacina-text" class="text-md text-gray-800 mt-1 ml-2" style="color: #b91c1c;">Nenhum arquivo selecionado.</div>
+                <?php if (isset($erros_form['carteira_vacinacao'])): ?>
+                    <span class="error-message"><?php echo htmlspecialchars($erros_form['carteira_vacinacao']); ?></span>
+                <?php endif; ?>
             </div>
         </div>
 
-            <hr class="border-gray-200 my-4">
-                
-                <div>
-                    <label for="openModalBtn">Características</label>
-                    <button type="button" id="openModalBtn" class="input-style w-full text-left">
-                        <span id="tagsPlaceholder" class="tags-placeholder" style="<?php echo !empty($caracteristicas) ? 'display: none;' : 'display: block;'; ?>">Selecionar Características...</span>
-                        <span class="tags-preview" id="tagsPreview"></span>
-                    </button>
-                </div>
-
-                <div id="hidden-tags-container"></div>
+        <!-- Mensagem quando NÃO É VACINADO -->
+        <div id="nao-vacinado-content" style="display: <?php echo ($status_vacinacao == 'nao') ? 'block' : 'none'; ?>;">
+            <div class="p-4 bg-gray-50 border border-gray-200 rounded-lg text-center">
+                                    <i class="fa-solid fa-syringe fs-4"></i>
+                <p class="text-sm text-gray-700">O pet <strong style="color: var(--cor-vermelho);">NÃO</strong> é vacinado. As opções de carteirinha ficarão disponíveis quando marcar como vacinado.</p>
             </div>
+        </div>
+    </div>
+</div>
     
             <div>
                 <label class="font-semibold text-gray-700">Adicionar Fotos</label>
                 
-                <!-- Área de Drag and Drop -->
-                <div id="drop-area" class="input-style w-full file-input-label mt-4">
+                <!-- Área de Drag and Drop para Fotos -->
+                <div id="drop-area" class="file-drop-area <?php echo isset($erros_form['fotos']) ? 'input-error' : ''; ?>">
                     <i class="fas fa-cloud-upload-alt"></i>
-                    <div class="drop-content">
-                        <span id="file-name-span">Arraste e solte fotos aqui ou clique para selecionar</span>
-                        <small class="block mt-1">Máximo: 5 fotos | Formatos: PNG, JPG, JPEG, WEBP</small>
-                    </div>
+                    <div class="file-info" id="file-name-span">Arraste e solte fotos aqui ou clique para selecionar</div>
+                    <div class="file-hint">Máximo: 5 fotos | Formatos: PNG, JPG, JPEG, WEBP</div>
                     <input type="file" id="fotos_novas_input" class="hidden" multiple accept="image/png, image/jpeg, image/jpg, image/webp">
                 </div>
                 
@@ -763,7 +1017,43 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                 <div id="fotos-preview-container" class="mt-4"></div>
                 <small id="limite-fotos-helper" class="text-sm text-gray-600 mt-1"></small>
+                <?php if (isset($erros_form['fotos'])): ?>
+                    <span class="error-message"><?php echo htmlspecialchars($erros_form['fotos']); ?></span>
+                <?php endif; ?>
             </div>
+
+            <!-- CAMPOS DINÂMICOS PARA CARACTERÍSTICAS ESPECIAIS -->
+            <div id="dynamic-fields-container">
+                <!-- Alergias (aparece quando selecionar característica "Alergia") -->
+                <div id="alergia-field" class="dynamic-field" style="display: none;">
+                    <h4><i class="fas fa-allergies"></i> Alergias do Pet</h4>
+                    <div id="alergias-container">
+                        <!-- Inputs de alergia serão adicionados aqui dinamicamente -->
+                    </div>
+                    <button type="button" id="add-alergia-btn" class="btn-add-alergia">
+                        <i class="fas fa-plus"></i> Adicionar Alergia
+                    </button>
+                </div>
+
+                <!-- Medicação (aparece quando selecionar característica "Medicação") -->
+                <div id="medicacao-field" class="dynamic-field" style="display: none;">
+                    <h4><i class="fas fa-pills"></i> Medicação do Pet</h4>
+                    <input type="text" name="medicacao" id="medicacao_input" placeholder="Nome da medicação que o pet toma" 
+                           class="input-style medicacao-input" value="<?php echo htmlspecialchars($medicacao); ?>">
+                </div>
+            </div>
+
+            <hr class="border-gray-200 my-4">
+                
+            <div>
+                <label for="openModalBtn" class="sr-only">Características</label>
+                <button type="button" id="openModalBtn" class="input-style w-full text-left">
+                    <span id="tagsPlaceholder" class="tags-placeholder" style="<?php echo !empty($caracteristicas) ? 'display: none;' : 'display: block;'; ?>">Selecionar Características...</span>
+                    <span class="tags-preview" id="tagsPreview"></span>
+                </button>
+            </div>
+
+            <div id="hidden-tags-container"></div>
 
             <div>
                 <label class="sr-only" for="comportamento">Comportamento (Ex: Dócil, adora crianças...)</label>
@@ -783,9 +1073,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
 </div>
 
+<!-- Modal de Características -->
 <div id="charModal" class="char-modal">
     <div class="char-modal-content">
-        
         <div class="char-modal-header">
             <div>
                 <h2>Selecionar Características</h2>
@@ -795,6 +1085,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
 
         <div class="char-modal-body">
+            <!-- Conteúdo do modal mantido igual -->
             <h3>Temperamento</h3>
             <div class="char-tags-container">
                 <span class="char-tag" data-color="laranja" data-value="Dócil"><i class="fa-solid fa-face-smile"></i> Dócil <i class="fas fa-check"></i></span>
@@ -900,13 +1191,199 @@ function validarLimiteFotos() {
     }
 }
 
-document.getElementById('file_vacina').addEventListener('change', function() {
-        const fileName = this.files[0] ? this.files[0].name : 'Nenhum arquivo selecionado.';
-        document.getElementById('preview-vacina').textContent = 'Arquivo: ' + fileName;
-        document.getElementById('preview-vacina').classList.add('text-green-600');
+// VALIDAÇÃO DA IDADE
+document.addEventListener('DOMContentLoaded', function() {
+    const idadeValorInput = document.querySelector('input[name="idade_valor"]');
+    const idadeUnidadeSelect = document.getElementById('idade_unidade-real');
+    
+    // Validação para aceitar apenas números
+    idadeValorInput.addEventListener('input', function() {
+        // Remove qualquer caractere não numérico
+        this.value = this.value.replace(/[^0-9]/g, '');
+        
+        // Validação específica para meses
+        if (idadeUnidadeSelect.value === 'meses' && this.value > 11) {
+            this.value = 11;
+            if (typeof showToast === 'function') {
+                showToast('A idade em meses não pode ser maior que 11.', 'warning');
+            }
+        }
+    });
+});
+
+// DRAG & DROP PARA CARTEIRINHA DE VACINAÇÃO
+document.addEventListener('DOMContentLoaded', function() {
+    const dropAreaVacina = document.getElementById('drop-area-vacina');
+    const fileInputVacina = document.getElementById('file_vacina');
+    const fileNameVacina = document.getElementById('file-name-vacina');
+    const previewVacina = document.getElementById('preview-vacina');
+
+    // Prevenir comportamentos padrão
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropAreaVacina.addEventListener(eventName, preventDefaults, false);
     });
 
-// Implementação do Drag and Drop
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    // Efeitos visuais
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropAreaVacina.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropAreaVacina.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight() {
+        dropAreaVacina.classList.add('dragover');
+    }
+
+    function unhighlight() {
+        dropAreaVacina.classList.remove('dragover');
+    }
+
+    // Manipular arquivos dropados
+    dropAreaVacina.addEventListener('drop', handleDropVacina, false);
+
+    function handleDropVacina(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFilesVacina(files);
+    }
+
+    // Manipular seleção via clique
+    dropAreaVacina.addEventListener('click', () => {
+        fileInputVacina.click();
+    });
+
+    fileInputVacina.addEventListener('change', function() {
+        handleFilesVacina(this.files);
+    });
+
+    function handleFilesVacina(files) {
+        if (files.length) {
+            const file = files[0];
+            // Validação do tipo de arquivo
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf'];
+            if (!allowedTypes.includes(file.type)) {
+                if (typeof showToast === 'function') {
+                    showToast('Formato de arquivo não permitido. Use JPG, PNG, WEBP ou PDF.', 'danger');
+                }
+                return;
+            }
+            
+            // Atualiza a interface
+            fileNameVacina.textContent = file.name;
+            previewVacina.textContent = 'Arquivo selecionado: ' + file.name;
+            previewVacina.style.color = 'green';
+            
+            // Atualiza o input file
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            fileInputVacina.files = dataTransfer.files;
+        }
+    }
+});
+
+// CAMPOS DINÂMICOS PARA ALERGIAS E MEDICAÇÃO
+document.addEventListener('DOMContentLoaded', function() {
+    const alergiaField = document.getElementById('alergia-field');
+    const medicacaoField = document.getElementById('medicacao-field');
+    const alergiasContainer = document.getElementById('alergias-container');
+    const addAlergiaBtn = document.getElementById('add-alergia-btn');
+    
+    // Preencher alergias existentes do PHP
+    const alergiasExistentes = <?php echo json_encode($alergias); ?>;
+    if (alergiasExistentes.length > 0 && alergiasExistentes[0] !== '') {
+        alergiasExistentes.forEach((alergia, index) => {
+            if (alergia.trim() !== '') {
+                addAlergiaInput(alergia);
+            }
+        });
+    } else {
+        // Adiciona um input vazio por padrão
+        addAlergiaInput('');
+    }
+    
+    // Função para adicionar input de alergia
+    function addAlergiaInput(value = '') {
+        const inputGroup = document.createElement('div');
+        inputGroup.className = 'alergia-input-group';
+        
+        const inputId = `alergia_${Date.now()}`;
+        inputGroup.innerHTML = `
+            <input type="text" name="alergias[]" value="${value}" 
+                   placeholder="Nome da alergia" class="input-style alergia-input" id="${inputId}">
+            <button type="button" class="btn-remove-alergia" ${alergiasContainer.children.length === 0 ? 'disabled' : ''}>
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        alergiasContainer.appendChild(inputGroup);
+        
+        // Atualiza estado dos botões de remover
+        updateRemoveButtons();
+        
+        // Foca no novo input
+        document.getElementById(inputId).focus();
+    }
+    
+    // Atualizar estado dos botões de remover
+    function updateRemoveButtons() {
+        const removeButtons = alergiasContainer.querySelectorAll('.btn-remove-alergia');
+        removeButtons.forEach((btn, index) => {
+            btn.disabled = (index === 0 && removeButtons.length === 1);
+        });
+    }
+    
+    // Event listener para adicionar alergia
+    addAlergiaBtn.addEventListener('click', () => {
+        addAlergiaInput();
+    });
+    
+    // Event listener para remover alergia (delegação de evento)
+    alergiasContainer.addEventListener('click', function(e) {
+        if (e.target.closest('.btn-remove-alergia')) {
+            const inputGroup = e.target.closest('.alergia-input-group');
+            if (inputGroup && alergiasContainer.children.length > 1) {
+                inputGroup.remove();
+                updateRemoveButtons();
+            }
+        }
+    });
+    
+    // Mostrar/ocultar campos baseado nas características selecionadas
+    function toggleDynamicFields(selectedTags) {
+        const hasAlergia = selectedTags.some(tag => tag.value === 'Alergia');
+        const hasMedicacao = selectedTags.some(tag => tag.value === 'Medicação');
+        
+        // Alergia
+        if (hasAlergia) {
+            alergiaField.style.display = 'block';
+        } else {
+            alergiaField.style.display = 'none';
+            // Limpa os inputs de alergia, mas mantém um vazio
+            alergiasContainer.innerHTML = '';
+            addAlergiaInput('');
+        }
+        
+        // Medicação
+        if (hasMedicacao) {
+            medicacaoField.style.display = 'block';
+        } else {
+            medicacaoField.style.display = 'none';
+            document.getElementById('medicacao_input').value = '';
+        }
+    }
+    
+    // Expor a função globalmente para o modal de características
+    window.toggleDynamicFields = toggleDynamicFields;
+});
+
+// Implementação do Drag and Drop para Fotos (mantida igual)
 document.addEventListener('DOMContentLoaded', function() {
     const dropArea = document.getElementById('drop-area');
     const fileInput = document.getElementById('fotos_novas_input');
@@ -935,11 +1412,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function highlight() {
-        dropArea.classList.add('highlight');
+        dropArea.classList.add('dragover');
     }
 
     function unhighlight() {
-        dropArea.classList.remove('highlight');
+        dropArea.classList.remove('dragover');
     }
 
     // Manipular arquivos dropados
@@ -1038,8 +1515,6 @@ document.addEventListener('DOMContentLoaded', function() {
         finalInput.files = dataTransfer.files;
         
         // Re-adiciona os arquivos que ainda estão no preview
-        // Esta é uma implementação simplificada - em produção você precisaria
-        // manter um array com os arquivos convertidos
         fileNameSpan.textContent = 'Arraste e solte fotos aqui ou clique para selecionar';
         validarLimiteFotos();
     }
@@ -1087,7 +1562,190 @@ function updateFinalInput(files, finalInput) {
 // Inicializar a validação de fotos
 document.addEventListener('DOMContentLoaded', validarLimiteFotos);
 
-// Custom Select Functionality
+// CONTROLE DINÂMICO DA SEÇÃO DE VACINAÇÃO NO CADASTRO
+document.addEventListener('DOMContentLoaded', function() {
+    const statusVacinacaoReal = document.getElementById('status_vacinacao-real');
+    const vacinadoContent = document.getElementById('vacinado-content');
+    const naoVacinadoContent = document.getElementById('nao-vacinado-content');
+    const fileVacina = document.getElementById('file_vacina');
+
+    // Função para toggle da seção de vacinação
+    function toggleVacinacaoSection() {
+        const isVacinado = statusVacinacaoReal.value === 'sim';
+        
+        // Mostra/oculta conteúdos
+        vacinadoContent.style.display = isVacinado ? 'block' : 'none';
+        naoVacinadoContent.style.display = isVacinado ? 'none' : 'block';
+        
+        // Atualiza a obrigatoriedade do campo
+        if (isVacinado) {
+            fileVacina.required = true;
+            // Mostra mensagem de obrigatoriedade
+            document.querySelector('#vacinado-content .text-informacao').textContent = 
+                'É obrigatório enviar a carteirinha de vacinação para comprovação.';
+        } else {
+            fileVacina.required = false;
+            // Limpa o preview e o input file
+            if (typeof clearVacinaPreview === 'function') {
+                clearVacinaPreview();
+            }
+        }
+    }
+
+    // Inicializar estado
+    toggleVacinacaoSection();
+
+    // Observar mudanças no select de vacinação
+    if (statusVacinacaoReal) {
+        statusVacinacaoReal.addEventListener('change', function() {
+            toggleVacinacaoSection();
+        });
+    }
+});
+
+// PREVIEW DA CARTEIRINHA DE VACINAÇÃO NO CADASTRO
+function setupVacinaPreviewCadastro() {
+    const dropAreaVacina = document.getElementById('drop-area-vacina');
+    const fileInputVacina = document.getElementById('file_vacina');
+    const fileNameVacina = document.getElementById('file-name-vacina');
+    const previewVacinaContainer = document.getElementById('preview-vacina-container');
+    const previewVacina = document.getElementById('preview-vacina');
+    const previewVacinaText = document.getElementById('preview-vacina-text');
+
+    if (!dropAreaVacina) return;
+
+    // Prevenir comportamentos padrão
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropAreaVacina.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    // Efeitos visuais
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropAreaVacina.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropAreaVacina.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight() {
+        dropAreaVacina.classList.add('dragover');
+    }
+
+    function unhighlight() {
+        dropAreaVacina.classList.remove('dragover');
+    }
+
+    // Manipular arquivos dropados
+    dropAreaVacina.addEventListener('drop', handleDropVacina, false);
+
+    function handleDropVacina(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFilesVacina(files);
+    }
+
+    // Manipular seleção via clique
+    dropAreaVacina.addEventListener('click', () => {
+        fileInputVacina.click();
+    });
+
+    fileInputVacina.addEventListener('change', function() {
+        handleFilesVacina(this.files);
+    });
+
+    function handleFilesVacina(files) {
+        if (files.length) {
+            const file = files[0];
+            // Validação do tipo de arquivo
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf'];
+            if (!allowedTypes.includes(file.type)) {
+                if (typeof showToast === 'function') {
+                    showToast('Formato de arquivo não permitido. Use JPG, PNG, WEBP ou PDF.', 'danger');
+                }
+                return;
+            }
+            
+            // Atualiza a interface
+            fileNameVacina.textContent = file.name;
+            previewVacinaText.textContent = 'Arquivo selecionado: ' + file.name;
+            previewVacinaText.style.color = 'green';
+            showVacinaPreview(file);
+            
+            // Atualiza o input file
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            fileInputVacina.files = dataTransfer.files;
+        }
+    }
+
+    function showVacinaPreview(file) {
+        previewVacina.innerHTML = '';
+        previewVacinaContainer.classList.remove('hidden');
+
+        if (file.type === 'application/pdf') {
+            // Preview para PDF
+            const pdfPreview = document.createElement('div');
+            pdfPreview.className = 'vacina-preview pdf';
+            pdfPreview.innerHTML = `
+                <i class="fas fa-file-pdf"></i>
+                <span class="text-sm font-medium">${file.name}</span>
+                <span class="text-xs text-gray-500">PDF Document</span>
+            `;
+            previewVacina.appendChild(pdfPreview);
+        } else {
+            // Preview para imagens
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imgPreview = document.createElement('div');
+                imgPreview.className = 'flex flex-col items-center';
+                imgPreview.innerHTML = `
+                    <img src="${e.target.result}" alt="Preview carteirinha" class="vacina-preview">
+                    <span class="text-sm mt-2">${file.name}</span>
+                `;
+                previewVacina.appendChild(imgPreview);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Botão para remover preview
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'btn-remove-preview';
+        removeBtn.innerHTML = '<i class="fas fa-times"></i> Remover arquivo';
+        removeBtn.addEventListener('click', function() {
+            clearVacinaPreview();
+        });
+        previewVacina.appendChild(removeBtn);
+    }
+
+    window.clearVacinaPreview = function() {
+        const previewVacinaContainer = document.getElementById('preview-vacina-container');
+        const previewVacina = document.getElementById('preview-vacina');
+        const fileInputVacina = document.getElementById('file_vacina');
+        const fileNameVacina = document.getElementById('file-name-vacina');
+        const previewVacinaText = document.getElementById('preview-vacina-text');
+        
+        if (previewVacinaContainer) previewVacinaContainer.classList.add('hidden');
+        if (previewVacina) previewVacina.innerHTML = '';
+        if (fileInputVacina) fileInputVacina.value = '';
+        if (fileNameVacina) fileNameVacina.textContent = 'Arraste e solte o arquivo aqui ou clique para selecionar';
+        if (previewVacinaText) {
+            previewVacinaText.textContent = 'Nenhum arquivo selecionado.';
+            previewVacinaText.style.color = '#b91c1c';
+        }
+    }
+}
+
+// Inicializar o preview da carteirinha no cadastro
+document.addEventListener('DOMContentLoaded', setupVacinaPreviewCadastro);
+
+// Custom Select Functionality (incluindo o novo select de idade)
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.custom-select-wrapper').forEach(setupCustomSelect);
 });
@@ -1150,7 +1808,8 @@ function setupCustomSelect(wrapper) {
             }
             
             // Fecha o menu
-            trigger.click();
+            trigger.setAttribute('aria-expanded', 'false');
+            optionsList.style.display = 'none';
         });
     });
 
@@ -1257,6 +1916,11 @@ function setupCustomSelect(wrapper) {
             } else {
                 tagsPlaceholder.classList.add('tags-placeholder');
             }
+        }
+        
+        // 4. Atualiza campos dinâmicos (alergia e medicação)
+        if (typeof toggleDynamicFields === 'function') {
+            toggleDynamicFields(selectedTags);
         }
     }
     
