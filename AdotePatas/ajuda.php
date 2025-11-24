@@ -129,13 +129,6 @@ if ($logado) {
   </nav>
 </header>
 
-
-<section class="banner-hero">
-  <div class="banner-container">
-    <img src="images/ajuda/banner_hero.jpeg" alt="banner de de um cachorro e gato filhotes juntos com um campo de flores no fundo" class="banner-image">
-  </div>
-</section>
-
 <!-- Substitua a seção cards-route existente por este código: -->
  
 <section class="cards-route py-5">
@@ -228,8 +221,8 @@ if ($logado) {
                   <li>Navegue pela nossa galeria de <a style="text-decorantion: none; color: var(--cor-vermelho)" href="pets">pets disponíveis</a> para adoção</li>
                   <li>Clique no pet que mais gostou para ver mais detalhes</li>
                   <li>Preencha o formulário de interesse na página do pet</li>
-                  <li>Aguarde o contato da ONG responsável para agendar uma visita</li>
-                  <li>Após a aprovação, você poderá levar seu novo amigo para casa!</li>
+                  <li>Aguarde o contato do responsável</li>
+                  <li>Após a aprovação, você poderá levar seu novo amiguinho para casa!</li>
                 </ol>
                 <p class="mb-0">Lembre-se que a adoção é um compromisso sério e para toda a vida do animal.</p>
               </div>
@@ -250,12 +243,11 @@ if ($logado) {
                 <ul>
                   <li>Ser maior de 18 anos</li>
                   <li>Apresentar documento de identidade e CPF</li>
-                  <li>Comprovar renda estável</li>
                   <li>Assinar termo de responsabilidade</li>
-                  <li>Permitir visita prévia ao local onde o animal vai viver</li>
+                  <li>Caso haja possibilidade, permitir a visita prévia ao local onde o animal vai viver</li>
                   <li>Comprometer-se com os cuidados veterinários necessários</li>
                 </ul>
-                <p class="mb-0">Cada ONG parceira pode ter requisitos adicionais específicos.</p>
+                <p class="mb-0">Cada responsável pode ter requisitos adicionais específicos.</p>
               </div>
             </div>
           </div>
@@ -274,10 +266,10 @@ if ($logado) {
                 <ul>
                   <li>Verifique as regras do condomínio sobre a posse de animais</li>
                   <li>Considere o tamanho e nível de energia do pet em relação ao espaço disponível</li>
-                  <li>Comprometa-se com passeios regulares para cães</li>
-                  <li>Garanta enriquecimento ambiental para gatos e outros pets</li>
+                  <li>Comprometa-se com passeios regulares para para o pet</li>
+                  <li>Garanta enriquecimento o ambiental</li>
                 </ul>
-                <p class="mb-0">Nossas ONGs parceiras podem ajudar a encontrar o pet ideal para seu estilo de vida e espaço.</p>
+                <p class="mb-0">Nossos recurso podem ajudar a encontrar o pet ideal para seu estilo de vida e espaço.</p>
               </div>
             </div>
           </div>
@@ -292,14 +284,15 @@ if ($logado) {
             </h3>
             <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#accordionFAQ">
               <div class="accordion-body">
-                <p>Sim! Todos os pets disponíveis para adoção através das ONGs parceiras recebem:</p>
+                <p>Não! Nem todos os pets disponíveis para adoção são vacinados ou castrados</p>
                 <ul>
+                  <li>Não há obrigatoriedade de:</li>
                   <li>Vacinação básica (V8/V10 para cães e V3/V4 para gatos)</li>
                   <li>Vermifugação</li>
-                  <li>Castração (ou compromisso de castração futura para filhotes)</li>
-                  <li>Microchipagem (quando aplicável)</li>
+                  <li>Castração</li>
+                  <li>Caso o pet possua algum dos itens mencionados acima é necessário a comprovação a partir da documentação </li>
+
                 </ul>
-                <p class="mb-0">Cada pet vem com seu histórico de saúde documentado que será repassado ao adotante.</p>
               </div>
             </div>
           </div>
@@ -316,12 +309,12 @@ if ($logado) {
               <div class="accordion-body">
                 <p>Sim, mas com algumas condições importantes:</p>
                 <ul>
-                  <li>Entre em contato com a ONG responsável pela adoção o mais rápido possível</li>
+                  <li>Entre em contato com o responsável pela adoção o mais rápido possível</li>
                   <li>Não abandone o animal em nenhuma circunstância</li>
-                  <li>Mantenha o pet em segurança até que a ONG possa recolhê-lo</li>
+                  <li>Mantenha o pet em segurança até que o responsável possa recolhê-lo</li>
                   <li>Comunique qualquer problema de saúde ou comportamento</li>
                 </ul>
-                <p class="mb-0">A devolução deve ser feita de forma responsável, sempre priorizando o bem-estar do animal. A maioria das ONGs tem políticas específicas sobre devoluções.</p>
+                <p class="mb-0">A devolução deve ser feita de forma responsável, sempre priorizando o bem-estar do animal.</p>
               </div>
             </div>
           </div>
@@ -338,13 +331,8 @@ if ($logado) {
               <div class="accordion-body">
                 <p>Existem várias formas de ajudar os animais sem adotar:</p>
                 <ul>
-                  <li><strong>Apadrinhamento:</strong> Contribua mensalmente com os custos de um pet específico</li>
-                  <li><strong>Doações:</strong> Alimentos, medicamentos, cobertores ou recursos financeiros</li>
-                  <li><strong>Voluntariado:</strong> Ajude nos eventos, transporte ou cuidados com os animais</li>
-                  <li><strong>Lar temporário:</strong> Ofereça um lar temporário para pets em recuperação</li>
                   <li><strong>Divulgação:</strong> Compartilhe nossos pets nas redes sociais</li>
                 </ul>
-                <p class="mb-0">Entre em contato com as ONGs parceiras para saber sobre suas necessidades específicas.</p>
               </div>
             </div>
           </div>
