@@ -432,14 +432,13 @@ if ($logado && $user_tipo == 'usuario') {
             <li><a href="pets">Adote</a></li>
             <li><a href="sobre-nos">Sobre nós</a></li>
             <li><a href="ongs">ONGs</a></li>
-            <li><a href="#">Política de privacidade</a></li>
-            <li><a href="#">Termos de uso</a></li>
+            <li><a href="politicas-privacidade.php">Política de privacidade</a></li>
+            <li><a href="termos-de-uso.php">Termos de uso</a></li>
           </ul>
         </div>
 
         <div class="col-lg-4 col-md-12 footer-column">
           <h3>Contato</h3>
-          <p>Endereço</p>
           <p><a href="mailto:adotepatas@gmail.com">adotepatas@gmail.com</a></p>
           <p><a href="tel:+5513992007065">(13) 99200-7065</a></p>
         </div>
@@ -457,7 +456,7 @@ if ($logado && $user_tipo == 'usuario') {
   
   <section id="direitos" class="direitos container p-3 d-flex align-items-center">
     <img src="images/index/logo-nome.svg" alt="logo da marca adote patas" class="img-fluid" width="150">
-      <div class="text-center ms-3">
+      <div class="text-center" style="margin-left: 7rem;">
         <h1 class="titulo-direitos" style="color: var(--cor-vermelho-claro); font-weight: bold;">Conectando pets a lares cheios de amor.</h1>
         <p style="color: var(--cor-cinza-texto);">Adote Patas © <?php echo date("Y") ?>. Todos os direitos reservados </p>
       </div>
@@ -474,7 +473,6 @@ if ($logado && $user_tipo == 'usuario') {
   <script src="assets/js/pages/index/card-deck.js"></script>
   <script src="assets/js/pages/index/loading.js"></script>
   <script src="assets/js/pages/index/offcanvas-fix.js"></script>
-
   <script src="assets/js/pages/index/scroll-reveal-init.js"></script>
 
   <!-- TOAST NOTIFICATION -->

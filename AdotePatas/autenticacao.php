@@ -687,6 +687,15 @@ $animationMessage = $_GET['message'] ?? 'Redirecionando...';
             <div id="mensagem-confirma-senha-cadastro" class="mensagem-validacao"></div>
         </div>
 
+        <div class="adotepatas-termos">
+           <p style="color: var(--cor-cinza-texto);">
+    Ao se cadastrar, você concorda com nossos 
+    <a href="termos-de-uso.php" style="color: var(--cor-vermelho); text-decoration: underline;">Termos de Uso</a> 
+    e 
+    <a href="politicas-privacidade.php" style="color: var(--cor-vermelho); text-decoration: underline;">Políticas de Privacidade</a>. 
+</p>
+        </div>
+
 <div class="flex justify-center w-40 mx-auto">
     <button type="submit" class="adopt-btn">
         
@@ -781,6 +790,15 @@ $animationMessage = $_GET['message'] ?? 'Redirecionando...';
                 <i class="fas fa-eye toggle-senha" data-target="confirma_senha_ong"></i>
             </div>
             <div id="mensagem-confirma_senha_ong" class="mensagem-validacao"></div>
+        </div>
+
+                <div class="adotepatas-termos">
+           <p style="color: var(--cor-cinza-texto);">
+    Ao se cadastrar, você concorda com nossos 
+    <a href="termos-de-uso.php" style="color: var(--cor-vermelho); text-decoration: underline;">Termos de Uso</a> 
+    e 
+    <a href="politicas-privacidade.php" style="color: var(--cor-vermelho); text-decoration: underline;">Políticas de Privacidade</a>. 
+</p>
         </div>
 
 <div class="flex justify-center w-55 mx-auto">

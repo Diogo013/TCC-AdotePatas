@@ -1,14 +1,13 @@
-
-
 @import "../sobre/sobre.css";
 
 /* ==========================================================================
-   ESTILOS DO NAVBAR E OFFCANVAS (IGUAL AJUDA.PHP)
+   ESTILOS DO NAVBAR E OFFCANVAS (IGUAL COMO-ADOTAR.PHP)
    ========================================================================== */
 
-   body{
-    background-color: #fafafa !important;
-   }
+body {
+  background-color: #fafafa !important;
+}
+
 /* Container principal alinhado */
 .navbar > .container {
   display: flex;
@@ -114,12 +113,10 @@
   transform: scaleX(1);
 }
 
-/* Remove a barra vertical antiga do loginlink */
 .loginlink::before {
   display: none;
 }
 
-/* Para usuário NÃO LOGADO - Barra entre Ajuda e Entrar */
 .navbar-nav .nav-item:has(.loginlink) {
   position: relative;
 }
@@ -135,7 +132,6 @@
   font-size: 1.8rem;
 }
 
-/* Alternativa mais compatível se o :has() não funcionar */
 .navbar-nav .nav-item + .nav-item:has(.loginlink)::before {
   content: "|";
   position: absolute;
@@ -147,7 +143,6 @@
   font-size: 1.8rem;
 }
 
-/* Fallback para navegadores que não suportam :has() */
 .navbar-nav .nav-item:nth-child(2) + .nav-item::before {
   content: "|";
   position: absolute;
@@ -163,21 +158,18 @@
   padding-left: 8px;
 }
 
-/* Ícone de perfil quando LOGADO */
 .profile-icon.logged-in,
 .sidebar-profile-icon.logged-in {
   color: var(--cor-vermelho) !important;
   font-size: 3rem;
 }
 
-/* Ícone de perfil quando NÃO LOGADO (Visitante) */
 .sidebar-profile-icon.logged-out {
   color: var(--cor-cinza) !important;
   opacity: 0.7;
   font-size: 4rem;
 }
 
-/* Container do perfil logado */
 .profile-info-link .d-flex {
   flex-direction: row-reverse;
 }
@@ -200,7 +192,7 @@
 }
 
 /* ==========================================================================
-   OFFCANVAS - ESTILOS COMPLETOS
+   OFFCANVAS
    ========================================================================== */
 .offcanvas {
   position: fixed;
@@ -282,10 +274,161 @@
 }
 
 /* ==========================================================================
-   RESPONSIVIDADE COMPLETA
+   SEÇÃO TERMOS DE USO
    ========================================================================== */
 
-/* Para usuário NÃO LOGADO - em telas menores que 1000px, esconde os links da navbar */
+.termos-section {
+  padding: 4rem var(--container-padding);
+  min-height: calc(100vh - 100px);
+}
+
+.termos-header {
+  margin-bottom: 3rem;
+}
+
+.section-title-kawaii {
+  font-family: "Kawaii RT", sans-serif;
+  font-size: clamp(2.5rem, 6vw, 3.5rem);
+  color: var(--cor-rosa-escuro);
+  line-height: 1.2;
+  margin-bottom: 1rem;
+}
+
+.section-subtitle-poppins {
+  font-family: "Poppins", sans-serif;
+  font-size: clamp(1rem, 3vw, 1.2rem);
+  color: var(--cor-cinza-texto);
+  font-weight: 400;
+  opacity: 0.9;
+}
+
+.termos-content {
+  background-color: var(--cor-branca);
+  border-radius: 15px;
+  padding: 2.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.termos-intro {
+  padding: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.termos-intro p {
+  font-family: "Poppins", sans-serif;
+  font-size: 1.5rem;
+  color: var(--cor-rosa-escuro);
+  margin: 0;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.termos-item {
+  margin-bottom: 2.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.termos-item:last-of-type {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.termos-item h2 {
+  font-family: "Poppins", sans-serif;
+  font-size: clamp(1.3rem, 4vw, 1.6rem);
+  color: var(--cor-rosa-escuro);
+  font-weight: 700;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.termos-item h2 i {
+  color: var(--cor-vermelho);
+  font-size: 1.8rem;
+}
+
+.termos-item p {
+  font-family: "Poppins", sans-serif;
+  font-size: clamp(0.9rem, 2.5vw, 1rem);
+  color: var(--cor-cinza-texto);
+  line-height: 1.8;
+  margin-bottom: 0.75rem;
+}
+
+.termos-item ul {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 1rem;
+}
+
+.termos-item ul li {
+  font-family: "Poppins", sans-serif;
+  font-size: clamp(0.9rem, 2.5vw, 1rem);
+  color: var(--cor-cinza-texto);
+  line-height: 1.8;
+  padding-left: 2rem;
+  position: relative;
+  margin-bottom: 0.5rem;
+}
+
+.termos-item ul li::before {
+  content: "•";
+  position: absolute;
+  left: 0.75rem;
+  color: var(--cor-vermelho);
+  font-weight: bold;
+  font-size: 1.5rem;
+}
+
+.termos-footer {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 2px solid var(--cor-rosa-pastel);
+}
+
+.data-atualizacao {
+  font-family: "Poppins", sans-serif;
+  font-size: 0.9rem;
+  color: var(--cor-cinza-texto);
+  font-style: italic;
+  margin-bottom: 1.5rem;
+}
+
+.btn-voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 2rem;
+  background-color: var(--cor-vermelho);
+  color: var(--cor-branca);
+  text-decoration: none;
+  border-radius: 25px;
+  font-family: "Poppins", sans-serif;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
+
+.btn-voltar:hover {
+  background-color: var(--cor-rosa-escuro);
+  color: var(--cor-branca);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 107, 107, 0.4);
+}
+
+.btn-voltar i {
+  font-size: 1.2rem;
+}
+
+/* ==========================================================================
+   RESPONSIVIDADE
+   ========================================================================== */
+
 @media (max-width: 1199.98px) {
   .d-none.d-xl-block .navbar-nav {
     display: none !important;
@@ -298,7 +441,24 @@
   }
 }
 
-/* Ajustes para telas muito pequenas */
+@media (max-width: 767.98px) {
+  .offcanvas {
+    width: 85% !important;
+  }
+  
+  .termos-content {
+    padding: 1.5rem;
+  }
+  
+  .termos-intro {
+    padding: 1rem;
+  }
+  
+  .termos-item h2 i {
+    font-size: 1.5rem;
+  }
+}
+
 @media (max-width: 575.98px) {
   .profile-name {
     display: none !important;
@@ -307,28 +467,18 @@
   .profile-icon.logged-in {
     font-size: 2.2rem;
   }
-}
-
-/* Ajustes para tablets */
-@media (max-width: 991.98px) {
-  .navbar {
-    background-color: var(--cor-branca);
-    box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
-  }
   
-  .navbar-nav {
-    gap: 0.5rem;
+  .termos-section {
+    padding: 2rem var(--container-padding);
   }
 }
 
-/* Ajustes para mobile */
-@media (max-width: 767.98px) {
+@media (min-width: 768px) {
   .offcanvas {
-    width: 85% !important;
+    width: 400px !important;
   }
 }
 
-/* Corrige possíveis problemas de offcanvas */
 body.offcanvas-open {
   overflow: hidden;
 }
@@ -340,230 +490,19 @@ body.offcanvas-open {
   width: 100%;
 }
 
-/* Garante que o conteúdo principal não seja afetado pelo offcanvas */
 main, section, footer {
   position: relative;
   z-index: 1;
 }
 
-@media (min-width: 768px) {
-  .offcanvas {
-    width: 400px !important;
-  }
-}
-
-/* --- PREFERÊNCIA POR REDUÇÃO DE MOVIMENTO --- */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
 
   .navbar,
-  .navlink::after {
+  .navlink::after,
+  .btn-voltar {
     transition: none;
-  }
-}
-/* ==========================================================================
-   SEÇÃO COMO ADOTAR - ORDEM CORRIGIDA
-   ========================================================================== */
-
-.como-adotar-section {
-  padding: 4rem var(--container-padding);
-  overflow-x: hidden;
-}
-
-/* Títulos da Seção */
-.section-title-kawaii {
-  font-family: "Kawaii RT", sans-serif;
-  font-size: clamp(2rem, 6vw, 2.7rem);
-  color: var(--cor-rosa-escuro);
-  line-height: 1.2;
-  margin-bottom: 1rem;
-}
-
-.section-subtitle-poppins {
-  font-family: "Poppins", sans-serif;
-  font-size: clamp(1rem, 3vw, 1.2rem);
-  color: var(--cor-cinza-texto);
-  font-weight: 500;
-  max-width: 500px;
-  margin: 0 auto 3rem auto;
-  opacity: 0.9;
-}
-
-/* Lista de Passos */
-.adoption-steps {
-  list-style: none;
-  padding: 0;
-  position: relative;
-  margin-top: 0;
-}
-
-/* Linha Pontilhada - Ajustada para mobile */
-.adoption-steps::before {
-  content: '';
-  position: absolute;
-  left: 30px;
-  top: 30px;
-  bottom: 30px;
-  width: 2px;
-  background-image: linear-gradient(
-    var(--cor-rosa-pastel) 60%, 
-    rgba(255, 255, 255, 0) 0%
-  );
-  background-position: left;
-  background-size: 100% 15px;
-  background-repeat: repeat-y;
-  z-index: 1;
-}
-
-.step-item {
-  display: flex;
-  align-items: flex-start;
-  margin-bottom: 1.5rem;
-  position: relative;
-}
-
-.step-icon-wrapper {
-  flex-shrink: 0;
-  width: 60px;
-  height: 60px;
-  background-color: var(--cor-rosa-pastel);
-  color: var(--cor-branca);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  margin-right: 1rem;
-  border: 3px solid var(--cor-branca);
-  box-shadow: 0 4px 12px rgba(255, 194, 194, 0.5);
-  z-index: 2;
-}
-
-.step-content {
-  background-color: var(--cor-branca);
-  padding: 0.75rem 1.25rem;
-  border-radius: 10px;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
-  flex-grow: 1;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.step-content:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-}
-
-.step-content h3 {
-  font-family: "Poppins", sans-serif;
-  font-weight: 700;
-  font-size: clamp(1.1rem, 4vw, 1.3rem);
-  color: var(--cor-rosa-escuro);
-  margin-bottom: 0.25rem;
-}
-
-.step-content p {
-  font-family: "Poppins", sans-serif;
-  font-size: clamp(0.85rem, 2.5vw, 0.95rem);
-  color: var(--cor-cinza-texto);
-  margin-bottom: 0;
-  opacity: 0.8;
-}
-
-/* Imagem - Agora abaixo dos passos em mobile */
-.adoption-illustration {
-  margin-top: 2rem; /* Espaço entre passos e imagem no mobile */
-}
-
-.adoption-illustration img {
-  max-width: 100%;
-  height: auto;
-  width: 100%;
-}
-
-/* ==========================================================================
-   RESPONSIVIDADE
-   ========================================================================== */
-
-/* Tablet */
-@media (min-width: 768px) {
-  .step-icon-wrapper {
-    width: 70px;
-    height: 70px;
-    font-size: 1.8rem;
-  }
-  
-  .adoption-steps::before {
-    left: 35px;
-    top: 35px;
-    bottom: 35px;
-  }
-  
-  .step-content {
-    padding: 1rem 1.5rem;
-  }
-}
-
-/* Desktop (≥ 992px) */
-@media (min-width: 992px) {
-  .adoption-steps {
-    margin-top: 2rem;
-  }
-  
-  .adoption-steps::before {
-    left: 40px;
-    top: 40px;
-    bottom: 40px;
-    width: 3px;
-    background-size: 100% 20px;
-  }
-  
-  .step-item {
-    margin-bottom: 2rem;
-  }
-  
-  .step-icon-wrapper {
-    width: 80px;
-    height: 80px;
-    font-size: 2.3rem;
-    margin-right: 1.5rem;
-  }
-  
-  .step-content {
-    padding: 1rem 1.75rem;
-    border-radius: 12px;
-  }
-  
-  .adoption-illustration {
-    margin-top: 0; /* Remove margem no desktop */
-  }
-  
-  .adoption-illustration img {
-    max-width: 550px;
-  }
-}
-
-/* Ajustes extras para telas muito pequenas */
-@media (max-width: 375px) {
-  .como-adotar-section {
-    padding: 2rem var(--container-padding);
-  }
-  
-  .step-icon-wrapper {
-    width: 50px;
-    height: 50px;
-    font-size: 1.3rem;
-    margin-right: 0.75rem;
-  }
-  
-  .adoption-steps::before {
-    left: 25px;
-    top: 25px;
-    bottom: 25px;
-  }
-  
-  .step-content {
-    padding: 0.6rem 1rem;
   }
 }
