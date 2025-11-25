@@ -6,6 +6,7 @@ include_once 'session.php';
 // 2. Garantir que o usuário está logado
 requerer_login();
 
+
 // Função para verificar se houve mudanças nos dados (exceto status)
 function houveMudancas($pet_atual, $novos_dados) {
     // Comparar campos básicos (excluindo status)
@@ -104,7 +105,7 @@ $MAX_FOTOS_GLOBAL = 5;
 // 5. Validações Básicas
 if (empty($id_pet)) $erros[] = "ID do pet perdido.";
 if (empty($nome)) $erros[] = "O campo 'Nome' é obrigatório.";
-if (count($caracteristicas) > 5) $erros[] = "Você só pode selecionar até 5 características.";
+//if (count($caracteristicas) > 5) $erros[] = "Você só pode selecionar até 5 características.";
 
 // Validação da idade - apenas números
 if (!empty($idade_valor) && !is_numeric($idade_valor)) {
@@ -228,7 +229,41 @@ if (!empty($erros)) {
 $conn->beginTransaction();
 
 try {
-    // 7. PROCESSAR EXCLUSÕES DE FOTOS
+    // ---------------------------------------------------------
+    // 1. MATEMÁTICA DAS FOTOS (VALIDAR ANTES DE DELETAR)
+    // ---------------------------------------------------------
+
+    // A. Contar quantas fotos existem no banco HOJE
+    $sql_count_initial = "SELECT COUNT(*) FROM pet_fotos WHERE id_pet_fk = :id_pet_fk";
+    $stmt_count_initial = $conn->prepare($sql_count_initial);
+    $stmt_count_initial->execute([':id_pet_fk' => $id_pet]);
+    $qtd_banco = $stmt_count_initial->fetchColumn();
+
+    // B. Contar quantas o usuário marcou para excluir
+    $qtd_excluir = count($fotos_para_excluir);
+
+    // C. Contar quantas novas estão chegando (validando array vazio)
+    $qtd_novas = 0;
+    if ($fotos_novas && !empty($fotos_novas['name'][0])) {
+        // Filtra para garantir que não são inputs vazios
+        $qtd_novas = count(array_filter($fotos_novas['name']));
+    }
+
+    // D. Cálculo Final Previsto
+    $total_final_previsto = ($qtd_banco - $qtd_excluir) + $qtd_novas;
+
+    // E. Validações de Regra de Negócio
+    if ($total_final_previsto > $MAX_FOTOS_GLOBAL) {
+        throw new Exception("Limite de $MAX_FOTOS_GLOBAL fotos excedido. O pet ficaria com $total_final_previsto fotos.");
+    }
+
+    if ($total_final_previsto < 1) {
+        throw new Exception("O pet não pode ficar sem fotos. Adicione uma foto nova se quiser apagar todas as atuais.");
+    }
+
+    // ---------------------------------------------------------
+    // 2. PROCESSAR EXCLUSÕES (AGORA É SEGURO)
+    // ---------------------------------------------------------
     if (!empty($fotos_para_excluir)) {
         $sql_get_path = "SELECT caminho_foto FROM pet_fotos WHERE id_foto = :id_foto AND id_pet_fk = :id_pet_fk";
         $stmt_get_path = $conn->prepare($sql_get_path);
@@ -237,7 +272,7 @@ try {
         $stmt_delete = $conn->prepare($sql_delete);
 
         foreach ($fotos_para_excluir as $id_foto) {
-            // Pega o caminho para apagar o arquivo físico
+            // Pega o caminho para apagar o arquivo físico depois do commit
             $stmt_get_path->execute([':id_foto' => $id_foto, ':id_pet_fk' => $id_pet]);
             $caminho = $stmt_get_path->fetchColumn();
             if ($caminho) {
@@ -249,70 +284,62 @@ try {
         }
     }
 
-    // 8. CONTAR FOTOS ATUAIS (APÓS EXCLUSÕES)
-    $sql_count = "SELECT COUNT(*) FROM pet_fotos WHERE id_pet_fk = :id_pet_fk";
-    $stmt_count = $conn->prepare($sql_count);
-    $stmt_count->execute([':id_pet_fk' => $id_pet]);
-    $total_fotos_atuais = $stmt_count->fetchColumn();
-
-    // 9. PROCESSAR NOVAS FOTOS
-    if ($fotos_novas && !empty(array_filter($fotos_novas['name']))) {
-        $total_novas_fotos = count($fotos_novas['name']);
-        
-        if (($total_fotos_atuais + $total_novas_fotos) > $MAX_FOTOS_GLOBAL) {
-            throw new Exception("Limite de $MAX_FOTOS_GLOBAL fotos excedido. Você tem $total_fotos_atuais e tentou adicionar $total_novas_fotos.");
-        }
-        
-        if ($total_fotos_atuais == 0 && $total_novas_fotos == 0) {
-             throw new Exception("O pet deve ter pelo menos 1 foto.");
-        }
-
+    // ---------------------------------------------------------
+    // 3. PROCESSAR UPLOAD DE NOVAS FOTOS
+    // ---------------------------------------------------------
+    if ($qtd_novas > 0) {
         $upload_dir = 'uploads/pets/';
         if (!is_dir($upload_dir)) mkdir($upload_dir, 0755, true);
         
-        $extensoes_permitidas = ['webp'];
+        // Aceita webp (do JS) e formatos padrão caso o JS falhe
+        $extensoes_permitidas = ['webp', 'jpg', 'jpeg', 'png'];
 
-        for ($i = 0; $i < $total_novas_fotos; $i++) {
+        // Loop manual para usar o índice correto
+        foreach ($fotos_novas['name'] as $i => $name) {
+            if (empty($name)) continue; // Pula slots vazios
+
             if ($fotos_novas['error'][$i] == UPLOAD_ERR_OK) {
-                $file_name = $fotos_novas['name'][$i];
                 $file_tmp = $fotos_novas['tmp_name'][$i];
                 $file_size = $fotos_novas['size'][$i];
                 
-                $file_ext_check = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+                $file_ext_check = strtolower(pathinfo($name, PATHINFO_EXTENSION));
 
                 if (!in_array($file_ext_check, $extensoes_permitidas)) {
-                    throw new Exception("Foto '$file_name': Formato inválido (apenas .webp permitido).");
+                    throw new Exception("Foto '$name': Formato inválido.");
                 }
                 if ($file_size > 5 * 1024 * 1024) {
-                    throw new Exception("Foto '$file_name': Imagem muito grande (Máx: 5MB).");
+                    throw new Exception("Foto '$name': Imagem muito grande (Máx: 5MB).");
                 }
 
-                $novo_nome_arquivo = uniqid('', true) . '.webp';
+                $novo_nome_arquivo = uniqid('', true) . '.' . $file_ext_check;
                 $caminho_completo = $upload_dir . $novo_nome_arquivo;
 
                 if (move_uploaded_file($file_tmp, $caminho_completo)) {
                     $novos_caminhos_salvos[] = $caminho_completo;
                 } else {
-                    throw new Exception("Falha ao salvar a imagem '$file_name'.");
+                    throw new Exception("Falha ao salvar a imagem '$name'.");
                 }
             }
         }
     }
-    
-    // 9.1 Verificação final: não pode ficar sem fotos
-    if ($total_fotos_atuais == 0 && empty($novos_caminhos_salvos)) {
-        throw new Exception("O pet deve ter pelo menos 1 foto. Você excluiu todas e não adicionou nenhuma nova.");
-    }
 
-    // 10. PROCESSAR ALERGIAS E MEDICAÇÃO
+    // ---------------------------------------------------------
+    // 4. PREPARAR DADOS ESPECIAIS (JSON)
+    // ---------------------------------------------------------
     $alergias_limpas = array_filter($alergias, function($alergia) {
         return !empty(trim($alergia));
     });
-    $alergias_json = !empty($alergias_limpas) ? json_encode($alergias_limpas, JSON_UNESCAPED_UNICODE) : null;
-    $medicacao_limpa = !empty(trim($medicacao)) ? trim($medicacao) : null;
-    $caracteristicas_json = json_encode($caracteristicas, JSON_UNESCAPED_UNICODE);
+    // Se vazio, salva NULL no banco, senão salva o JSON
+    $alergias_json = !empty($alergias_limpas) ? json_encode(array_values($alergias_limpas), JSON_UNESCAPED_UNICODE) : null;
     
-    // 11. ATUALIZAR DADOS DO PET
+    $medicacao_limpa = !empty(trim($medicacao)) ? trim($medicacao) : null;
+    
+    // Garante array values para evitar chaves numéricas esparsas no JSON
+    $caracteristicas_json = json_encode(array_values($caracteristicas), JSON_UNESCAPED_UNICODE);
+    
+    // ---------------------------------------------------------
+    // 5. ATUALIZAR TABELA PET (UPDATE)
+    // ---------------------------------------------------------
     $sql_update = "UPDATE pet SET 
                         nome = :nome, 
                         especie = :especie, 
@@ -329,7 +356,6 @@ try {
                         alergias = :alergias,
                         medicacao = :medicacao";
 
-    // Adiciona o campo da carteira de vacinação se houver nova
     if ($novo_caminho_vacina) {
         $sql_update .= ", carteira_vacinacao = :carteira_vacinacao";
     }
@@ -354,7 +380,6 @@ try {
         ':id_pet' => $id_pet
     ];
 
-    // Adiciona o parâmetro da vacina se necessário
     if ($novo_caminho_vacina) {
         $params[':carteira_vacinacao'] = $novo_caminho_vacina;
     }
@@ -362,7 +387,9 @@ try {
     $stmt_update = $conn->prepare($sql_update);
     $stmt_update->execute($params);
 
-    // 12. INSERIR NOVAS FOTOS NO BANCO
+    // ---------------------------------------------------------
+    // 6. INSERIR NOVAS FOTOS NO BANCO
+    // ---------------------------------------------------------
     if (!empty($novos_caminhos_salvos)) {
         $sql_foto_insert = "INSERT INTO pet_fotos (id_pet_fk, caminho_foto) VALUES (:id_pet_fk, :caminho_foto)";
         $stmt_foto_insert = $conn->prepare($sql_foto_insert);
@@ -375,22 +402,24 @@ try {
         }
     }
 
-    // 13. COMMIT!
+    // ---------------------------------------------------------
+    // 7. CONFIRMAR TRANSAÇÃO (COMMIT)
+    // ---------------------------------------------------------
     $conn->commit();
 
-    // 14. Apagar arquivos físicos marcados para exclusão
+    // ---------------------------------------------------------
+    // 8. LIMPEZA DE ARQUIVOS ANTIGOS
+    // ---------------------------------------------------------
     foreach ($caminhos_para_excluir_fisico as $caminho) {
         if (file_exists($caminho)) {
             @unlink($caminho);
         }
     }
 
-    // Se houve upload de nova carteirinha, apaga a antiga
     if ($novo_caminho_vacina && !empty($pet_atual['carteira_vacinacao']) && file_exists($pet_atual['carteira_vacinacao'])) {
         @unlink($pet_atual['carteira_vacinacao']);
     }
 
-    // 15. Redireciona de volta com sucesso
     $_SESSION['toast_message'] = "Pet atualizado com sucesso!";
     $_SESSION['toast_type'] = 'success';
     
@@ -402,24 +431,26 @@ try {
     exit;
 
 } catch (Exception $e) {
-    // 16. Se deu erro, ROLLBACK
+    // SE DEU ERRO, DESFAZ TUDO
     $conn->rollBack();
     
-    // Apaga qualquer arquivo novo que tenha sido salvo no servidor
+    // Apaga os arquivos que acabamos de subir (já que o banco falhou)
     foreach ($novos_caminhos_salvos as $caminho) {
         if (file_exists($caminho)) {
             @unlink($caminho);
         }
     }
     
-    // Apaga a nova carteirinha se foi salva
     if ($novo_caminho_vacina && file_exists($novo_caminho_vacina)) {
         @unlink($novo_caminho_vacina);
     }
 
-    // Redireciona de volta para a edição com o erro
-    $_SESSION['toast_message'] = $e->getMessage();
-    $_SESSION['toast_type'] = 'danger';
-    header('Location: editar-pet.php?id=' . $id_pet);
-    exit;
+    // --- DEBUG DE ERRO (MODO PÂNICO) ---
+    echo "<div style='background:red; color:white; padding:20px; font-size:20px;'>";
+    echo "<h1>ERRO ENCONTRADO:</h1>";
+    echo $e->getMessage();
+    echo "<br><br><strong>Linha do erro:</strong> " . $e->getLine();
+    echo "<br><strong>Arquivo:</strong> " . $e->getFile();
+    echo "</div>";
+    exit; // Mata o script aqui e mostra o erro na tela branca
 }

@@ -155,6 +155,15 @@ if ($status_vacinacao === 'sim') {
 
     // 3. Inserção
     if (!empty($erros)) {
+
+        echo "<pre>";
+        echo "<h1>OPS! Erros encontrados:</h1>";
+        print_r($erros); // Mostra quais campos falharam
+        echo "<hr>";
+        echo "<h1>O que chegou no POST:</h1>";
+        print_r($_POST); // Mostra o que o formulário enviou
+        echo "</pre>";
+        exit; // PARA TUDO AQUI. Não deixa redirecionar.
         $_SESSION['erros_form'] = $erros;
         $_SESSION['mensagem_status'] = "Por favor, corrija os erros abaixo.";
         $_SESSION['tipo_mensagem'] = 'danger';
@@ -222,7 +231,10 @@ $stmt->execute([
             if ($caminho_vacina && file_exists($caminho_vacina)) @unlink($caminho_vacina);
             foreach ($fotos_salvas_paths as $p) if (file_exists($p)) @unlink($p);
             
+            
             $_SESSION['mensagem_status'] = "Erro no banco: " . $e->getMessage();
+            echo "<h1>Erro no Banco de Dados:</h1>";
+            echo "<pre>" . $e->getMessage() . "</pre>";
             $_SESSION['tipo_mensagem'] = 'danger';
             header("Location: cadastrar-pet.php");
             exit;
@@ -249,434 +261,420 @@ unset($_SESSION['erros_form']);
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <style>
-        :root {
-            --cor-vermelho: #B46459;
-            --cor-vermelho-claro: #d68a80;
-            --cor-rosa-claro: #f8f0ef;
-            --cor-rosa-escuro: #e8c4c0;
-            --cor-branca: #ffffff;
-            --cor-texto: #333333;
-        }
+/* =========================================
+   VARIÁVEIS E GERAL
+   ========================================= */
+:root {
+    --cor-vermelho: #B46459;
+    --cor-vermelho-claro: #d68a80;
+    --cor-rosa-claro: #f8f0ef;
+    --cor-rosa-escuro: #e8c4c0;
+    --cor-branca: #ffffff;
+    --cor-texto: #333333;
+}
 
-        /* Estilos para os campos alinhados */
-        .form-row-3 {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 1.5rem;
-            align-items: end;
-        }
+.form-row-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1.5rem;
+    align-items: end;
+}
 
-        @media (max-width: 768px) {
-            .form-row-3 {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-            }
-        }
+@media (max-width: 768px) {
+    .form-row-3 {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
 
-        .age-input-group {
-            display: grid;
-            grid-template-columns: 1fr 120px;
-            gap: 8px;
-            align-items: center;
-        }
+/* =========================================
+   INPUTS E ERROS
+   ========================================= */
+.input-error {
+    border-color: #dc2626 !important;
+    background-color: rgba(254, 242, 242, 0.9) !important; 
+}
 
-        @media (max-width: 768px) {
-            .age-input-group {
-                grid-template-columns: 1fr;
-            }
-        }
+.error-message {
+    color: #dc2626; 
+    font-weight: 500;
+    font-size: 0.875rem;
+    margin-top: 0.4rem;
+    display: none;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
 
-        /* Estilo para mensagens de erro */
-        .error-message {
-            color: #dc2626;
-            font-size: 0.875rem;
-            margin-top: 0.25rem;
-            display: block;
-        }
+.input-error:focus {
+    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
+}
 
-        .input-error {
-            border-color: #dc2626 !important;
-            background-color: #fef2f2 !important;
-        }
+/* --- CORREÇÃO DA IDADE --- */
+.age-input-group {
+    display: grid;
+    grid-template-columns: 1fr 120px;
+    gap: 8px;
+    align-items: start; /* Alterado de stretch para start para evitar distorção */
+}
 
-        /* Estilo para o campo de arquivos com drag & drop */
-        .file-drop-area {
-            border: 2px dashed var(--cor-vermelho-claro);
-            border-radius: 12px;
-            padding: 1rem;
-            text-align: center;
-            transition: all 0.3s ease;
-            background: var(--cor-rosa-claro);
-            cursor: pointer;
-            position: relative;
-        }
+/* Trava a altura do input numérico */
+.age-input-group input[type="number"] {
+    height: 54px !important; /* Altura fixa padrão */
+    max-height: 54px !important;
+    max-width: 100px !important;
+    box-sizing: border-box;
+    border: 2px solid transparent;
+}
 
-        .file-drop-area:hover, .file-drop-area.dragover {
-            background: #fff0f0;
-            border-color: var(--cor-vermelho);
-            transform: translateY(-2px);
-        }
+/* Trava a altura do select customizado */
+.age-unit-custom .custom-select-trigger {
+    height: 54px !important;
+    min-height: 54px  ;
+    max-height: 54px ;
+    display: flex;
+    align-items: center;
+    padding: 0 1.15rem; /* Padding lateral apenas */
+    box-sizing: border-box;
+    /* Borda igual ao input padrão */
+    border: 2px solid transparent;
+    margin: 0;
+}
 
-        .file-drop-area i {
-            font-size: 3rem;
-            color: var(--cor-vermelho-claro);
-            margin-bottom: 1rem;
-            transition: all 0.3s ease;
-        }
+/* Garante que o hover/focus não mude o tamanho da borda */
+.age-unit-custom .custom-select-trigger:focus,
+.age-unit-custom .custom-select-trigger:hover {
+    border-color: rgba(255, 255, 255, 0.6);
+    outline: none;
+    margin: 0; /* Previne margens extras */
+}
 
-        .file-drop-area.dragover i {
-            color: var(--cor-vermelho);
-            transform: scale(1.1);
-        }
+@media (max-width: 768px) {
+    .age-input-group {
+        grid-template-columns: 1fr;
+    }
+}
 
-        .file-info {
-            font-weight: 600;
-            color: var(--cor-texto);
-            margin-bottom: 0.5rem;
-        }
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type=number] {
+    -moz-appearance: textfield;
+}
 
-        .file-hint {
-            color: #666;
-            font-size: 0.9rem;
-        }
+/* =========================================
+   DRAG AND DROP & UPLOADS
+   ========================================= */
+.file-drop-area {
+    border: 2px dashed var(--cor-vermelho-claro);
+    border-radius: 12px;
+    padding: 2rem 1rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.9); 
+    cursor: pointer;
+    position: relative;
+}
 
-        /* Estilo checkbox amamentação melhorado */
-        .amamentacao-checkbox {
-            display: flex;
-            align-items: flex-start;
-            gap: 1rem;
-            padding: 1.5rem;
-            background: linear-gradient(135deg, #fff8f8, #ffecec);
-            border-radius: 16px;
-            border: 2px solid #ffe0e0;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
+.file-drop-area:hover, .file-drop-area.dragover {
+    background: #fff;
+    border-color: var(--cor-vermelho);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
 
-        .amamentacao-checkbox:hover {
-            border-color: var(--cor-vermelho-claro);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(180, 100, 89, 0.1);
-        }
+.file-drop-area i {
+    font-size: 3rem;
+    color: var(--cor-vermelho);
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
 
-        .amamentacao-checkbox input[type="checkbox"] {
-            width: 24px;
-            height: 24px;
-            margin-top: 0.25rem;
-            accent-color: var(--cor-vermelho);
-            flex-shrink: 0;
-        }
+.file-drop-area.dragover i {
+    transform: scale(1.1);
+}
 
-        .amamentacao-checkbox label {
-            font-weight: 600;
-            color: var(--cor-texto);
-            line-height: 1.5;
-            cursor: pointer;
-        }
+.file-info {
+    font-weight: 600;
+    color: var(--cor-texto);
+    margin-bottom: 0.5rem;
+}
 
-        .amamentacao-checkbox .required {
-            color: var(--cor-vermelho);
-            font-weight: 700;
-        }
+.file-hint {
+    color: #666;
+    font-size: 0.9rem;
+}
 
-        /* Campos dinâmicos para alergias e medicação */
-        .dynamic-field {
-            margin-top: 1rem;
-            padding: 1.5rem;
-            background: var(--cor-rosa-claro);
-            border-radius: 12px;
-        }
-
-        .dynamic-field h4 {
-            color: var(--cor-vermelho);
-            margin-bottom: 1rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .alergia-input-group {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 0.5rem;
-            align-items: center;
-        }
-
-        .alergia-input {
-            flex: 1;
-        }
-
-        .btn-add-alergia {
-            background: var(--cor-vermelho);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 0.5rem 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.9rem;
-        }
-
-        .btn-add-alergia:hover {
-            background: var(--cor-vermelho-claro);
-            transform: translateY(-1px);
-        }
-
-        .btn-remove-alergia {
-            background: var(--cor-vermelho);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            flex-shrink: 0;
-        }
-
-        .btn-remove-alergia:hover {
-            background: #b91c1c;
-            transform: scale(1.1);
-        }
-
-        .medicacao-input {
-            width: 100%;
-        }
-
-        /* Oculta os spinners nos inputs number */
-        input[type=number]::-webkit-inner-spin-button,
-        input[type=number]::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-
-        input[type=number] {
-            -moz-appearance: textfield;
-        }
-
-        /* Estilos para selects customizados */
-        .select-hidden {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            margin: -1px;
-            padding: 0;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            border: 0;
-        }
-
-        .custom-select-wrapper {
-            position: relative;
-            width: 100%;
-            font-family: 'Poppins', sans-serif; 
-        }
-
-        .custom-select-trigger {
-            width: 100%;
-            padding: 1.15rem;
-            background-color: rgba(180, 100, 89, 0.55);
-            border: 1px solid transparent;
-            border-radius: 12px;
-            color: var(--cor-branca);
-            font-size: 1rem;
-            font-weight: 500;
-            text-align: left;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: border-color 0.2s ease, background-color 0.2s ease;
-            -webkit-appearance: none; 
-            -moz-appearance: none; 
-            appearance: none; 
-        }
-
-        .custom-select-trigger:focus,
-        .custom-select-trigger:hover {
-            border-color:  rgba(255, 255, 255, 0.6);
-            outline: none; 
-        }
-        
-        .custom-select-value.placeholder {
-            color: var(--cor-branca);
-            background-color: transparent;
-            opacity: 0.8;
-        }
-
-        .custom-select-arrow {
-            width: 10px;
-            height: 10px;
-            border-right: 2px solid var(--cor-vermelho);
-            border-bottom: 2px solid var(--cor-vermelho);
-            transform: rotate(45deg);
-            transition: transform 0.3s ease;
-            pointer-events: none; 
-        }
-
-        .custom-select-trigger[aria-expanded="true"] .custom-select-arrow {
-            transform: rotate(225deg);
-            margin-top: 5px; 
-        }
-
-        .custom-select-options {
-            position: absolute;
-            top: calc(100% + 4px);
-            left: 0;
-            right: 0;
-            z-index: 10;
-            background-color: var(--cor-rosa-claro);
-            border-radius: 12px;
-            border: 0.5px solid var(--cor-rosa-escuro); 
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            padding: 8px;
-            list-style: none;
-            margin: 0;
-            overflow-y: auto;
-            max-height: 200px;
-            display: none;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .custom-option {
-            padding: 10px 12px;
-            color: var(--cor-vermelho); 
-            font-weight: 500;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.2s ease, color 0.2s ease;
-        }
-
-        .custom-option:hover,
-        .custom-option:focus {
-            background-color: var(--cor-rosa-escuro);
-            opacity: 0.4;
-            color: var(--cor-branca);
-            outline: none;
-        }
-
-        .custom-option.selected {
-            background-color: var(--cor-rosa-escuro); 
-            color: var(--cor-branca);
-            font-weight: 700;
-        }
-
-        /* Estilo customizado para o select de idade */
-        .age-unit-custom {
-            width: 100%;
-        }
-
-        .age-unit-custom .custom-select-trigger {
-            height: 100%;
-            min-height: 54px;
-        }
-
-        .tags-preview {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .char-tag-input {
-            background-color: #ffffff;
-            padding: 0.3rem 0.7rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            color: var(--cor-vermelho);
-            border: 1px solid #eee;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        #openModalBtn {
-            min-height: 60px;
-            display: flex;
-            align-items: flex-start;
-            padding: 1.15rem;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .tags-placeholder {
-            color: var(--cor-branca) !important;
-        }
-
-        #openModalBtn:has(.char-tag-input) {
-            color: inherit;
-        }
-
-        /* Estilos para preview de fotos */
-        #fotos-preview-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
-        }
-
-        .foto-preview {
-            position: relative;
-            width: 100%;
-            padding-top: 100%;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            border: 2px solid #eee;
-        }
-
-        .foto-preview img {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .remove-preview {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            width: 24px;
-            height: 24px;
-            background: rgba(255, 255, 255, 0.9);
-            border: none;
-            border-radius: 50%;
-            color: var(--cor-vermelho);
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            line-height: 1;
-            transition: all 0.2s ease;
-        }
-
-        .remove-preview:hover {
-            background: var(--cor-vermelho);
-            color: white;
-            transform: scale(1.1);
-        }
-
-        /* Estilos para a seção de vacinação */
 #vacinacao-section .file-drop-area {
     border: 2px dashed var(--cor-vermelho);
-    background: var(--cor-rosa-claro);
+    background: rgba(255, 245, 245, 0.95);
 }
 
 #vacinacao-section .file-drop-area:hover {
+    border-color: #a04035;
+    background: #fff;
+}
+
+/* Previews de Fotos */
+#fotos-preview-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.foto-preview {
+    position: relative;
+    width: 100%;
+    padding-top: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    border: 2px solid #fff;
+}
+
+.foto-preview img {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+}
+
+.remove-preview {
+    position: absolute;
+    top: 5px; right: 5px;
+    width: 24px; height: 24px;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 50%;
+    color: var(--cor-vermelho);
+    font-weight: bold;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.remove-preview:hover {
+    background: var(--cor-vermelho);
+    color: white;
+}
+
+/* =========================================
+   CHECKBOXES E CAMPOS DINÂMICOS
+   ========================================= */
+.amamentacao-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 16px;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.amamentacao-checkbox:hover {
     border-color: var(--cor-vermelho-claro);
-    background: #fff0f0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(180, 100, 89, 0.2);
+}
+
+.amamentacao-checkbox.input-error {
+    border-color: #dc2626 !important;
+    background: rgba(255, 240, 240, 0.95);
+}
+
+.amamentacao-checkbox input[type="checkbox"] {
+    width: 24px;
+    height: 24px;
+    margin-top: 0.25rem;
+    accent-color: var(--cor-vermelho);
+    flex-shrink: 0;
+}
+
+.amamentacao-checkbox label {
+    font-weight: 600;
+    color: var(--cor-texto);
+    line-height: 1.5;
+    cursor: pointer;
+}
+
+.amamentacao-checkbox .required {
+    color: var(--cor-vermelho);
+    font-weight: 700;
+}
+
+/* Campos Dinâmicos */
+.dynamic-field {
+    margin-top: 1rem;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.dynamic-field h4 {
+    color: white;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    margin-bottom: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.alergia-input-group {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    align-items: center;
+}
+
+.alergia-input { flex: 1; }
+
+.btn-add-alergia, .btn-remove-alergia {
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex; align-items: center; justify-content: center;
+    color: white;
+}
+
+.btn-add-alergia {
+    background: var(--cor-vermelho);
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    gap: 0.5rem;
+}
+.btn-add-alergia:hover { background: #a04035; }
+
+.btn-remove-alergia {
+    background: rgba(180, 100, 89, 0.8);
+    width: 42px; height: 54px; 
+    border-radius: 12px;
+}
+.btn-remove-alergia:hover { background: var(--cor-vermelho); }
+
+
+/* =========================================
+   SELECTS CUSTOMIZADOS
+   ========================================= */
+.select-hidden {
+    position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+    overflow: hidden; clip: rect(0, 0, 0, 0); border: 0;
+}
+
+.custom-select-wrapper {
+    position: relative;
+    width: 100%;
+    font-family: 'Poppins', sans-serif;
+}
+
+.custom-select-trigger {
+    width: 100%;
+    padding: 0 1.15rem; /* Padding ajustado para altura fixa */
+    height: 54px; /* Altura fixa igual aos inputs */
+    background-color: rgba(180, 100, 89, 0.58); 
+    border: 2px solid transparent;
+    border-radius: 0.75rem; 
+    color: white;
+    font-size: 1rem;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    display: flex; justify-content: space-between; align-items: center;
+    transition: border-color 0.3s ease-in-out;
+    box-sizing: border-box;
+}
+
+.custom-select-trigger:focus, 
+.custom-select-trigger:hover {
+    border-color: rgba(255, 255, 255, 0.6);
+    outline: none;
+}
+
+.custom-select-value.placeholder {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.custom-select-arrow {
+    width: 10px; height: 10px;
+    border-right: 2px solid white;
+    border-bottom: 2px solid white;
+    transform: rotate(45deg);
+    transition: transform 0.3s ease;
+    pointer-events: none;
+}
+
+.custom-select-trigger[aria-expanded="true"] .custom-select-arrow {
+    transform: rotate(225deg);
+    margin-top: 5px;
+}
+
+.custom-select-options {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0; right: 0; z-index: 50;
+    background-color: #fff; 
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    padding: 8px;
+    list-style: none;
+    margin: 0;
+    overflow-y: auto;
+    max-height: 250px;
+    display: none;
+}
+
+.custom-option {
+    padding: 10px 15px;
+    color: var(--cor-texto);
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.custom-option:hover, 
+.custom-option.selected {
+    background-color: var(--cor-rosa-claro);
+    color: var(--cor-vermelho);
+    font-weight: 700;
+}
+
+/* Botão de Características */
+#openModalBtn {
+    min-height: 60px;
+    display: flex;
+    align-items: center; 
+    padding: 1.15rem;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.tags-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.char-tag-input {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--cor-vermelho);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.tags-placeholder {
+    color: rgba(255, 255, 255, 0.8) !important;
 }
     </style>
 </head>
@@ -719,7 +717,7 @@ unset($_SESSION['erros_form']);
             </div>
         <?php endif; ?>
 
-       <form action="cadastrar-pet.php" method="post" enctype="multipart/form-data" id="form-cadastro-pet" class="space-y-6">
+       <form action="cadastrar-pet.php" method="post" enctype="multipart/form-data" id="form-cadastro-pet" class="space-y-6" novalidate>
             
             <div class="grid gap-6">
                 <div>
@@ -739,31 +737,20 @@ unset($_SESSION['erros_form']);
                 <div>
                     <label>Idade Aproximada</label>
                     <div class="age-input-group">
-                        <input 
-                            type="number" 
-                            name="idade_valor" 
-                            placeholder="Ex: 2" 
-                            required 
-                            min="1" 
-                            max="11"
+                        
+                        <input type="number" name="idade_valor" id="idade_valor" placeholder="Ex: 2" required min="0"
                             class="input-style age-value <?php echo isset($erros_form['idade']) ? 'input-error' : ''; ?>" 
-                            value="<?php echo htmlspecialchars($idade_valor); ?>"
-                        >
-                        <select name="idade_unidade" id="idade_unidade-real" required class="select-hidden" aria-hidden="true" tabindex="-1">
+                            value="<?php echo htmlspecialchars($idade_valor); ?>">
+                            
+                        <select name="idade_unidade" id="idade_unidade-real" class="select-hidden" aria-hidden="true" tabindex="-1">
                             <option value="anos" <?= $idade_unidade == 'anos' ? 'selected' : '' ?>>Anos</option>
                             <option value="meses" <?= $idade_unidade == 'meses' ? 'selected' : '' ?>>Meses</option>
                         </select>
 
                         <div class="custom-select-wrapper age-unit-custom" data-target-select="idade_unidade-real">
-                            <button type="button" class="custom-select-trigger input-style w-full" 
-                                    aria-haspopup="listbox" 
-                                    aria-expanded="false">
+                            <button type="button" class="custom-select-trigger input-style w-full" aria-haspopup="listbox" aria-expanded="false">
                                 <span class="custom-select-value <?php echo empty($idade_unidade) ? 'placeholder' : ''; ?>">
-                                    <?php 
-                                        if ($idade_unidade == 'anos') echo 'Anos';
-                                        elseif ($idade_unidade == 'meses') echo 'Meses';
-                                        else echo 'Unidade';
-                                    ?>
+                                    <?php echo ($idade_unidade == 'meses') ? 'Meses' : 'Anos'; ?>
                                 </span>
                                 <span class="custom-select-arrow"></span>
                             </button>
@@ -774,14 +761,14 @@ unset($_SESSION['erros_form']);
                         </div>
                     </div>
                     <?php if (isset($erros_form['idade'])): ?>
-                        <span class="error-message"><?php echo htmlspecialchars($erros_form['idade']); ?></span>
+                        <span class="error-message" style="display:block"><?php echo htmlspecialchars($erros_form['idade']); ?></span>
                     <?php endif; ?>
+                    <div class="error-message" id="error-idade">Informe uma idade válida.</div>
                 </div>
-
                 <!-- Espécie -->
                 <div>
                     <label id="select-label-especie">Espécie</label>
-                    <select name="especie" id="especie-real" required class="select-hidden" aria-hidden="true" tabindex="-1">
+                    <select name="especie" id="especie-real" class="select-hidden" aria-hidden="true" tabindex="-1">
                         <option value="cachorro" <?php echo ($especie == 'cachorro') ? 'selected' : ''; ?>>Cachorro</option>
                         <option value="gato" <?php echo ($especie == 'gato') ? 'selected' : ''; ?>>Gato</option>
                     </select>
@@ -841,7 +828,7 @@ unset($_SESSION['erros_form']);
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label id="select-label-porte">Porte</label>
-                    <select name="porte" id="porte-real" required class="select-hidden" aria-hidden="true" tabindex="-1">
+                    <select name="porte" id="porte-real" class="select-hidden" aria-hidden="true" tabindex="-1">
                         <option value="pequeno" <?php echo ($porte == 'pequeno') ? 'selected' : ''; ?>>Pequeno</option>
                         <option value="medio" <?php echo ($porte == 'medio') ? 'selected' : ''; ?>>Médio</option>
                         <option value="grande" <?php echo ($porte == 'grande') ? 'selected' : ''; ?>>Grande</option>
@@ -884,7 +871,7 @@ unset($_SESSION['erros_form']);
                 </div>
                 <div>
                     <label id="select-label-vacinacao">Vacinado?</label>
-                    <select name="status_vacinacao" id="status_vacinacao-real" required class="select-hidden" aria-hidden="true" tabindex="-1">
+                    <select name="status_vacinacao" id="status_vacinacao-real" class="select-hidden" aria-hidden="true" tabindex="-1">
                         <option value="sim" <?php echo ($status_vacinacao == 'sim') ? 'selected' : ''; ?>>Sim</option>
                         <option value="nao" <?php echo ($status_vacinacao == 'nao') ? 'selected' : ''; ?>>Não</option>
                     </select>
@@ -914,7 +901,7 @@ unset($_SESSION['erros_form']);
             <div class="grid gap-6"> 
                 <div>
                     <label id="select-label-castracao">Castrado?</label>
-                    <select name="status_castracao" id="status_castracao-real" required class="select-hidden" aria-hidden="true" tabindex="-1">
+                    <select name="status_castracao" id="status_castracao-real" class="select-hidden" aria-hidden="true" tabindex="-1">
                         <option value="sim" <?php echo ($status_castracao == 'sim') ? 'selected' : ''; ?>>Sim</option>
                         <option value="nao" <?php echo ($status_castracao == 'nao') ? 'selected' : ''; ?>>Não</option>
                     </select>
@@ -978,16 +965,19 @@ unset($_SESSION['erros_form']);
 
             <!-- Campo de upload da carteirinha (obrigatório quando vacinado) -->
             <div class="mt-4">
-                <label class="font-semibold text-gray-700 mb-1 block">Carteirinha de Vacinação <span class="text-red-600">*</span></label>
+                <label class="font-semibold text-gray-700 mb-1 block" id="label-vacina-text">Carteirinha de Vacinação <span class="text-red-600">*</span></label>
                 <div id="drop-area-vacina" class="file-drop-area <?php echo isset($erros_form['carteira_vacinacao']) ? 'input-error' : ''; ?>">
                     <i class="fas fa-file-medical"></i>
-                    <div class="file-info" id="file-name-vacina">Arraste e solte o arquivo aqui ou clique para selecionar</div>
-                    <div class="file-hint">Formatos aceitos: JPG, PNG, PDF, WEBP</div>
+                    <div class="file-info" id="file-name-vacina">Arraste ou clique para selecionar</div>
+                    <div class="file-hint">Formatos: JPG, PNG, PDF, WEBP</div>
                     <input type="file" name="carteira_vacinacao" id="file_vacina" class="hidden" accept="image/*,.pdf">
                 </div>
-                <div id="preview-vacina-text" class="text-md text-gray-800 mt-1 ml-2" style="color: #b91c1c;">Nenhum arquivo selecionado.</div>
-                <?php if (isset($erros_form['carteira_vacinacao'])): ?>
-                    <span class="error-message"><?php echo htmlspecialchars($erros_form['carteira_vacinacao']); ?></span>
+                <div id="preview-vacina-container" class="hidden mt-2 p-2 bg-white rounded border">
+                    <div id="preview-vacina"></div>
+                </div>
+                 <div class="error-message" id="error-vacina">A carteirinha é obrigatória.</div>
+                 <?php if (isset($erros_form['carteira_vacinacao'])): ?>
+                    <span class="error-message" style="display:block"><?php echo htmlspecialchars($erros_form['carteira_vacinacao']); ?></span>
                 <?php endif; ?>
             </div>
         </div>
@@ -1079,15 +1069,13 @@ unset($_SESSION['erros_form']);
         <div class="char-modal-header">
             <div>
                 <h2>Selecionar Características</h2>
-                <p>Escolha até 5 características para o seu pet.</p>
+                <p>Escolha as características do seu pet.</p>
             </div>
             <button type="button" class="char-modal-close" id="closeModalBtn">&times;</button>
         </div>
-
         <div class="char-modal-body">
-            <!-- Conteúdo do modal mantido igual -->
             <h3>Temperamento</h3>
-            <div class="char-tags-container">
+            <div class="char-tags-container" data-category="unlimited">
                 <span class="char-tag" data-color="laranja" data-value="Dócil"><i class="fa-solid fa-face-smile"></i> Dócil <i class="fas fa-check"></i></span>
                 <span class="char-tag" data-color="verde" data-value="Brincalhão"><i class="fa-solid fa-puzzle-piece"></i> Brincalhão <i class="fas fa-check"></i></span>
                 <span class="char-tag" data-color="roxo" data-value="Calmo"><i class="fa-solid fa-leaf"></i> Calmo <i class="fas fa-check"></i></span>
@@ -1099,16 +1087,16 @@ unset($_SESSION['erros_form']);
                 <span class="char-tag" data-color="laranja" data-value="Medroso"><i class="fa-solid fa-ghost"></i> Medroso <i class="fas fa-check"></i></span>
             </div>
             
-            <h3>Nível de Energia</h3>
-            <div class="char-tags-container">
+            <h3>Nível de Energia (Max 1)</h3>
+            <div class="char-tags-container" data-category="single-energy">
                 <span class="char-tag" data-color="verde" data-value="Baixa Energia"><i class="fa-solid fa-battery-quarter"></i> Baixa Energia <i class="fas fa-check"></i></span>
                 <span class="char-tag" data-color="laranja" data-value="Média Energia"><i class="fa-solid fa-battery-half"></i> Média Energia <i class="fas fa-check"></i></span>
                 <span class="char-tag" data-color="rosa" data-value="Alta Energia"><i class="fa-solid fa-battery-full"></i> Alta Energia <i class="fas fa-check"></i></span>
                 <span class="char-tag" data-color="roxo" data-value="Hiperativo"><i class="fa-solid fa-bolt"></i> Hiperativo <i class="fas fa-check"></i></span>
             </div>
-            
+
             <h3>Sociabilidade</h3>
-            <div class="char-tags-container">
+            <div class="char-tags-container" data-category="unlimited">
                 <span class="char-tag" data-color="rosa" data-value="Com Crianças"><i class="fa-solid fa-child"></i> Com Crianças <i class="fas fa-check"></i></span>
                 <span class="char-tag" data-color="verde" data-value="Com Cães"><i class="fa-solid fa-dog"></i> Com Cães <i class="fas fa-check"></i></span>
                 <span class="char-tag" data-color="roxo" data-value="Com Gatos"><i class="fa-solid fa-cat"></i> Com Gatos <i class="fas fa-check"></i></span>
@@ -1116,9 +1104,9 @@ unset($_SESSION['erros_form']);
                 <span class="char-tag" data-color="rosa" data-value="Pet Único"><i class="fa-solid fa-user"></i> Pet Único <i class="fas fa-check"></i></span>
                 <span class="char-tag" data-color="verde" data-value="Com Idosos"><i class="fa-solid fa-person-cane"></i> Com Idosos <i class="fas fa-check"></i></span>
             </div>
-            
+
             <h3>Cuidados Especiais</h3>
-            <div class="char-tags-container">
+            <div class="char-tags-container" data-category="unlimited">
                 <span class="char-tag" data-color="roxo" data-value="Medicação"><i class="fa-solid fa-pills"></i> Medicação <i class="fas fa-check"></i></span>
                 <span class="char-tag" data-color="laranja" data-value="Dieta Especial"><i class="fa-solid fa-bowl-food"></i> Dieta Especial <i class="fas fa-check"></i></span>
                 <span class="char-tag" data-color="rosa" data-value="Alergia"><i class="fa-solid fa-allergies"></i> Alergia <i class="fas fa-check"></i></span>
@@ -1129,25 +1117,24 @@ unset($_SESSION['erros_form']);
                 <span class="char-tag" data-color="verde" data-value="Traumático"><i class="fa-solid fa-heart-crack"></i> Traumático <i class="fas fa-check"></i></span>
             </div>
 
-            <h3>Treinamento e Hábitos</h3>
-            <div class="char-tags-container">
+            <h3>Treinamento e Hábitos (Max 1)</h3>
+            <div class="char-tags-container" data-category="single-training">
                 <span class="char-tag" data-color="verde" data-value="Adestrado"><i class="fa-solid fa-graduation-cap"></i> Adestrado <i class="fas fa-check"></i></span>
                 <span class="char-tag" data-color="laranja" data-value="Em Treinamento"><i class="fa-solid fa-person-chalkboard"></i> Em Treinamento <i class="fas fa-check"></i></span>
                 <span class="char-tag" data-color="roxo" data-value="Não Adestrado"><i class="fa-solid fa-xmark"></i> Não Adestrado <i class="fas fa-check"></i></span>
             </div>
 
             <h3>Ambiente Ideal</h3>
-            <div class="char-tags-container">
+            <div class="char-tags-container" data-category="unlimited">
                 <span class="char-tag" data-color="roxo" data-value="Apartamento"><i class="fa-solid fa-building"></i> Apartamento <i class="fas fa-check"></i></span>
                 <span class="char-tag" data-color="verde" data-value="Precisa de Quintal"><i class="fa-solid fa-tree"></i> Precisa de Quintal <i class="fas fa-check"></i></span>
                 <span class="char-tag" data-color="laranja" data-value="Casa"><i class="fa-solid fa-house"></i> Casa <i class="fas fa-check"></i></span>
                 <span class="char-tag" data-color="rosa" data-value="1ª Adoção"><i class="fa-solid fa-star"></i> 1ª Adoção <i class="fas fa-check"></i></span>
             </div>
         </div>
-        
         <div class="char-modal-footer">
             <button type="button" class="btn btn-cancelar" id="cancelModalBtn">Cancelar</button>
-            <button type="button" class="btn btn-salvar" id="saveModalBtn">Salvar Seleção (0/5)</button>
+            <button type="button" class="btn btn-salvar" id="saveModalBtn">Salvar Seleção</button>
         </div>
     </div>
 </div>
@@ -1158,180 +1145,402 @@ unset($_SESSION['erros_form']);
 <script src="assets/js/pages/autenticacao/autenticacao.js" type="module"></script>
 
 <script>
-// Variáveis globais para controle de fotos
+// Constantes Globais
+const totalFotosAtuais = 0; // Cadastro começa com 0
+const existingCharacteristics = <?php echo json_encode($caracteristicas); ?>;
+const alergiasExistentes = <?php echo json_encode($alergias); ?>;
 const MAX_FOTOS_GLOBAL = 5;
 
-// Função de validação de limite de fotos
-function validarLimiteFotos() {
-    const fotosNovas = document.getElementById('fotos_novas_final').files.length;
-    const totalFinal = fotosNovas;
+// Função: Toast de Notificação
+function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast-notification');
+    const msg = document.getElementById('toast-message');
+    const icon = document.getElementById('toast-icon');
+    
+    if (!toast || !msg) return;
 
-    const limiteHelper = document.getElementById('limite-fotos-helper');
-    const submitBtn = document.getElementById('submit-btn');
-
-    if (totalFinal > MAX_FOTOS_GLOBAL) {
-        limiteHelper.textContent = `Erro: Limite de ${MAX_FOTOS_GLOBAL} fotos excedido! (Total: ${totalFinal})`;
-        limiteHelper.style.color = 'var(--cor-vermelho)';
-        submitBtn.disabled = true;
-        submitBtn.style.opacity = '0.7';
-        return false;
-    } else if (totalFinal === 0) {
-        limiteHelper.textContent = `O pet deve ter pelo menos 1 foto.`;
-        limiteHelper.style.color = 'var(--cor-vermelho)';
-        submitBtn.disabled = true;
-        submitBtn.style.opacity = '0.7';
-        return false;
-    } else {
-        const espacoRestante = MAX_FOTOS_GLOBAL - totalFinal;
-        limiteHelper.textContent = `Você pode adicionar mais ${espacoRestante} foto(s). (Total será ${totalFinal}/${MAX_FOTOS_GLOBAL})`;
-        limiteHelper.style.color = '#555';
-        submitBtn.disabled = false;
-        submitBtn.style.opacity = '1';
-        return true;
+    msg.textContent = message;
+    toast.className = `toast ${type}`;
+    
+    if (icon) {
+        if (type === 'success') icon.innerHTML = '<i class="fas fa-check"></i>';
+        else icon.innerHTML = '<i class="fas fa-times"></i>';
     }
+    
+    toast.style.display = 'flex';
+    setTimeout(() => { toast.style.display = 'none'; }, 4000);
 }
 
-// VALIDAÇÃO DA IDADE
+// --- VALIDAÇÃO DE CAMPOS VAZIOS NO SUBMIT ---
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('form-cadastro-pet');
+    if (!form) return;
+
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        // Função auxiliar para marcar erro
+        function setError(id, message) {
+            const el = document.getElementById(id);
+            if(el) {
+                el.classList.add('input-error');
+                // Tenta achar msg de erro próxima ou pelo ID específico
+                const err = el.parentNode.querySelector('.error-message') || document.getElementById('error-'+id);
+                if(err) {
+                    err.style.display = 'block';
+                    if(message) err.textContent = message;
+                }
+            }
+        }
+
+        function clearErrors() {
+            document.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
+            document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+        }
+
+        clearErrors();
+
+        // 1. Validações básicas (inputs simples)
+       
+        const requiredIds = ['nome', 'especie-real', 'sexo-real', 'porte-real', 'status_vacinacao-real', 'status_castracao-real'];
+        requiredIds.forEach(id => {
+            const el = document.getElementById(id);
+            // Para selects customizados, o valor pode estar no input hidden ou no visual?
+            // Aqui assumimos que os IDs apontam para os inputs que guardam o valor
+            if(!el || !el.value.trim()) {
+                setError(id);
+                isValid = false;
+            }
+        });
+
+        // 2. Idade
+        const idadeVal = document.getElementById('idade_valor');
+        if(!idadeVal || !idadeVal.value) {
+            setError('idade_valor');
+            const errDiv = document.getElementById('error-idade');
+            if(errDiv) errDiv.style.display = 'block';
+            isValid = false;
+        }
+
+        // 3. Amamentação (Checkbox)
+        const checkAmamentacao = document.getElementById('check_amamentacao');
+        if(checkAmamentacao && !checkAmamentacao.checked) {
+             const wrapper = document.getElementById('container-amamentacao');
+             if(wrapper) wrapper.classList.add('input-error');
+             const errDiv = document.getElementById('error-amamentacao');
+             if(errDiv) errDiv.style.display = 'block';
+             isValid = false;
+        }
+
+        // 4. Carteirinha (File) - Obrigatório apenas se vacinado = sim
+        const statusVacina = document.getElementById('status_vacinacao-real');
+        if (statusVacina && statusVacina.value === 'sim') {
+            const vacinaInput = document.getElementById('file_vacina');
+            if(vacinaInput && vacinaInput.files.length === 0) {
+                const dropArea = document.getElementById('drop-area-vacina');
+                if(dropArea) dropArea.classList.add('input-error');
+                const errDiv = document.getElementById('error-vacina');
+                if(errDiv) errDiv.style.display = 'block';
+                isValid = false;
+            }
+        }
+
+        // 5. Fotos
+        const fotosInput = document.getElementById('fotos_novas_final');
+        // Nota: No cadastro, totalFotosAtuais é 0, então só olhamos o input de novas
+        if(fotosInput && fotosInput.files.length === 0) {
+            const dropArea = document.getElementById('drop-area');
+            if(dropArea) dropArea.classList.add('input-error');
+            const errDiv = document.getElementById('error-fotos');
+            if(errDiv) errDiv.style.display = 'block';
+            isValid = false;
+        }
+
+        if(!isValid) {
+            e.preventDefault();
+            showToast('Preencha todos os campos obrigatórios!', 'danger');
+            // Scroll para o primeiro erro
+            const firstError = document.querySelector('.input-error, .error-message[style="display: block;"]');
+            if(firstError) {
+                firstError.scrollIntoView({behavior: 'smooth', block: 'center'});
+            }
+        }
+    });
+});
+
+// --- LÓGICA DE IDADE (MESES vs ANOS) ---
 document.addEventListener('DOMContentLoaded', function() {
     const idadeValorInput = document.querySelector('input[name="idade_valor"]');
     const idadeUnidadeSelect = document.getElementById('idade_unidade-real');
     
-    // Validação para aceitar apenas números
-    idadeValorInput.addEventListener('input', function() {
-        // Remove qualquer caractere não numérico
-        this.value = this.value.replace(/[^0-9]/g, '');
-        
-        // Validação específica para meses
-        if (idadeUnidadeSelect.value === 'meses' && this.value > 11) {
-            this.value = 11;
-            if (typeof showToast === 'function') {
+    if (!idadeValorInput || !idadeUnidadeSelect) return;
+
+    function checkAgeLimit() {
+        // Removemos a limitação estrita no HTML (max=11) e controlamos aqui
+        if (idadeUnidadeSelect.value === 'meses') {
+            idadeValorInput.setAttribute('max', '11');
+            
+            // Se o usuário digitar algo maior que 11, avisamos
+            if(idadeValorInput.value && parseInt(idadeValorInput.value) > 11) {
+                idadeValorInput.value = 11; 
                 showToast('A idade em meses não pode ser maior que 11.', 'warning');
             }
+        } else {
+            // Se for ANOS, removemos o limite máximo
+            idadeValorInput.removeAttribute('max');
         }
+    }
+
+    idadeValorInput.addEventListener('input', function() {
+        this.value = this.value.replace(/[^0-9]/g, ''); // Apenas números
+        checkAgeLimit();
     });
+    
+    // Observa mudança no select hidden (disparado pelo custom select)
+    idadeUnidadeSelect.addEventListener('change', checkAgeLimit);
+    
+    // Executa na carga inicial para definir o estado correto
+    checkAgeLimit();
 });
 
-// DRAG & DROP PARA CARTEIRINHA DE VACINAÇÃO
+// --- UPLOAD DE VACINA (DRAG & DROP) ---
 document.addEventListener('DOMContentLoaded', function() {
     const dropAreaVacina = document.getElementById('drop-area-vacina');
     const fileInputVacina = document.getElementById('file_vacina');
     const fileNameVacina = document.getElementById('file-name-vacina');
+    const previewVacinaContainer = document.getElementById('preview-vacina-container');
     const previewVacina = document.getElementById('preview-vacina');
+
+    if (!dropAreaVacina) return;
 
     // Prevenir comportamentos padrão
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        dropAreaVacina.addEventListener(eventName, preventDefaults, false);
+        dropAreaVacina.addEventListener(eventName, (e) => { e.preventDefault(); e.stopPropagation(); }, false);
     });
-
-    function preventDefaults(e) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
 
     // Efeitos visuais
     ['dragenter', 'dragover'].forEach(eventName => {
-        dropAreaVacina.addEventListener(eventName, highlight, false);
+        dropAreaVacina.addEventListener(eventName, () => dropAreaVacina.classList.add('dragover'), false);
     });
 
     ['dragleave', 'drop'].forEach(eventName => {
-        dropAreaVacina.addEventListener(eventName, unhighlight, false);
+        dropAreaVacina.addEventListener(eventName, () => dropAreaVacina.classList.remove('dragover'), false);
     });
 
-    function highlight() {
-        dropAreaVacina.classList.add('dragover');
-    }
+    // Handle Drop
+    dropAreaVacina.addEventListener('drop', (e) => {
+        const files = e.dataTransfer.files;
+        handleVacinaFile(files);
+    }, false);
 
-    function unhighlight() {
-        dropAreaVacina.classList.remove('dragover');
-    }
+    // Handle Click
+    dropAreaVacina.addEventListener('click', () => fileInputVacina.click());
+    fileInputVacina.addEventListener('change', function() { handleVacinaFile(this.files); });
 
-    // Manipular arquivos dropados
-    dropAreaVacina.addEventListener('drop', handleDropVacina, false);
-
-    function handleDropVacina(e) {
-        const dt = e.dataTransfer;
-        const files = dt.files;
-        handleFilesVacina(files);
-    }
-
-    // Manipular seleção via clique
-    dropAreaVacina.addEventListener('click', () => {
-        fileInputVacina.click();
-    });
-
-    fileInputVacina.addEventListener('change', function() {
-        handleFilesVacina(this.files);
-    });
-
-    function handleFilesVacina(files) {
+    function handleVacinaFile(files) {
         if (files.length) {
             const file = files[0];
-            // Validação do tipo de arquivo
             const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf'];
+            
             if (!allowedTypes.includes(file.type)) {
-                if (typeof showToast === 'function') {
-                    showToast('Formato de arquivo não permitido. Use JPG, PNG, WEBP ou PDF.', 'danger');
-                }
+                showToast('Formato inválido. Use JPG, PNG, WEBP ou PDF.', 'danger');
                 return;
             }
             
-            // Atualiza a interface
+            // Atualiza interface
             fileNameVacina.textContent = file.name;
-            previewVacina.textContent = 'Arquivo selecionado: ' + file.name;
-            previewVacina.style.color = 'green';
+            if(previewVacinaContainer) previewVacinaContainer.classList.remove('hidden');
             
-            // Atualiza o input file
-            const dataTransfer = new DataTransfer();
-            dataTransfer.items.add(file);
-            fileInputVacina.files = dataTransfer.files;
+            if(previewVacina) {
+                previewVacina.textContent = 'Arquivo selecionado: ' + file.name;
+                previewVacina.style.color = 'green';
+            }
+            
+            // Remove erro visual
+            dropAreaVacina.classList.remove('input-error');
+            const errDiv = document.getElementById('error-vacina');
+            if(errDiv) errDiv.style.display = 'none';
+            
+            // Atualiza input
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            fileInputVacina.files = dt.files;
         }
     }
 });
 
-// CAMPOS DINÂMICOS PARA ALERGIAS E MEDICAÇÃO
+// --- UPLOAD DE FOTOS E CONVERSÃO WEBP (COM LIMITE) ---
+document.addEventListener('DOMContentLoaded', function() {
+    const dropArea = document.getElementById('drop-area');
+    const fileInput = document.getElementById('fotos_novas_input');
+    const finalInput = document.getElementById('fotos_novas_final');
+    const fileNameSpan = document.getElementById('file-name-span');
+    const previewContainer = document.getElementById('fotos-preview-container');
+    
+    if (!dropArea || !fileInput) return;
+
+    // Validação Inicial
+    validarLimiteFotos();
+
+    // Listeners Drag & Drop
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, (e) => { e.preventDefault(); e.stopPropagation(); }, false);
+    });
+    dropArea.addEventListener('drop', (e) => handleFiles(e.dataTransfer.files));
+    dropArea.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', function() { handleFiles(this.files); });
+
+    async function handleFiles(files) {
+        if (!files.length) return;
+
+        // Calcula totais (Assumindo totalFotosAtuais global definido na página)
+        // Se não estiver definido (página de cadastro), assume 0
+        const atuais = (typeof totalFotosAtuais !== 'undefined') ? totalFotosAtuais : 0;
+        const novas = files.length;
+        
+        if ((atuais + novas) > MAX_FOTOS_GLOBAL) {
+            showToast(`Limite de ${MAX_FOTOS_GLOBAL} fotos excedido!`, 'danger');
+            return;
+        }
+
+        fileNameSpan.textContent = 'Processando...';
+
+        try {
+            const promises = Array.from(files).map(file => {
+                // Preview
+                const reader = new FileReader();
+                reader.onload = (e) => addImagePreview(e.target.result, file.name);
+                reader.readAsDataURL(file);
+                // Converter
+                return convertToWebP(file);
+            });
+
+            const converted = await Promise.all(promises);
+            
+            // Adiciona ao input final
+            const dt = new DataTransfer();
+            converted.forEach(f => dt.items.add(f));
+            finalInput.files = dt.files;
+            
+            fileNameSpan.textContent = `${converted.length} nova(s) foto(s)`;
+            
+            // Remove erro visual
+            dropArea.classList.remove('input-error');
+            const errDiv = document.getElementById('error-fotos');
+            if(errDiv) errDiv.style.display = 'none';
+
+            validarLimiteFotos();
+
+        } catch (error) {
+            console.error(error);
+            showToast('Erro ao processar imagens.', 'danger');
+        }
+    }
+
+    function addImagePreview(src, name) {
+        const div = document.createElement('div');
+        div.className = 'foto-preview';
+        div.innerHTML = `<img src="${src}"><button type="button" class="remove-preview">×</button>`;
+        
+        div.querySelector('button').addEventListener('click', () => {
+            div.remove();
+            finalInput.value = ''; // Limpa tudo para simplificar
+            previewContainer.innerHTML = '';
+            fileNameSpan.textContent = 'Arraste ou clique para selecionar';
+            validarLimiteFotos();
+        });
+        
+        previewContainer.appendChild(div);
+    }
+});
+
+function validarLimiteFotos() {
+    const fotosNovasInput = document.getElementById('fotos_novas_final');
+    if(!fotosNovasInput) return;
+
+    const novas = fotosNovasInput.files.length;
+    // Se for edição, considera fotos atuais marcadas para exclusão. Se cadastro, atuais é 0.
+    const atuaisTotal = (typeof totalFotosAtuais !== 'undefined') ? totalFotosAtuais : 0;
+    let marcadas = 0;
+    
+    // Verifica se existem checkboxes de exclusão (página de edição)
+    const checkboxes = document.querySelectorAll('input[name="fotos_para_excluir[]"]:checked');
+    if(checkboxes) marcadas = checkboxes.length;
+
+    const total = (atuaisTotal - marcadas) + novas;
+    
+    const helper = document.getElementById('limite-fotos-helper');
+    const btn = document.getElementById('submit-btn');
+
+    if (total > MAX_FOTOS_GLOBAL) {
+        if(helper) {
+            helper.textContent = `Limite excedido (${total}/${MAX_FOTOS_GLOBAL})`;
+            helper.style.color = 'red';
+        }
+        if(btn) btn.disabled = true;
+    } else {
+        if(helper) {
+            helper.textContent = `Total: ${total}/${MAX_FOTOS_GLOBAL}`;
+            helper.style.color = '#666';
+        }
+        if(btn) btn.disabled = false;
+    }
+}
+
+// Função de Conversão WebP
+function convertToWebP(file) {
+    return new Promise((resolve, reject) => {
+        if (file.type === 'image/webp') { resolve(file); return; }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                canvas.toBlob((blob) => {
+                    const newName = file.name.replace(/\.[^/.]+$/, "") + ".webp";
+                    resolve(new File([blob], newName, { type: 'image/webp' }));
+                }, 'image/webp', 0.8);
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+// --- CONTROLE DE CAMPOS DINÂMICOS (ALERGIA/MEDICAÇÃO) ---
 document.addEventListener('DOMContentLoaded', function() {
     const alergiaField = document.getElementById('alergia-field');
     const medicacaoField = document.getElementById('medicacao-field');
     const alergiasContainer = document.getElementById('alergias-container');
     const addAlergiaBtn = document.getElementById('add-alergia-btn');
     
-    // Preencher alergias existentes do PHP
-    const alergiasExistentes = <?php echo json_encode($alergias); ?>;
-    if (alergiasExistentes.length > 0 && alergiasExistentes[0] !== '') {
-        alergiasExistentes.forEach((alergia, index) => {
-            if (alergia.trim() !== '') {
-                addAlergiaInput(alergia);
-            }
+    if(!alergiaField || !medicacaoField) return;
+
+    // Variável global 'alergiasExistentes' deve ser definida no PHP
+    if (typeof alergiasExistentes !== 'undefined' && alergiasExistentes.length > 0 && alergiasExistentes[0] !== '') {
+        alergiasExistentes.forEach((alergia) => {
+            if (alergia.trim() !== '') addAlergiaInput(alergia);
         });
     } else {
-        // Adiciona um input vazio por padrão
         addAlergiaInput('');
     }
     
-    // Função para adicionar input de alergia
     function addAlergiaInput(value = '') {
         const inputGroup = document.createElement('div');
         inputGroup.className = 'alergia-input-group';
-        
         const inputId = `alergia_${Date.now()}`;
         inputGroup.innerHTML = `
-            <input type="text" name="alergias[]" value="${value}" 
-                   placeholder="Nome da alergia" class="input-style alergia-input" id="${inputId}">
-            <button type="button" class="btn-remove-alergia" ${alergiasContainer.children.length === 0 ? 'disabled' : ''}>
-                <i class="fas fa-times"></i>
-            </button>
+            <input type="text" name="alergias[]" value="${value}" placeholder="Nome da alergia" class="input-style alergia-input" id="${inputId}">
+            <button type="button" class="btn-remove-alergia"><i class="fas fa-times"></i></button>
         `;
-        
         alergiasContainer.appendChild(inputGroup);
-        
-        // Atualiza estado dos botões de remover
         updateRemoveButtons();
-        
-        // Foca no novo input
-        document.getElementById(inputId).focus();
     }
     
-    // Atualizar estado dos botões de remover
     function updateRemoveButtons() {
         const removeButtons = alergiasContainer.querySelectorAll('.btn-remove-alergia');
         removeButtons.forEach((btn, index) => {
@@ -1339,413 +1548,67 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Event listener para adicionar alergia
-    addAlergiaBtn.addEventListener('click', () => {
-        addAlergiaInput();
-    });
+    if(addAlergiaBtn) addAlergiaBtn.addEventListener('click', () => addAlergiaInput());
     
-    // Event listener para remover alergia (delegação de evento)
     alergiasContainer.addEventListener('click', function(e) {
         if (e.target.closest('.btn-remove-alergia')) {
-            const inputGroup = e.target.closest('.alergia-input-group');
-            if (inputGroup && alergiasContainer.children.length > 1) {
-                inputGroup.remove();
+            const group = e.target.closest('.alergia-input-group');
+            if (group && alergiasContainer.children.length > 1) {
+                group.remove();
                 updateRemoveButtons();
             }
         }
     });
     
-    // Mostrar/ocultar campos baseado nas características selecionadas
-    function toggleDynamicFields(selectedTags) {
+    // Função Global para o Modal chamar
+    window.toggleDynamicFields = function(selectedTags) {
         const hasAlergia = selectedTags.some(tag => tag.value === 'Alergia');
         const hasMedicacao = selectedTags.some(tag => tag.value === 'Medicação');
         
-        // Alergia
         if (hasAlergia) {
             alergiaField.style.display = 'block';
         } else {
             alergiaField.style.display = 'none';
-            // Limpa os inputs de alergia, mas mantém um vazio
+            // Reseta mas mantém um input vazio
             alergiasContainer.innerHTML = '';
             addAlergiaInput('');
         }
         
-        // Medicação
         if (hasMedicacao) {
             medicacaoField.style.display = 'block';
         } else {
             medicacaoField.style.display = 'none';
             document.getElementById('medicacao_input').value = '';
         }
-    }
-    
-    // Expor a função globalmente para o modal de características
-    window.toggleDynamicFields = toggleDynamicFields;
+    };
 });
 
-// Implementação do Drag and Drop para Fotos (mantida igual)
-document.addEventListener('DOMContentLoaded', function() {
-    const dropArea = document.getElementById('drop-area');
-    const fileInput = document.getElementById('fotos_novas_input');
-    const finalInput = document.getElementById('fotos_novas_final');
-    const fileNameSpan = document.getElementById('file-name-span');
-    const previewContainer = document.getElementById('fotos-preview-container');
-
-    // Prevenir comportamentos padrão
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        dropArea.addEventListener(eventName, preventDefaults, false);
-        document.body.addEventListener(eventName, preventDefaults, false);
-    });
-
-    function preventDefaults(e) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
-
-    // Efeitos visuais
-    ['dragenter', 'dragover'].forEach(eventName => {
-        dropArea.addEventListener(eventName, highlight, false);
-    });
-
-    ['dragleave', 'drop'].forEach(eventName => {
-        dropArea.addEventListener(eventName, unhighlight, false);
-    });
-
-    function highlight() {
-        dropArea.classList.add('dragover');
-    }
-
-    function unhighlight() {
-        dropArea.classList.remove('dragover');
-    }
-
-    // Manipular arquivos dropados
-    dropArea.addEventListener('drop', handleDrop, false);
-
-    function handleDrop(e) {
-        const dt = e.dataTransfer;
-        const files = dt.files;
-        handleFiles(files);
-    }
-
-    // Manipular seleção via clique
-    dropArea.addEventListener('click', () => {
-        fileInput.click();
-    });
-
-    fileInput.addEventListener('change', function() {
-        handleFiles(this.files);
-    });
-
-    // Função principal para processar arquivos
-    async function handleFiles(files) {
-        if (!files.length) return;
-
-        // Validação preliminar
-        const totalPreliminar = files.length;
-
-        if (totalPreliminar > MAX_FOTOS_GLOBAL) {
-            if (typeof showToast === 'function') {
-                showToast(`Limite de ${MAX_FOTOS_GLOBAL} fotos excedido!`, 'danger');
-            }
-            return;
-        }
-
-        fileNameSpan.textContent = 'Processando...';
-
-        try {
-            const conversionPromises = Array.from(files).map(file => {
-                // Mostra preview imediato
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    addImagePreview(e.target.result, file.name);
-                };
-                reader.readAsDataURL(file);
-
-                // Converte para WebP
-                return convertToWebP(file);
-            });
-
-            const convertedFiles = await Promise.all(conversionPromises);
-            updateFinalInput(convertedFiles, finalInput);
-            
-            fileNameSpan.textContent = `${convertedFiles.length} foto(s) adicionada(s)`;
-            validarLimiteFotos();
-
-        } catch (error) {
-            console.error("Erro ao processar imagens:", error);
-            fileNameSpan.textContent = 'Erro no processamento. Tente novamente.';
-            if (typeof showToast === 'function') {
-                showToast('Erro ao processar imagens.', 'danger');
-            }
-        }
-    }
-
-    // Adicionar preview da imagem
-    function addImagePreview(src, filename) {
-        const previewDiv = document.createElement('div');
-        previewDiv.className = 'foto-preview';
-        
-        const img = document.createElement('img');
-        img.src = src;
-        img.alt = `Preview: ${filename}`;
-        
-        const removeBtn = document.createElement('button');
-        removeBtn.type = 'button';
-        removeBtn.className = 'remove-preview';
-        removeBtn.innerHTML = '×';
-        removeBtn.title = 'Remover foto';
-        
-        removeBtn.addEventListener('click', function() {
-            previewDiv.remove();
-            // Recria a lista de arquivos no input final
-            updateFinalInputFromPreviews();
-            validarLimiteFotos();
-        });
-        
-        previewDiv.appendChild(img);
-        previewDiv.appendChild(removeBtn);
-        previewContainer.appendChild(previewDiv);
-    }
-
-    // Atualizar input final baseado nos previews
-    function updateFinalInputFromPreviews() {
-        // Limpa o input final
-        const dataTransfer = new DataTransfer();
-        finalInput.files = dataTransfer.files;
-        
-        // Re-adiciona os arquivos que ainda estão no preview
-        fileNameSpan.textContent = 'Arraste e solte fotos aqui ou clique para selecionar';
-        validarLimiteFotos();
-    }
-});
-
-// Função para converter para WebP
-async function convertToWebP(file) {
-    return new Promise((resolve, reject) => {
-        if (file.type === 'image/webp') {
-            resolve(file);
-            return;
-        }
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            const img = new Image();
-            img.onload = function() {
-                const canvas = document.createElement('canvas');
-                canvas.width = img.width;
-                canvas.height = img.height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0);
-                canvas.toBlob(function(blob) {
-                    const webpFileName = file.name.split('.').slice(0, -1).join('.') + '.webp';
-                    const webpFile = new File([blob], webpFileName, { type: 'image/webp' });
-                    resolve(webpFile);
-                }, 'image/webp', 0.8);
-            };
-            img.onerror = reject;
-            img.src = event.target.result;
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-    });
-}
-
-// Função para atualizar input final
-function updateFinalInput(files, finalInput) {
-    const dataTransfer = new DataTransfer();
-    files.forEach(file => {
-        dataTransfer.items.add(file);
-    });
-    finalInput.files = dataTransfer.files;
-}
-
-// Inicializar a validação de fotos
-document.addEventListener('DOMContentLoaded', validarLimiteFotos);
-
-// CONTROLE DINÂMICO DA SEÇÃO DE VACINAÇÃO NO CADASTRO
+// --- CONTROLE DE VISIBILIDADE DA VACINAÇÃO ---
 document.addEventListener('DOMContentLoaded', function() {
     const statusVacinacaoReal = document.getElementById('status_vacinacao-real');
     const vacinadoContent = document.getElementById('vacinado-content');
     const naoVacinadoContent = document.getElementById('nao-vacinado-content');
     const fileVacina = document.getElementById('file_vacina');
 
-    // Função para toggle da seção de vacinação
     function toggleVacinacaoSection() {
-        const isVacinado = statusVacinacaoReal.value === 'sim';
+        if(!statusVacinacaoReal || !vacinadoContent) return;
         
-        // Mostra/oculta conteúdos
+        const isVacinado = statusVacinacaoReal.value === 'sim';
         vacinadoContent.style.display = isVacinado ? 'block' : 'none';
         naoVacinadoContent.style.display = isVacinado ? 'none' : 'block';
         
-        // Atualiza a obrigatoriedade do campo
-        if (isVacinado) {
-            fileVacina.required = true;
-            // Mostra mensagem de obrigatoriedade
-            document.querySelector('#vacinado-content .text-informacao').textContent = 
-                'É obrigatório enviar a carteirinha de vacinação para comprovação.';
-        } else {
-            fileVacina.required = false;
-            // Limpa o preview e o input file
-            if (typeof clearVacinaPreview === 'function') {
-                clearVacinaPreview();
-            }
+        if (!isVacinado && typeof window.clearVacinaPreview === 'function') {
+            window.clearVacinaPreview();
         }
     }
 
-    // Inicializar estado
-    toggleVacinacaoSection();
-
-    // Observar mudanças no select de vacinação
     if (statusVacinacaoReal) {
-        statusVacinacaoReal.addEventListener('change', function() {
-            toggleVacinacaoSection();
-        });
+        toggleVacinacaoSection();
+        statusVacinacaoReal.addEventListener('change', toggleVacinacaoSection);
     }
 });
 
-// PREVIEW DA CARTEIRINHA DE VACINAÇÃO NO CADASTRO
-function setupVacinaPreviewCadastro() {
-    const dropAreaVacina = document.getElementById('drop-area-vacina');
-    const fileInputVacina = document.getElementById('file_vacina');
-    const fileNameVacina = document.getElementById('file-name-vacina');
-    const previewVacinaContainer = document.getElementById('preview-vacina-container');
-    const previewVacina = document.getElementById('preview-vacina');
-    const previewVacinaText = document.getElementById('preview-vacina-text');
-
-    if (!dropAreaVacina) return;
-
-    // Prevenir comportamentos padrão
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        dropAreaVacina.addEventListener(eventName, preventDefaults, false);
-    });
-
-    function preventDefaults(e) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
-
-    // Efeitos visuais
-    ['dragenter', 'dragover'].forEach(eventName => {
-        dropAreaVacina.addEventListener(eventName, highlight, false);
-    });
-
-    ['dragleave', 'drop'].forEach(eventName => {
-        dropAreaVacina.addEventListener(eventName, unhighlight, false);
-    });
-
-    function highlight() {
-        dropAreaVacina.classList.add('dragover');
-    }
-
-    function unhighlight() {
-        dropAreaVacina.classList.remove('dragover');
-    }
-
-    // Manipular arquivos dropados
-    dropAreaVacina.addEventListener('drop', handleDropVacina, false);
-
-    function handleDropVacina(e) {
-        const dt = e.dataTransfer;
-        const files = dt.files;
-        handleFilesVacina(files);
-    }
-
-    // Manipular seleção via clique
-    dropAreaVacina.addEventListener('click', () => {
-        fileInputVacina.click();
-    });
-
-    fileInputVacina.addEventListener('change', function() {
-        handleFilesVacina(this.files);
-    });
-
-    function handleFilesVacina(files) {
-        if (files.length) {
-            const file = files[0];
-            // Validação do tipo de arquivo
-            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf'];
-            if (!allowedTypes.includes(file.type)) {
-                if (typeof showToast === 'function') {
-                    showToast('Formato de arquivo não permitido. Use JPG, PNG, WEBP ou PDF.', 'danger');
-                }
-                return;
-            }
-            
-            // Atualiza a interface
-            fileNameVacina.textContent = file.name;
-            previewVacinaText.textContent = 'Arquivo selecionado: ' + file.name;
-            previewVacinaText.style.color = 'green';
-            showVacinaPreview(file);
-            
-            // Atualiza o input file
-            const dataTransfer = new DataTransfer();
-            dataTransfer.items.add(file);
-            fileInputVacina.files = dataTransfer.files;
-        }
-    }
-
-    function showVacinaPreview(file) {
-        previewVacina.innerHTML = '';
-        previewVacinaContainer.classList.remove('hidden');
-
-        if (file.type === 'application/pdf') {
-            // Preview para PDF
-            const pdfPreview = document.createElement('div');
-            pdfPreview.className = 'vacina-preview pdf';
-            pdfPreview.innerHTML = `
-                <i class="fas fa-file-pdf"></i>
-                <span class="text-sm font-medium">${file.name}</span>
-                <span class="text-xs text-gray-500">PDF Document</span>
-            `;
-            previewVacina.appendChild(pdfPreview);
-        } else {
-            // Preview para imagens
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const imgPreview = document.createElement('div');
-                imgPreview.className = 'flex flex-col items-center';
-                imgPreview.innerHTML = `
-                    <img src="${e.target.result}" alt="Preview carteirinha" class="vacina-preview">
-                    <span class="text-sm mt-2">${file.name}</span>
-                `;
-                previewVacina.appendChild(imgPreview);
-            };
-            reader.readAsDataURL(file);
-        }
-
-        // Botão para remover preview
-        const removeBtn = document.createElement('button');
-        removeBtn.type = 'button';
-        removeBtn.className = 'btn-remove-preview';
-        removeBtn.innerHTML = '<i class="fas fa-times"></i> Remover arquivo';
-        removeBtn.addEventListener('click', function() {
-            clearVacinaPreview();
-        });
-        previewVacina.appendChild(removeBtn);
-    }
-
-    window.clearVacinaPreview = function() {
-        const previewVacinaContainer = document.getElementById('preview-vacina-container');
-        const previewVacina = document.getElementById('preview-vacina');
-        const fileInputVacina = document.getElementById('file_vacina');
-        const fileNameVacina = document.getElementById('file-name-vacina');
-        const previewVacinaText = document.getElementById('preview-vacina-text');
-        
-        if (previewVacinaContainer) previewVacinaContainer.classList.add('hidden');
-        if (previewVacina) previewVacina.innerHTML = '';
-        if (fileInputVacina) fileInputVacina.value = '';
-        if (fileNameVacina) fileNameVacina.textContent = 'Arraste e solte o arquivo aqui ou clique para selecionar';
-        if (previewVacinaText) {
-            previewVacinaText.textContent = 'Nenhum arquivo selecionado.';
-            previewVacinaText.style.color = '#b91c1c';
-        }
-    }
-}
-
-// Inicializar o preview da carteirinha no cadastro
-document.addEventListener('DOMContentLoaded', setupVacinaPreviewCadastro);
-
-// Custom Select Functionality (incluindo o novo select de idade)
+// --- SELECTS CUSTOMIZADOS ---
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.custom-select-wrapper').forEach(setupCustomSelect);
 });
@@ -1755,65 +1618,39 @@ function setupCustomSelect(wrapper) {
     const optionsList = wrapper.querySelector('.custom-select-options');
     const options = wrapper.querySelectorAll('.custom-option');
     const valueSpan = trigger.querySelector('.custom-select-value');
-    
-    // Pega o <select> real escondido usando o data-target-select
-    const targetSelectId = wrapper.dataset.targetSelect;
-    const realSelect = document.getElementById(targetSelectId);
+    const realSelect = document.getElementById(wrapper.dataset.targetSelect);
 
-    // Encontra a opção selecionada no select real e a marca no customizado
     if (realSelect) {
-        const initialSelectedValue = realSelect.value;
-        options.forEach(option => {
-            if (option.dataset.value === initialSelectedValue) {
-                option.classList.add('selected');
-                valueSpan.textContent = option.textContent;
+        options.forEach(opt => {
+            if (opt.dataset.value == realSelect.value) {
+                opt.classList.add('selected');
+                valueSpan.textContent = opt.textContent;
+                valueSpan.classList.remove('placeholder');
             }
         });
     }
 
-    // 1. Abrir/Fechar o menu
     trigger.addEventListener('click', () => {
-        const isExpanded = trigger.getAttribute('aria-expanded') === 'true';
-        // Fecha outros selects abertos
-        document.querySelectorAll('.custom-select-trigger[aria-expanded="true"]').forEach(otherTrigger => {
-            if (otherTrigger !== trigger) {
-                otherTrigger.setAttribute('aria-expanded', 'false');
-                otherTrigger.nextElementSibling.style.display = 'none';
-            }
-        });
-
-        trigger.setAttribute('aria-expanded', !isExpanded);
-        optionsList.style.display = isExpanded ? 'none' : 'block';
+        const open = trigger.getAttribute('aria-expanded') === 'true';
+        trigger.setAttribute('aria-expanded', !open);
+        optionsList.style.display = open ? 'none' : 'block';
     });
 
-    // 2. Selecionar uma opção
-    options.forEach(option => {
-        option.addEventListener('click', () => {
-            // Remove a classe 'selected' de todos
+    options.forEach(opt => {
+        opt.addEventListener('click', () => {
             options.forEach(o => o.classList.remove('selected'));
-            
-            // Adiciona 'selected' na clicada
-            option.classList.add('selected');
-            
-            // Atualiza o valor visual no "trigger"
-            valueSpan.textContent = option.textContent;
+            opt.classList.add('selected');
+            valueSpan.textContent = opt.textContent;
             valueSpan.classList.remove('placeholder');
-            
-            // ATUALIZA O VALOR NO <select> ESCONDIDO
             if (realSelect) {
-                realSelect.value = option.dataset.value;
-                // Dispara um evento 'change' no select real
-                const event = new Event('change');
-                realSelect.dispatchEvent(event);
+                realSelect.value = opt.dataset.value;
+                realSelect.dispatchEvent(new Event('change'));
             }
-            
-            // Fecha o menu
             trigger.setAttribute('aria-expanded', 'false');
             optionsList.style.display = 'none';
         });
     });
-
-    // 3. Fechar ao clicar fora
+    
     document.addEventListener('click', (e) => {
         if (!wrapper.contains(e.target)) {
             trigger.setAttribute('aria-expanded', 'false');
@@ -1824,7 +1661,8 @@ function setupCustomSelect(wrapper) {
 </script>
 
 <script type="module">
-    // Pega os elementos do DOM
+    // --- MODAL DE CARACTERÍSTICAS ---
+document.addEventListener('DOMContentLoaded', function() {
     const modal = document.getElementById('charModal');
     const openBtn = document.getElementById('openModalBtn');
     const closeBtn = document.getElementById('closeModalBtn');
@@ -1835,150 +1673,90 @@ function setupCustomSelect(wrapper) {
     const tagsPreview = document.getElementById('tagsPreview');
     const tagsPlaceholder = document.getElementById('tagsPlaceholder');
     
-    // Pega características existentes do PHP
-    const existingCharacteristics = <?php echo json_encode($caracteristicas); ?>;
-    
-    const MAX_SELECTIONS = 5;
+    if(!modal) return;
+
     let selectedTags = [];
 
-    // --- Funções do Modal ---
-    function openModal() {
-        if (modal) modal.style.display = 'flex';
-        syncModalStateFromForm();
-    }
-
-    function closeModal() {
-        if (modal) modal.style.display = 'none';
-    }
-    
-    function updateSelectionCount() {
-        const count = selectedTags.length;
-        saveBtn.textContent = `Salvar Seleção (${count}/${MAX_SELECTIONS})`;
-        saveBtn.disabled = (count === 0);
-    }
-    
-    // --- Sincronização ---
-    function syncModalStateFromForm() {
-        selectedTags = [];
-        const hiddenInputs = hiddenTagsContainer.querySelectorAll('input[name="caracteristicas[]"]');
-        
-        hiddenInputs.forEach(input => {
-            const value = input.value;
-            const matchingTag = document.querySelector(`.char-tag[data-value="${value}"]`);
-            if (matchingTag) {
-                const iconHTML = matchingTag.querySelector('i:first-child').outerHTML;
-                selectedTags.push({ value: value, iconHTML: iconHTML });
-            }
-        });
-        
-        // Atualiza a aparência das tags no modal
+    // Carrega tags pré-selecionadas (definidas no PHP)
+    if(typeof existingCharacteristics !== 'undefined') {
         allTagsInModal.forEach(tag => {
-            if (selectedTags.some(t => t.value === tag.dataset.value)) {
+            if (existingCharacteristics.includes(tag.dataset.value)) {
                 tag.classList.add('active');
-            } else {
-                tag.classList.remove('active');
+                const iconHTML = tag.querySelector('i:first-child').outerHTML;
+                selectedTags.push({ value: tag.dataset.value, iconHTML: iconHTML });
             }
         });
-        updateSelectionCount();
-    }
-    
-    // Função para salvar e atualizar a UI
-    function saveAndApplyTags() {
-        // 1. Limpa os inputs escondidos e o preview de tags
-        hiddenTagsContainer.innerHTML = '';
-        tagsPreview.innerHTML = '';
-        
-        let hasSelection = selectedTags.length > 0;
-
-        selectedTags.forEach(tag => {
-            // 2a. Cria os novos inputs escondidos
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'caracteristicas[]';
-            input.value = tag.value;
-            hiddenTagsContainer.appendChild(input);
-            
-            // 2b. Adiciona a TAG ESTILIZADA ao preview no botão
-            const tagElement = document.createElement('span');
-            tagElement.className = 'char-tag-input';
-            
-            // Adiciona o ícone e o texto
-            tagElement.innerHTML = tag.iconHTML + ' ' + tag.value;
-            
-            tagsPreview.appendChild(tagElement);
-        });
-        
-        // 3. Mostra/Esconde o placeholder
-        if (tagsPlaceholder) {
-            tagsPlaceholder.style.display = hasSelection ? 'none' : 'block';
-            if (hasSelection) {
-                tagsPlaceholder.classList.remove('tags-placeholder');
-            } else {
-                tagsPlaceholder.classList.add('tags-placeholder');
-            }
-        }
-        
-        // 4. Atualiza campos dinâmicos (alergia e medicação)
-        if (typeof toggleDynamicFields === 'function') {
-            toggleDynamicFields(selectedTags);
-        }
-    }
-    
-    // Função para pré-popular no load da página
-    function prefillCharacteristics() {
-        existingCharacteristics.forEach(value => {
-            const matchingTag = document.querySelector(`.char-tag[data-value="${value}"]`);
-            if (matchingTag) {
-                const iconHTML = matchingTag.querySelector('i:first-child').outerHTML;
-                if (selectedTags.length < MAX_SELECTIONS) {
-                    selectedTags.push({ value: value, iconHTML: iconHTML });
-                }
-            }
-        });
-        // Aplica as tags carregadas
         saveAndApplyTags();
     }
 
-    // --- Event Handlers ---
-    if (openBtn) openBtn.addEventListener('click', openModal);
-    if (closeBtn) closeBtn.addEventListener('click', closeModal);
-    if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
-    if (modal) {
-        modal.addEventListener('click', (event) => (event.target === modal) && closeModal());
-    }
+    function openModal() { modal.style.display = 'flex'; }
+    function closeModal() { modal.style.display = 'none'; }
 
-    // Clicar numa Tag
+    if(openBtn) openBtn.addEventListener('click', openModal);
+    if(closeBtn) closeBtn.addEventListener('click', closeModal);
+    if(cancelBtn) cancelBtn.addEventListener('click', closeModal);
+
     allTagsInModal.forEach(tag => {
         tag.addEventListener('click', () => {
+            const container = tag.closest('.char-tags-container');
+            const categoryType = container.dataset.category;
             const value = tag.dataset.value;
-            const iconHTML = tag.querySelector('i:first-child').outerHTML; 
-            const isActive = tag.classList.contains('active');
+            const iconHTML = tag.querySelector('i:first-child').outerHTML;
 
-            if (isActive) {
+            if (tag.classList.contains('active')) {
                 tag.classList.remove('active');
                 selectedTags = selectedTags.filter(t => t.value !== value);
             } else {
-                if (selectedTags.length < MAX_SELECTIONS) {
-                    tag.classList.add('active');
-                    selectedTags.push({ value: value, iconHTML: iconHTML });
-                } else {
-                    console.warn(`Limite de ${MAX_SELECTIONS} características atingido.`);
+                // Lógica Single Choice
+                if (categoryType === 'single-energy' || categoryType === 'single-training') {
+                    const siblings = container.querySelectorAll('.char-tag.active');
+                    siblings.forEach(sibling => {
+                        sibling.classList.remove('active');
+                        selectedTags = selectedTags.filter(t => t.value !== sibling.dataset.value);
+                    });
                 }
+                tag.classList.add('active');
+                selectedTags.push({ value: value, iconHTML: iconHTML });
             }
-            updateSelectionCount();
+            if(saveBtn) saveBtn.textContent = `Salvar Seleção (${selectedTags.length})`;
         });
     });
-    
-    // Salvar Seleção
-    if (saveBtn) {
+
+    function saveAndApplyTags() {
+        hiddenTagsContainer.innerHTML = '';
+        tagsPreview.innerHTML = '';
+        
+        if (selectedTags.length > 0) {
+            tagsPlaceholder.style.display = 'none';
+            selectedTags.forEach(tag => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'caracteristicas[]';
+                input.value = tag.value;
+                hiddenTagsContainer.appendChild(input);
+                
+                const span = document.createElement('span');
+                span.className = 'char-tag-input';
+                span.innerHTML = tag.iconHTML + ' ' + tag.value;
+                tagsPreview.appendChild(span);
+            });
+        } else {
+            tagsPlaceholder.style.display = 'block';
+        }
+        
+        // Atualiza campos dinâmicos
+        if (typeof window.toggleDynamicFields === 'function') {
+            window.toggleDynamicFields(selectedTags);
+        }
+    }
+
+    if(saveBtn) {
         saveBtn.addEventListener('click', () => {
             saveAndApplyTags();
             closeModal();
         });
     }
-    
-    // Executa o pré-preenchimento
-    prefillCharacteristics();
+});
 </script>
 
 </body>

@@ -159,18 +159,50 @@ if ($user_tipo == 'admin') {
             }
         }
 
-        .age-input-group {
-            display: grid;
-            grid-template-columns: 1fr 120px;
-            gap: 8px;
-            align-items: center;
-        }
+        /* --- CORREÇÃO DA IDADE --- */
+.age-input-group {
+    display: grid;
+    grid-template-columns: 1fr 120px;
+    gap: 8px;
+    align-items: start; /* Alterado de stretch para start para evitar distorção */
+}
 
-        @media (max-width: 768px) {
-            .age-input-group {
-                grid-template-columns: 1fr;
-            }
-        }
+/* Trava a altura do input numérico */
+.age-input-group input[type="number"] {
+    height: 54px !important; /* Altura fixa padrão */
+    max-height: 54px !important;
+    max-width: 100px !important;
+    box-sizing: border-box;
+    border: 2px solid transparent;
+}
+
+/* Trava a altura do select customizado */
+.age-unit-custom .custom-select-trigger {
+    height: 54px !important;
+    min-height: 54px  ;
+    max-height: 54px ;
+    display: flex;
+    align-items: center;
+    padding: 0 1.15rem; /* Padding lateral apenas */
+    box-sizing: border-box;
+    /* Borda igual ao input padrão */
+    border: 2px solid transparent;
+    margin: 0;
+}
+
+/* Garante que o hover/focus não mude o tamanho da borda */
+.age-unit-custom .custom-select-trigger:focus,
+.age-unit-custom .custom-select-trigger:hover {
+    border-color: rgba(255, 255, 255, 0.6);
+    outline: none;
+    margin: 0; /* Previne margens extras */
+}
+
+@media (max-width: 768px) {
+    .age-input-group {
+        grid-template-columns: 1fr;
+    }
+}
 
         /* Estilo para mensagens de erro */
         .error-message {
@@ -799,8 +831,7 @@ if ($user_tipo == 'admin') {
                             name="idade_valor" 
                             placeholder="Ex: 2" 
                             required 
-                            min="1" 
-                            max="11"
+                            min="0" 
                             class="input-style age-value" 
                             value="<?php echo $idade_valor_edit; ?>"
                         >
@@ -1210,15 +1241,14 @@ if ($user_tipo == 'admin') {
         <div class="char-modal-header">
             <div>
                 <h2>Selecionar Características</h2>
-                <p>Escolha até 5 características para o seu pet.</p>
+                <p>Escolha as características para o seu pet.</p>
             </div>
             <button type="button" class="char-modal-close" id="closeModalBtn">&times;</button>
         </div>
 
         <div class="char-modal-body">
-            <!-- Conteúdo do modal mantido igual ao cadastrar-pet.php -->
             <h3>Temperamento</h3>
-            <div class="char-tags-container">
+            <div class="char-tags-container" data-category="unlimited">
                 <span class="char-tag" data-color="laranja" data-value="Dócil"><i class="fa-solid fa-face-smile"></i> Dócil <i class="fas fa-check"></i></span>
                 <span class="char-tag" data-color="verde" data-value="Brincalhão"><i class="fa-solid fa-puzzle-piece"></i> Brincalhão <i class="fas fa-check"></i></span>
                 <span class="char-tag" data-color="roxo" data-value="Calmo"><i class="fa-solid fa-leaf"></i> Calmo <i class="fas fa-check"></i></span>
@@ -1229,17 +1259,17 @@ if ($user_tipo == 'admin') {
                 <span class="char-tag" data-color="rosa" data-value="Curioso"><i class="fa-solid fa-magnifying-glass"></i> Curioso <i class="fas fa-check"></i></span>
                 <span class="char-tag" data-color="laranja" data-value="Medroso"><i class="fa-solid fa-ghost"></i> Medroso <i class="fas fa-check"></i></span>
             </div>
-            
-            <h3>Nível de Energia</h3>
-            <div class="char-tags-container">
+
+            <h3>Nível de Energia (Max 1)</h3>
+            <div class="char-tags-container" data-category="single-energy">
                 <span class="char-tag" data-color="verde" data-value="Baixa Energia"><i class="fa-solid fa-battery-quarter"></i> Baixa Energia <i class="fas fa-check"></i></span>
                 <span class="char-tag" data-color="laranja" data-value="Média Energia"><i class="fa-solid fa-battery-half"></i> Média Energia <i class="fas fa-check"></i></span>
                 <span class="char-tag" data-color="rosa" data-value="Alta Energia"><i class="fa-solid fa-battery-full"></i> Alta Energia <i class="fas fa-check"></i></span>
                 <span class="char-tag" data-color="roxo" data-value="Hiperativo"><i class="fa-solid fa-bolt"></i> Hiperativo <i class="fas fa-check"></i></span>
             </div>
-            
+
             <h3>Sociabilidade</h3>
-            <div class="char-tags-container">
+            <div class="char-tags-container" data-category="unlimited">
                 <span class="char-tag" data-color="rosa" data-value="Com Crianças"><i class="fa-solid fa-child"></i> Com Crianças <i class="fas fa-check"></i></span>
                 <span class="char-tag" data-color="verde" data-value="Com Cães"><i class="fa-solid fa-dog"></i> Com Cães <i class="fas fa-check"></i></span>
                 <span class="char-tag" data-color="roxo" data-value="Com Gatos"><i class="fa-solid fa-cat"></i> Com Gatos <i class="fas fa-check"></i></span>
@@ -1247,9 +1277,9 @@ if ($user_tipo == 'admin') {
                 <span class="char-tag" data-color="rosa" data-value="Pet Único"><i class="fa-solid fa-user"></i> Pet Único <i class="fas fa-check"></i></span>
                 <span class="char-tag" data-color="verde" data-value="Com Idosos"><i class="fa-solid fa-person-cane"></i> Com Idosos <i class="fas fa-check"></i></span>
             </div>
-            
+
             <h3>Cuidados Especiais</h3>
-            <div class="char-tags-container">
+            <div class="char-tags-container" data-category="unlimited">
                 <span class="char-tag" data-color="roxo" data-value="Medicação"><i class="fa-solid fa-pills"></i> Medicação <i class="fas fa-check"></i></span>
                 <span class="char-tag" data-color="laranja" data-value="Dieta Especial"><i class="fa-solid fa-bowl-food"></i> Dieta Especial <i class="fas fa-check"></i></span>
                 <span class="char-tag" data-color="rosa" data-value="Alergia"><i class="fa-solid fa-allergies"></i> Alergia <i class="fas fa-check"></i></span>
@@ -1260,15 +1290,15 @@ if ($user_tipo == 'admin') {
                 <span class="char-tag" data-color="verde" data-value="Traumático"><i class="fa-solid fa-heart-crack"></i> Traumático <i class="fas fa-check"></i></span>
             </div>
 
-            <h3>Treinamento e Hábitos</h3>
-            <div class="char-tags-container">
+            <h3>Treinamento e Hábitos (Max 1)</h3>
+            <div class="char-tags-container" data-category="single-training">
                 <span class="char-tag" data-color="verde" data-value="Adestrado"><i class="fa-solid fa-graduation-cap"></i> Adestrado <i class="fas fa-check"></i></span>
                 <span class="char-tag" data-color="laranja" data-value="Em Treinamento"><i class="fa-solid fa-person-chalkboard"></i> Em Treinamento <i class="fas fa-check"></i></span>
                 <span class="char-tag" data-color="roxo" data-value="Não Adestrado"><i class="fa-solid fa-xmark"></i> Não Adestrado <i class="fas fa-check"></i></span>
             </div>
 
             <h3>Ambiente Ideal</h3>
-            <div class="char-tags-container">
+            <div class="char-tags-container" data-category="unlimited">
                 <span class="char-tag" data-color="roxo" data-value="Apartamento"><i class="fa-solid fa-building"></i> Apartamento <i class="fas fa-check"></i></span>
                 <span class="char-tag" data-color="verde" data-value="Precisa de Quintal"><i class="fa-solid fa-tree"></i> Precisa de Quintal <i class="fas fa-check"></i></span>
                 <span class="char-tag" data-color="laranja" data-value="Casa"><i class="fa-solid fa-house"></i> Casa <i class="fas fa-check"></i></span>
@@ -1368,32 +1398,52 @@ document.addEventListener('DOMContentLoaded', showDynamicFieldsBasedOnCharacteri
 // Inicializar a verificação de mudanças
 document.addEventListener('DOMContentLoaded', checkFormChanges);
 
-// VALIDAÇÃO DA IDADE
+// VALIDAÇÃO DA IDADE (DINÂMICA)
 document.addEventListener('DOMContentLoaded', function() {
     const idadeValorInput = document.querySelector('input[name="idade_valor"]');
     const idadeUnidadeSelect = document.getElementById('idade_unidade-real');
     
-    // Validação para aceitar apenas números
-    idadeValorInput.addEventListener('input', function() {
-        // Remove qualquer caractere não numérico
-        this.value = this.value.replace(/[^0-9]/g, '');
-        
-        // Validação específica para meses
-        if (idadeUnidadeSelect.value === 'meses' && this.value > 11) {
-            this.value = 11;
-            if (typeof showToast === 'function') {
-                showToast('A idade em meses não pode ser maior que 11.', 'warning');
+    if (!idadeValorInput || !idadeUnidadeSelect) return;
+
+    function checkAgeLimit() {
+        // Se for MESES, aplica o limite de 11
+        if (idadeUnidadeSelect.value === 'meses') {
+            idadeValorInput.setAttribute('max', '11');
+            
+            // Se o usuário já tinha digitado algo maior que 11, corrige e avisa
+            if (idadeValorInput.value && parseInt(idadeValorInput.value) > 11) {
+                idadeValorInput.value = 11;
+                if (typeof showToast === 'function') {
+                    showToast('A idade em meses não pode ser maior que 11.', 'warning');
+                }
             }
+        } else {
+            // Se for ANOS, remove o limite máximo (libera 15, 20, etc)
+            idadeValorInput.removeAttribute('max');
         }
+    }
+
+    // Ouve quando digita o número
+    idadeValorInput.addEventListener('input', function() {
+        this.value = this.value.replace(/[^0-9]/g, ''); // Garante apenas números
+        checkAgeLimit();
     });
+    
+    // Ouve quando muda o select (Anos <-> Meses)
+    idadeUnidadeSelect.addEventListener('change', checkAgeLimit);
+    
+    // Roda uma vez ao carregar a página para garantir o estado certo
+    checkAgeLimit();
 });
 
-// DRAG & DROP PARA CARTEIRINHA DE VACINAÇÃO
+// DRAG & DROP UNIFICADO PARA CARTEIRINHA DE VACINAÇÃO
 document.addEventListener('DOMContentLoaded', function() {
     const dropAreaVacina = document.getElementById('drop-area-vacina');
     const fileInputVacina = document.getElementById('file_vacina');
     const fileNameVacina = document.getElementById('file-name-vacina');
-    const previewVacina = document.getElementById('preview-vacina');
+    // const previewVacina = document.getElementById('preview-vacina'); // Se não usar preview de texto, pode comentar
+
+    if (!dropAreaVacina || !fileInputVacina) return;
 
     // Prevenir comportamentos padrão
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
@@ -1431,7 +1481,7 @@ document.addEventListener('DOMContentLoaded', function() {
         handleFilesVacina(files);
     }
 
-    // Manipular seleção via clique
+    // Manipular seleção via clique (AQUI ESTAVA O PROBLEMA: SÓ PRECISA DE UM DESSES)
     dropAreaVacina.addEventListener('click', () => {
         fileInputVacina.click();
     });
@@ -1443,24 +1493,39 @@ document.addEventListener('DOMContentLoaded', function() {
     function handleFilesVacina(files) {
         if (files.length) {
             const file = files[0];
-            // Validação do tipo de arquivo
+            
+            // 1. Validação do tipo de arquivo
             const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf'];
             if (!allowedTypes.includes(file.type)) {
                 if (typeof showToast === 'function') {
-                    showToast('Formato de arquivo não permitido. Use JPG, PNG, WEBP ou PDF.', 'danger');
+                    showToast('Formato inválido. Use JPG, PNG, WEBP ou PDF.', 'danger');
+                }
+                return;
+            }
+            
+            // 2. Validação de Tamanho (5MB) - Trouxemos do segundo bloco
+            if (file.size > 5 * 1024 * 1024) {
+                if (typeof showToast === 'function') {
+                    showToast('Arquivo muito grande. Tamanho máximo: 5MB.', 'danger');
                 }
                 return;
             }
             
             // Atualiza a interface
-            fileNameVacina.textContent = file.name;
-            previewVacina.textContent = 'Arquivo selecionado: ' + file.name;
-            previewVacina.style.color = 'green';
+            if(fileNameVacina) {
+                fileNameVacina.textContent = file.name;
+                fileNameVacina.style.color = 'green';
+            }
             
             // Atualiza o input file
             const dataTransfer = new DataTransfer();
             dataTransfer.items.add(file);
             fileInputVacina.files = dataTransfer.files;
+
+            // Avisa o sistema que houve mudança no formulário
+            if (typeof window.formHasChanges !== 'undefined') {
+                window.formHasChanges = true;
+            }
         }
     }
 });
@@ -1544,96 +1609,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
         });
-    }
-});
-
-// DRAG & DROP SIMPLIFICADO PARA CARTEIRINHA (SEM PREVIEW)
-document.addEventListener('DOMContentLoaded', function() {
-    const dropAreaVacina = document.getElementById('drop-area-vacina');
-    const fileInputVacina = document.getElementById('file_vacina');
-    const fileNameVacina = document.getElementById('file-name-vacina');
-
-    if (!dropAreaVacina || !fileInputVacina) return;
-
-    // Prevenir comportamentos padrão
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        dropAreaVacina.addEventListener(eventName, preventDefaults, false);
-    });
-
-    function preventDefaults(e) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
-
-    // Efeitos visuais
-    ['dragenter', 'dragover'].forEach(eventName => {
-        dropAreaVacina.addEventListener(eventName, highlight, false);
-    });
-
-    ['dragleave', 'drop'].forEach(eventName => {
-        dropAreaVacina.addEventListener(eventName, unhighlight, false);
-    });
-
-    function highlight() {
-        dropAreaVacina.classList.add('dragover');
-    }
-
-    function unhighlight() {
-        dropAreaVacina.classList.remove('dragover');
-    }
-
-    // Manipular arquivos dropados
-    dropAreaVacina.addEventListener('drop', handleDropVacina, false);
-
-    function handleDropVacina(e) {
-        const dt = e.dataTransfer;
-        const files = dt.files;
-        handleFilesVacina(files);
-    }
-
-    // Manipular seleção via clique
-    dropAreaVacina.addEventListener('click', () => {
-        fileInputVacina.click();
-    });
-
-    fileInputVacina.addEventListener('change', function() {
-        handleFilesVacina(this.files);
-    });
-
-    function handleFilesVacina(files) {
-        if (files.length) {
-            const file = files[0];
-            // Validação do tipo de arquivo
-            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf'];
-            if (!allowedTypes.includes(file.type)) {
-                if (typeof showToast === 'function') {
-                    showToast('Formato de arquivo não permitido. Use JPG, PNG, WEBP ou PDF.', 'danger');
-                }
-                return;
-            }
-            
-            // Validação do tamanho do arquivo (opcional: 5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                if (typeof showToast === 'function') {
-                    showToast('Arquivo muito grande. Tamanho máximo: 5MB.', 'danger');
-                }
-                return;
-            }
-            
-            // Atualiza a interface
-            fileNameVacina.textContent = file.name;
-            fileNameVacina.style.color = 'green';
-            
-            // Atualiza o input file
-            const dataTransfer = new DataTransfer();
-            dataTransfer.items.add(file);
-            fileInputVacina.files = dataTransfer.files;
-
-            // Disparar evento de mudança no formulário
-            if (typeof window.formHasChanges !== 'undefined') {
-                window.formHasChanges = true;
-            }
-        }
     }
 });
 
@@ -2044,40 +2019,27 @@ function setupCustomSelect(wrapper) {
     // Pega características existentes do PHP
     const existingCharacteristics = <?php echo json_encode($pet_caracteristicas); ?>;
     
-    const MAX_SELECTIONS = 5;
+    // Array que guarda as seleções
     let selectedTags = [];
 
     // --- Funções do Modal ---
     function openModal() {
         if (modal) modal.style.display = 'flex';
-        syncModalStateFromForm();
+        // Recarrega visualmente o estado atual caso tenha mudado
+        syncVisualState();
     }
 
     function closeModal() {
         if (modal) modal.style.display = 'none';
     }
     
-    function updateSelectionCount() {
+    function updateSelectionText() {
         const count = selectedTags.length;
-        saveBtn.textContent = `Salvar Seleção (${count}/${MAX_SELECTIONS})`;
-        saveBtn.disabled = (count === 0);
+        if(saveBtn) saveBtn.textContent = `Salvar Seleção (${count})`;
     }
-    
-    // --- Sincronização ---
-    function syncModalStateFromForm() {
-        selectedTags = [];
-        const hiddenInputs = hiddenTagsContainer.querySelectorAll('input[name="caracteristicas[]"]');
-        
-        hiddenInputs.forEach(input => {
-            const value = input.value;
-            const matchingTag = document.querySelector(`.char-tag[data-value="${value}"]`);
-            if (matchingTag) {
-                const iconHTML = matchingTag.querySelector('i:first-child').outerHTML;
-                selectedTags.push({ value: value, iconHTML: iconHTML });
-            }
-        });
-        
-        // Atualiza a aparência das tags no modal
+
+    // --- Sincronização Visual ---
+    function syncVisualState() {
         allTagsInModal.forEach(tag => {
             if (selectedTags.some(t => t.value === tag.dataset.value)) {
                 tag.classList.add('active');
@@ -2085,72 +2047,71 @@ function setupCustomSelect(wrapper) {
                 tag.classList.remove('active');
             }
         });
-        updateSelectionCount();
+        updateSelectionText();
     }
     
-    // Função para salvar e atualizar a UI
+    // --- Lógica Principal: Salvar e Aplicar ---
     function saveAndApplyTags() {
-        // 1. Limpa os inputs escondidos e o preview de tags
+        // 1. Limpa os inputs escondidos e o preview
         hiddenTagsContainer.innerHTML = '';
         tagsPreview.innerHTML = '';
         
         let hasSelection = selectedTags.length > 0;
 
         selectedTags.forEach(tag => {
-            // 2a. Cria os novos inputs escondidos
+            // 2a. Cria input hidden para envio no POST
             const input = document.createElement('input');
             input.type = 'hidden';
             input.name = 'caracteristicas[]';
             input.value = tag.value;
             hiddenTagsContainer.appendChild(input);
             
-            // 2b. Adiciona a TAG ESTILIZADA ao preview no botão
+            // 2b. Cria a tag visual na página principal
             const tagElement = document.createElement('span');
             tagElement.className = 'char-tag-input';
-            
-            // Adiciona o ícone e o texto
             tagElement.innerHTML = tag.iconHTML + ' ' + tag.value;
-            
             tagsPreview.appendChild(tagElement);
         });
         
-        // 3. Mostra/Esconde o placeholder
+        // 3. Controla o placeholder
         if (tagsPlaceholder) {
             tagsPlaceholder.style.display = hasSelection ? 'none' : 'block';
-            if (hasSelection) {
-                tagsPlaceholder.classList.remove('tags-placeholder');
-            } else {
-                tagsPlaceholder.classList.add('tags-placeholder');
-            }
         }
         
-        // 4. Atualiza campos dinâmicos (alergia e medicação)
+        // 4. Dispara campos dinâmicos (Alergia/Medicação)
         if (typeof toggleDynamicFields === 'function') {
             toggleDynamicFields(selectedTags);
         }
+
+        // 5. Avisa que o formulário mudou (para o modal de confirmação)
+        if (typeof window.formHasChanges !== 'undefined') {
+            window.formHasChanges = true;
+        }
     }
     
-   // Função para pré-popular no load da página
-function prefillCharacteristics() {
-    existingCharacteristics.forEach(value => {
-        const matchingTag = document.querySelector(`.char-tag[data-value="${value}"]`);
-        if (matchingTag) {
-            const iconHTML = matchingTag.querySelector('i:first-child').outerHTML;
-            if (selectedTags.length < MAX_SELECTIONS) {
+    // --- Carregamento Inicial (Prefill) ---
+    function prefillCharacteristics() {
+        selectedTags = [];
+        existingCharacteristics.forEach(value => {
+            // Procura a tag no HTML do modal para pegar o ícone correto
+            const matchingTag = document.querySelector(`.char-tag[data-value="${value}"]`);
+            if (matchingTag) {
+                const iconHTML = matchingTag.querySelector('i:first-child').outerHTML;
                 selectedTags.push({ value: value, iconHTML: iconHTML });
             }
+        });
+        
+        // Aplica o estado inicial
+        syncVisualState();
+        saveAndApplyTags();
+        
+        // Reseta o flag de mudanças pois acabamos de carregar a página
+        if (typeof window.formHasChanges !== 'undefined') {
+            window.formHasChanges = false;
         }
-    });
-    // Aplica as tags carregadas
-    saveAndApplyTags();
-    
-    // MOSTRAR CAMPOS DINÂMICOS BASEADO NAS CARACTERÍSTICAS EXISTENTES
-    if (typeof toggleDynamicFields === 'function') {
-        toggleDynamicFields(selectedTags);
     }
-}
 
-    // --- Event Handlers ---
+    // --- Event Listeners ---
     if (openBtn) openBtn.addEventListener('click', openModal);
     if (closeBtn) closeBtn.addEventListener('click', closeModal);
     if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
@@ -2158,29 +2119,38 @@ function prefillCharacteristics() {
         modal.addEventListener('click', (event) => (event.target === modal) && closeModal());
     }
 
-    // Clicar numa Tag
+    // CLIQUE NAS TAGS (A Lógica Inteligente)
     allTagsInModal.forEach(tag => {
         tag.addEventListener('click', () => {
+            const container = tag.closest('.char-tags-container');
+            const categoryType = container.dataset.category;
             const value = tag.dataset.value;
-            const iconHTML = tag.querySelector('i:first-child').outerHTML; 
+            const iconHTML = tag.querySelector('i:first-child').outerHTML;
             const isActive = tag.classList.contains('active');
 
             if (isActive) {
+                // Se já está ativo, remove
                 tag.classList.remove('active');
                 selectedTags = selectedTags.filter(t => t.value !== value);
             } else {
-                if (selectedTags.length < MAX_SELECTIONS) {
-                    tag.classList.add('active');
-                    selectedTags.push({ value: value, iconHTML: iconHTML });
-                } else {
-                    console.warn(`Limite de ${MAX_SELECTIONS} características atingido.`);
+                // Se for categoria "Single" (Única escolha), limpa os outros do mesmo grupo
+                if (categoryType === 'single-energy' || categoryType === 'single-training') {
+                    const siblings = container.querySelectorAll('.char-tag.active');
+                    siblings.forEach(sibling => {
+                        sibling.classList.remove('active');
+                        selectedTags = selectedTags.filter(t => t.value !== sibling.dataset.value);
+                    });
                 }
+                
+                // Adiciona o novo
+                tag.classList.add('active');
+                selectedTags.push({ value: value, iconHTML: iconHTML });
             }
-            updateSelectionCount();
+            updateSelectionText();
         });
     });
     
-    // Salvar Seleção
+    // Botão Salvar do Modal
     if (saveBtn) {
         saveBtn.addEventListener('click', () => {
             saveAndApplyTags();
@@ -2188,9 +2158,8 @@ function prefillCharacteristics() {
         });
     }
     
-    // Executa o pré-preenchimento
-    prefillCharacteristics();
+    // Inicializa tudo
+    document.addEventListener('DOMContentLoaded', prefillCharacteristics);
 </script>
-
 </body>
 </html>
