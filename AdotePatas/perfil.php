@@ -565,7 +565,7 @@ if (isset($_SESSION['toast_message'])) {
                                                        target="_blank" 
                                                        class="btn btn-sm btn-info text-white" 
                                                        title="Ver Carteirinha de Vacinação">
-                                                       <i class="fas fa-file-medical"></i> Doc
+                                                       <i class="fas fa-file-medical"></i>
                                                     </a>
                                                     <?php endif; ?>
                                                     <a href="editar-pet.php?id=<?php echo $pet['id_pet']; ?>" class="btn btn-sm btn-outline-primary me-2" title="Editar Pet"> <i class="fa-solid fa-pencil"></i> </a>
@@ -1273,7 +1273,7 @@ console.log('Função showToast carregada');
                     } else if (result.action === 'unfavorited') {
                         iconElement.classList.remove('fa-solid', 'favorited');
                         iconElement.classList.add('fa-regular');
-                        showToast(result.message, 'warning');
+                       // showToast(result.message, 'danger');
                         
                         // NOVO: Remove o card da tela após descurtir
                         // (Apenas se estivermos na página 'pets-curtidos')

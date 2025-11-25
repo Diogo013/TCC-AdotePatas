@@ -1,133 +1,628 @@
-/* Corpo da página com o fundo bege/rosa claro */
-.form-body {
-    background-color: #fcf8f7;
-    color: #4f4f4f;
+@import "../../global/global.css";
+
+
+.adopt-btn {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+  cursor: pointer;
+  background-color: #b92b2b;
+  color: #f0e9e9;
+  font-family: "Poppins", sans-serif;
+  font-weight: 700;
+  font-size: 1.5rem; /* Ajustado para caber melhor */
+  padding: 0.75rem 0; /* py-3 */
+  width: 100%;
+  max-width: 280px;
+  border-radius: 1rem; /* rounded-2xl */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.19);
 }
 
-/* Header simples */
-.form-header {
-    background-color: #ffffff;
-    border-bottom: 1px solid #eee;
+.adopt-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25), 0 10px 25px rgba(0, 0, 0, 0.22);
+}
+
+.adopt-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.heart-background {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  font-size: 2.5rem;
+  margin-top: 3px;
+  line-height: 1;
+  color: #a82626;
+  user-select: none;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3),
+    -1px -1px 2px rgba(255, 255, 255, 0.15);
+}
+
+.adopt-btn span {
+  position: relative;
+  z-index: 2;
+  text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* =========================================
+   CONFIGURAÇÕES GERAIS E VARIÁVEIS
+   ========================================= */
+.form-body {
+    background-color: var(--cor-laranja-claro);
+    color: var(--cor-cinza-texto);
+    font-family: 'Poppins', sans-serif;
+    overflow-x: hidden;
+}
+
+/* Classes Utilitárias de Fonte e Cor */
+.font-kawaii {
+    font-family: 'Kawaii RT', cursive;
+}
+.text-vermelho { color: var(--cor-vermelho); font-size: 2rem; }
+.text-rosa-escuro { color: var(--cor-rosa-escuro); }
+
+/* Animação Suave de Entrada */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translate3d(0, 20px, 0);
+    }
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+.fade-in-up {
+    animation: fadeInUp 1s ease-out forwards;
 }
 
 .navbar-logo {
-    height: 50px;
+    height: 60px; /* Aumentei um pouco para destaque */
     width: auto;
+    object-fit: contain;
+}
+
+.profile-info-link {
+    cursor: pointer;
+    transition: opacity 0.3s;
+}
+.profile-info-link:hover {
+    opacity: 0.8;
 }
 
 .profile-name {
-    color: var(--cor-vermelho, #D9534F);
-    font-weight: 500;
+    color: var(--cor-vermelho);
+    font-weight: 700;
 }
 
-.profile-icon.logged-in {
-    font-size: 2rem;
-    color: var(--cor-vermelho, #D9534F);
+.profile-icon {
+    font-size: 2.2rem;
+    color: var(--cor-rosa-pastel);
+    background: #fff;
+    border-radius: 50%;
 }
 
-/* Informações do Pet no topo do formulário */
-.form-pet-info-header {
+/* =========================================
+   MODAL DE TERMOS (Estilo Amigável)
+   ========================================= */
+.custom-modal {
+    border-radius: 25px;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    background: #fff url('data:image/svg+xml;utf8,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><path d="M50 50 L60 60" stroke="%23f7f4f2" /></svg>'); /* Textura sutil opcional */
+}
+
+.termo-text-box {
+    background-color: var(--cor-laranja-claro);
+    padding: 1.5rem;
+    border-radius: 15px;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+/* Checkbox Customizado do Modal */
+.form-check-card {
+    position: relative;
+    margin-top: 20px;
+}
+
+.form-check-input-custom {
+    display: none; /* Esconde o checkbox padrão */
+}
+
+.form-check-label-custom {
     display: flex;
     align-items: center;
-    gap: 20px;
-    margin-bottom: 20px;
-    padding: 20px;
-    background-color: #fff;
-    border-radius: 15px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    gap: 15px;
+    padding: 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-.pet-form-img {
-    width: 100px;
-    height: 100px;
+.check-icon {
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    border: 2px solid #ccc;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: transparent;
+    transition: all 0.2s;
+}
+
+.form-check-input-custom:checked + .form-check-label-custom {
+    border-color: var(--cor-vermelho);
+    background-color: #fff5f5;
+}
+
+.form-check-input-custom:checked + .form-check-label-custom .check-icon {
+    background-color: var(--cor-vermelho);
+    border-color: var(--cor-vermelho);
+    color: #fff;
+}
+
+/* =========================================
+   HERO CARD DO PET
+   ========================================= */
+.pet-hero-card {
+    background: var(--cor-branca);
+    border-radius: 20px;
+    padding: 30px;
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    margin-bottom: 40px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+    position: relative;
+    overflow: hidden;
+    font-size: 1rem;
+}
+
+.pet-image-wrapper {
+    position: relative;
+}
+
+.pet-hero-img {
+    width: 140px;
+    height: 140px;
     object-fit: cover;
     border-radius: 50%;
-    border: 3px solid #fbeeee;
+    border: 5px solid var(--cor-laranja-claro);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
-.form-pet-info-header h2 {
-    font-size: 1.5rem;
-    font-weight: 300;
-    color: #555;
-}
-.form-pet-info-header h2 strong {
+.badge-adote {
+    background-color: var(--cor-rosa-pastel);
+    color: var(--cor-vermelho);
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
     font-weight: 700;
-    color: #333;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-/* Container principal do formulário */
-.form-container {
-    background-color: #ffffff;
+@media (max-width: 768px) {
+    .pet-hero-card {
+        flex-direction: column;
+        text-align: center;
+        padding: 20px;
+    }
+    .pet-hero-card::before {
+        width: 100%; height: 5px;
+    }
+}
+
+/* =========================================
+   FORMULÁRIO E CARTÕES
+   ========================================= */
+.form-card {
+    background: var(--cor-branca);
     padding: 30px;
-    border-radius: 15px;
+    border-radius: 20px;
+    border: 1px solid #f0f0f0;
 }
 
 .form-section-title {
-    text-align: center;
-    font-weight: 600;
-    color: #a05a5a; /* Tom de vermelho do print */
+    color: var(--cor-rosa-escuro);
     margin-bottom: 25px;
+    font-size: 1.8rem;
+    border-bottom: 2px dashed #eee;
+    padding-bottom: 10px;
 }
 
-/* Caixinha de cada pergunta (igual ao print) */
-.form-question-box {
-    background-color: #fbeeee; /* Fundo rosa claro */
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 20px;
-    border: 1px solid #f8e0e0;
+.question-group {
+    margin-bottom: 30px;
 }
 
-.form-question-box .form-label {
-    font-weight: 600;
+.question-label {
+    font-weight: 700;
     color: #333;
-    font-size: 1.1rem;
-    margin-bottom: 10px;
+    font-size: 1.05rem;
+    margin-bottom: 12px;
+    display: block;
 }
 
-.form-question-box .form-text {
-    font-size: 0.9rem;
-    margin-bottom: 15px;
-}
-
-/* Botão de Enviar */
-.btn-adocao-submit {
-    background-color: #D9534F; /* Vermelho principal */
-    border-color: #D9534F;
-    color: #fff;
+/* --- UI Component: Botões de Sim/Não (Outline) --- */
+.btn-outline-custom {
+    border: 2px solid #ddd;
+    color: #666;
     font-weight: 600;
-    padding: 12px 30px;
-    border-radius: 50px;
-    transition: all 0.3s ease;
+    border-radius: 10px;
+    padding: 10px;
+    transition: all 0.2s;
 }
+
+.btn-check:checked + .btn-outline-custom {
+    background-color: var(--cor-rosa-escuro);
+    border-color: var(--cor-rosa-escuro);
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(155, 0, 0, 0.2);
+}
+
+.btn-outline-custom:hover {
+    background-color: #f9f9f9;
+    border-color: #bbb;
+}
+
+/* --- UI Component: Cards Radio (Com ícones) --- */
+.card-radio-option {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background: #fff;
+    border: 2px solid #eee;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    height: 100%;
+}
+
+.card-radio-option:hover {
+    border-color: var(--cor-rosa-pastel);
+    background: #fffaf9;
+}
+
+.card-radio-option .icon-option {
+    font-size: 1.5rem;
+    color: #ccc;
+    margin-right: 15px;
+    transition: color 0.2s;
+}
+
+.btn-check:checked + .card-radio-option {
+    border-color: var(--cor-rosa-escuro);
+    background-color: #fff5f5;
+    box-shadow: 0 4px 12px rgba(191, 105, 100, 0.15);
+}
+
+.btn-check:checked + .card-radio-option .icon-option {
+    color: var(--cor-vermelho);
+}
+
+.btn-check:checked + .card-radio-option span {
+    font-weight: 700;
+    color: var(--cor-vermelho);
+}
+
+/* --- UI Component: Simple Radio List --- */
+.card-simple-option {
+    display: block;
+    padding: 12px 15px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    background-color: #f8f9fa;
+    transition: all 0.2s;
+}
+
+.card-simple-option:hover {
+    background-color: #eee;
+}
+
+.btn-check:checked + .card-simple-option {
+    background-color: var(--cor-rosa-escuro);
+    color: #fff;
+    font-weight: 500;
+}
+
+/* --- Botões de Ação --- */
+.btn-primary-custom {
+    background-color: var(--cor-vermelho);
+    border: none;
+    border-radius: 50px;
+    font-weight: 700;
+}
+.btn-primary-custom:disabled {
+    background-color: #ccc;
+}
+.btn-primary-custom:not(:disabled):hover {
+    background-color: #7a0000;
+}
+
 
 .btn-adocao-submit:hover {
-    background-color: #c9302c;
-    border-color: #ac2925;
+    transform: translateY(-1px);
+    box-shadow: 0 15px 25px rgba(155, 0, 0, 0.3);
     color: #fff;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(217, 83, 79, 0.3);
 }
 
-/* Estilização do Modal */
-.modal-header {
-    border-bottom: 0;
-}
-.modal-footer {
-    border-top: 0;
-}
-.modal-content {
-    border-radius: 15px;
-    border: 0;
+/* Utilitário Alert */
+.bg-light-alert {
+    background-color: #fff0f0;
 }
 
-/* Caixa do checkbox de ciência no modal */
-.form-check-box {
-    background-color: #fbeeee;
-    border-radius: 10px;
-    padding: 15px;
+/* Container principal alinhado */
+.navbar > .container {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.form-check-box .form-check-label {
-    font-size: 0.9rem;
+.navbar {
+  background: transparent;
+  padding: 0.5rem 1rem;
+  margin-bottom: 0 !important;
+  position: relative;
+  z-index: 1030;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+}
+
+.navbar-logo {
+  width: clamp(60px, 10vw, 80px);
+  height: clamp(60px, 10vw, 80px);
+  object-fit: contain;
+  user-select: none;
+}
+
+.navbar-nav {
+  gap: 1.5rem;
+  align-items: center;
+  flex-direction: row !important;
+  margin: 0 !important;
+}
+
+.nav-link {
+  font-weight: bold !important;
+  cursor: pointer;
+  position: relative;
+  padding: 10px 15px;
+  transition: color 0.3s ease;
+  display: flex;
+  align-items: center;
+  font-size: 1.5rem !important;
+  white-space: nowrap;
+  border-radius: 4px;
+}
+
+.navlink {
+  color: var(--cor-cinza-texto);
+}
+
+.navlink::after {
+  content: "";
+  position: absolute;
+  bottom: 5px;
+  left: 15px;
+  width: calc(100% - 30px);
+  height: 2px;
+  background: var(--cor-rosa-escuro);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.navlink:hover,
+.navlink:focus {
+  color: var(--cor-rosa-escuro) !important;
+}
+
+.navlink:hover::after,
+.navlink:focus::after,
+.navlink.active::after {
+  transform: scaleX(1);
+}
+
+.navlink.active {
+  color: var(--cor-rosa-escuro) !important;
+}
+
+.loginlink {
+  color: var(--cor-vermelho) !important;
+  position: relative;
+  margin-left: 0 !important;
+}
+
+.loginlink::after {
+  content: "";
+  position: absolute;
+  bottom: 5px;
+  left: 15px;
+  width: calc(100% - 30px);
+  height: 2px;
+  background: var(--cor-vermelho);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.loginlink:hover,
+.loginlink:focus {
+  color: var(--cor-vermelho);
+}
+
+.loginlink:hover::after,
+.loginlink:focus::after {
+  transform: scaleX(1);
+}
+
+.loginlink::before {
+  display: none;
+}
+
+.navbar-nav .nav-item:has(.loginlink) {
+  position: relative;
+}
+
+.navbar-nav .nav-item:has(.loginlink)::before {
+  content: "|";
+  position: absolute;
+  left: -12px;
+  top: 45%;
+  transform: translateY(-50%);
+  color: var(--cor-cinza);
+  font-weight: 300;
+  font-size: 1.8rem;
+}
+
+.navbar-nav .nav-item + .nav-item:has(.loginlink)::before {
+  content: "|";
+  position: absolute;
+  left: -12px;
+  top: 45%;
+  transform: translateY(-50%);
+  color: var(--cor-vermelho);
+  font-weight: 500;
+  font-size: 1.8rem;
+}
+
+.navbar-nav .nav-item:nth-child(2) + .nav-item::before {
+  content: "|";
+  position: absolute;
+  left: -12px;
+  top: 45%;
+  transform: translateY(-50%);
+  color: var(--cor-vermelho);
+  font-weight: 500;
+  font-size: 1.8rem;
+}
+
+.navbar-nav .nav-item.position-relative {
+  padding-left: 8px;
+}
+
+.profile-icon.logged-in,
+.sidebar-profile-icon.logged-in {
+  color: var(--cor-vermelho) !important;
+  font-size: 3rem;
+}
+
+.sidebar-profile-icon.logged-out {
+  color: var(--cor-cinza) !important;
+  opacity: 0.7;
+  font-size: 4rem;
+}
+
+.profile-info-link .d-flex {
+  flex-direction: row-reverse;
+}
+
+.profile-name {
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.profile-info-link {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nav-icon {
+  font-size: 2rem;
+  color: #555;
+}
+
+/* ==========================================================================
+   OFFCANVAS
+   ========================================================================== */
+.offcanvas {
+  position: fixed;
+  z-index: 1045;
+  transition: transform 0.3s ease-in-out;
+  visibility: visible !important;
+}
+
+.offcanvas-end {
+  transform: translateX(100%);
+}
+
+.offcanvas.show {
+  transform: translateX(0);
+}
+
+.offcanvas-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1040;
+  width: 100vw;
+  height: 100vh;
+  background-color: #000;
+}
+
+.offcanvas-backdrop.show {
+  opacity: 0.5;
+}
+
+.offcanvas-header {
+  border-bottom: 1px solid #eee;
+}
+
+.profile-sidebar {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-nav .nav-link {
+  color: var(--cor-cinza-texto);
+  font-weight: 500;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s ease;
+  margin-bottom: 0.25rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+}
+
+.profile-nav .nav-link:hover {
+  background-color: var(--cor-laranja-claro);
+  color: var(--cor-rosa-escuro);
+}
+
+.profile-nav .nav-link.active {
+  background-color: var(--cor-vermelho);
+  color: var(--cor-branca);
+}
+
+.logout-link-sidebar {
+  color: var(--cor-vermelho) !important;
+}
+
+.logout-link-sidebar:hover {
+  background-color: #fcebeb !important;
+}
+
+.loginlink-sidebar {
+  color: var(--cor-vermelho) !important;
+  font-weight: 600;
+}
+
+.loginlink-sidebar:hover {
+  background-color: #fcebeb !important;
+  color: var(--cor-vermelho) !important;
 }

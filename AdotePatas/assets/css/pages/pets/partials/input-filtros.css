@@ -14,6 +14,37 @@
     flex-grow: 1;      
     min-width: 250px; 
 }
+
+/* Limitar largura do input de pesquisa */
+.custom-search-width {
+    width: 50%; /* Ajuste este valor conforme necessário */
+    flex-grow: 0 !important; /* Impede que o input cresça demais */
+}
+
+/* Mudar cor do input para rosa escuro */
+.search-input {
+    background-color: var(--cor-rosa-escuro) !important;
+    border: 2px solid var(--cor-rosa-escuro) !important;
+}
+
+/* Ajustar cor do placeholder para melhor contraste */
+.search-input::placeholder {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Manter a cor do ícone branca para contraste */
+.search-icon {
+    color: var(--cor-branca) !important;
+}
+
+/* Estilos para estados de foco */
+.search-input:focus {
+    background-color: var(--cor-rosa-escuro) !important;
+    border-color: var(--cor-rosa-escuro) !important;
+    box-shadow: 0 0 0 0.25rem rgba(191, 105, 100, 0.4) !important;
+    color: var(--cor-branca) !important;
+}
+
 .search-input {
     width: 100%;
     height: 52px; 
@@ -25,7 +56,7 @@
     font-size: 1rem;
     font-weight: 500;
     padding: 0.5rem 3.25rem 0.5rem 1.5rem;
-    transition: box-shadow 0.2s ease;
+    transition: box-shadow 0.2s ease;   
 }
 .search-input::placeholder {
     color: var(--cor-branca, #ffffff);

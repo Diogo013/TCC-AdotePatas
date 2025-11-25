@@ -352,6 +352,32 @@ $sql = "SELECT
         </div>
         <?php endif; ?>
 
+        
+        <?php
+        // Verifica se existem alergias
+        $alergias = json_decode($pet['alergias'] ?? '[]', true);
+        if (!empty($alergias) && is_array($alergias)):
+        ?>
+        <div class="detalhe-secao shadow-sm">
+            <h2>Alergias</h2>
+            <div class="caracteristicas-container">
+                <?php foreach ($alergias as $alergia): ?>
+                    <span class="char-tag-display">
+                        <?php echo htmlspecialchars($alergia); ?>
+                    </span>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        <?php endif; ?>
+
+        <?php if (!empty($pet['medicacao'])): ?>
+        <div class="detalhe-secao shadow-sm">
+            <h2>Medicações</h2>
+            <p><?php echo nl2br(htmlspecialchars($pet['medicacao'])); ?></p>
+        </div>
+        <?php endif; ?>
+
+
         <?php if (!empty($outros_pets)): ?>
         <div class="detalhe-secao">
             <h2>Outros Pets que Você Pode Gostar</h2>

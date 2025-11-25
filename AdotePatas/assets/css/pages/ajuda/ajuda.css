@@ -27,7 +27,7 @@ body {
 }
 
 .navbar {
-  background: transparent;
+  background: #fafafa;
   padding: 0.5rem 1rem;
   margin-bottom: 0 !important;
   position: relative;
@@ -721,62 +721,6 @@ main, section, footer {
 }
 
 /* ==========================================================================
-   BANNER HERO RESPONSIVO - IMAGEM MAIS ALTA
-   ========================================================================== */
-
-.banner-hero {
-  width: 100%;
-  position: relative;
-  overflow: hidden;
-  background-color: var(--cor-laranja-claro);
-}
-
-.banner-container {
-  width: 100%;
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.banner-image {
-  width: 100%;
-  height: auto;
-  display: block;
-  object-fit: cover;
-  object-position: center 60%; /* Foca mais no topo da imagem - MOSTRA MAIS OS ANIMAIS */
-}
-
-/* Altura do banner para desktop */
-.banner-hero .banner-image {
-  height: 380px; /* Aumentei um pouco a altura para compensar */
-}
-
-/* Tablet */
-@media (max-width: 992px) {
-  .banner-hero .banner-image {
-    height: 300px;
-    object-position: center 25%; /* Ajuste progressivo para dispositivos menores */
-  }
-}
-
-/* Mobile */
-@media (max-width: 768px) {
-  .banner-hero .banner-image {
-    height: 250px;
-    object-position: center 30%;
-  }
-}
-
-/* Mobile pequeno */
-@media (max-width: 576px) {
-  .banner-hero .banner-image {
-    height: 200px;
-    object-position: center 35%;
-  }
-}
-
-/* ==========================================================================
    ESTILOS DOS CARDS DE REDIRECIONAMENTO
    ========================================================================== */
 
@@ -832,7 +776,7 @@ main, section, footer {
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--cor-laranja-claro), var(--cor-rosa-pastel));
+  background: var(--cor-rosa-pastel);
   display: flex;
   align-items: center;
   justify-content: center;

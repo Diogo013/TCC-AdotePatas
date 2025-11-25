@@ -21,6 +21,8 @@ function requerer_login() {
     }
 }
 
+
+
 /**
  * Redireciona o usuário para o dashboard se ele já estiver logado.
  * Útil para páginas de login e cadastro.

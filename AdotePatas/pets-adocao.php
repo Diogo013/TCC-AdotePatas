@@ -161,13 +161,13 @@ try {
 
                 <?php if (!empty($pets)): ?>
                 <section class="search-filter-section mb-4">
-                    <form class="search-filter-container" role="search">
-                        <div class="search-bar-wrapper">
-                            <input type="search" class="form-control search-input"
-                                   placeholder="Pesquise pelo nome ou adicione filtros"
-                                   aria-label="Pesquisar pet pelo nome">
-                            <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                        </div>
+                    <form class="search-filter-container d-flex justify-content-center" role="search">
+                       <div class="search-bar-wrapper custom-search-width">
+    <input type="search" class="form-control search-input"
+           placeholder="Pesquise pelo nome ou adicione filtros"
+           aria-label="Pesquisar pet pelo nome">
+    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+</div>
 
                         <button type="button" class="btn filter-btn"
                                 data-bs-toggle="collapse"
