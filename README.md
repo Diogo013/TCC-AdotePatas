@@ -1,4 +1,4 @@
-# 🐶 AdotePatas
+# 🐶🐱 AdotePatas
 
 <img width="1919" height="909" alt="image" src="https://github.com/user-attachments/assets/26777266-3f23-481c-bdb7-68148a948a06" />
 > *Conectando corações a novos lares: Uma plataforma completa para adoção responsável.*
