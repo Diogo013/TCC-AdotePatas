@@ -49,11 +49,11 @@ O projeto foi construído com foco em **Performance** e **Regras de Negócio**:
 
 | Tela Perfil | Tela dos Pets |
 | :---: | :---: |
-| ![Home](link-print-home.png) | ![Maps](link-print-mapa.png) |
+| <img width="1919" height="905" alt="image" src="https://github.com/user-attachments/assets/d4ee4248-713e-4e61-9020-00069d10dc4d" /> | <img width="1919" height="912" alt="image" src="https://github.com/user-attachments/assets/3bedfc75-62c2-4981-8ebf-76f54d51adab" /> |
 
 | Chat | Painel Admin |
 | :---: | :---: |
-| ![Chat](link-print-chat.png) | ![Admin](link-print-admin.png) |
+| <img width="1919" height="912" alt="image" src="https://github.com/user-attachments/assets/febb3b7f-16c5-4d7a-92ff-a07dda58c102" /> | <img width="1919" height="913" alt="image" src="https://github.com/user-attachments/assets/243f613c-f771-4c39-99ac-ccd9ab91cce5" /> |
 
 ---
 
