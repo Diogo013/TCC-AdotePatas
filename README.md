@@ -9,7 +9,7 @@ O **AdotePatas** é uma solução Full-Stack robusta desenvolvida para facilitar
 
 Diferente de catálogos simples, este sistema gerencia **todo o fluxo de adoção**: desde o cadastro e geolocalização do animal, passando pela comunicação via chat, até a moderação de segurança realizada por administradores.
 
-🔗 **Acesse o projeto online:** [https://www.adotepatas.page.gd](https://www.adotepatas.page.gd)
+🔗 **Acesse o projeto online:** [https://adotepatas.page.gd](https://adotepatas.page.gd)
 
 ---
 
