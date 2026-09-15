@@ -1,196 +1,257 @@
 <?php
 session_start();
-include_once 'conexao.php'; // Nosso script de conexão
 
-// --- NOVO: Definir $base_path PRIMEIRO ---
-if ($_SERVER['SERVER_NAME'] == 'localhost') {
-    $base_path = '/TCC-AdotePatas/AdotePatas/';
-} else {
-    $base_path = '/'; 
-}
-// --- FIM NOVO ---
+require_once __DIR__ . '/route-bootstrap.php';
+include_once __DIR__ . '/conexao.php';
+require_once __DIR__ . '/email-service.php';
 
-// 1. Segurança: Verifica se o usuário está logado
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_tipo'])) {
-    // Se não estiver logado, não pode enviar
-    header("Location: " . $base_path . "login");
+$base_path = ADOTE_PATAS_BASE_URL;
+
+function redirectToAdoptionForm(string $basePath, $petId): void
+{
+    header('Location: ' . $basePath . 'formulario-adocao/?id=' . urlencode((string) $petId));
     exit;
 }
-// ... (Verificação de POST, Pega dados... tudo igual) ...
-// 3. Pega os dados do usuário e do pet
-$id_usuario_adotante = $_SESSION['user_id'];
-$id_pet = filter_input(INPUT_POST, 'id_pet', FILTER_SANITIZE_NUMBER_INT);
 
-// 4. Pega todas as respostas do formulário (precisamos limpar!)
-// Usamos htmlspecialchars para evitar XSS simples.
+function redirectToChat(string $basePath, $conversationId): void
+{
+    header('Location: ' . $basePath . 'chat/?id=' . urlencode((string) $conversationId));
+    exit;
+}
+
+// Apenas adotantes autenticados podem enviar uma solicitação de adoção.
+if (!isset($_SESSION['user_id'], $_SESSION['user_tipo'])) {
+    header('Location: ' . $base_path . 'login/');
+    exit;
+}
+
+if ($_SESSION['user_tipo'] !== 'usuario') {
+    $_SESSION['form_error'] = 'Apenas contas de adotante podem enviar solicitações de adoção.';
+    header('Location: ' . $base_path . 'pets/');
+    exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header('Location: ' . $base_path . 'pets/');
+    exit;
+}
+
+$id_usuario_adotante = (int) $_SESSION['user_id'];
+$id_pet = filter_input(INPUT_POST, 'id_pet', FILTER_VALIDATE_INT);
+
 $dados_formulario = [
-// ... (dados do formulário igual antes) ...
-    'tem_criancas' => htmlspecialchars($_POST['tem_criancas'] ?? ''),
-    'todos_apoiam' => htmlspecialchars($_POST['todos_apoiam'] ?? ''),
-    'tipo_moradia' => htmlspecialchars($_POST['tipo_moradia'] ?? ''),
-    'pet_sera_presente' => htmlspecialchars($_POST['pet_sera_presente'] ?? ''),
-    'presente_responsavel' => htmlspecialchars($_POST['presente_responsavel'] ?? null),
-    'teve_pets' => htmlspecialchars($_POST['teve_pets'] ?? ''),
-    'autoriza_visita' => htmlspecialchars($_POST['autoriza_visita'] ?? ''),
-    'ciente_devolucao' => htmlspecialchars($_POST['ciente_devolucao'] ?? ''),
-    'ciente_termo_responsabilidade' => htmlspecialchars($_POST['ciente_termo_responsabilidade'] ?? ''),
+    'tem_criancas' => trim((string) ($_POST['tem_criancas'] ?? '')),
+    'todos_apoiam' => trim((string) ($_POST['todos_apoiam'] ?? '')),
+    'tipo_moradia' => trim((string) ($_POST['tipo_moradia'] ?? '')),
+    'pet_sera_presente' => trim((string) ($_POST['pet_sera_presente'] ?? '')),
+    'presente_responsavel' => trim((string) ($_POST['presente_responsavel'] ?? '')),
+    'teve_pets' => trim((string) ($_POST['teve_pets'] ?? '')),
+    'autoriza_visita' => trim((string) ($_POST['autoriza_visita'] ?? '')),
+    'ciente_devolucao' => trim((string) ($_POST['ciente_devolucao'] ?? '')),
+    'ciente_termo_responsabilidade' => trim((string) ($_POST['ciente_termo_responsabilidade'] ?? '')),
 ];
 
-// 5. Validação básica (só um exemplo, podemos melhorar)
-if (empty($id_pet) || empty($dados_formulario['tem_criancas']) || empty($dados_formulario['todos_apoiam'])) {
-    // Se dados essenciais faltarem
-    $_SESSION['form_error'] = "Erro: Parece que alguns campos obrigatórios não foram preenchidos.";
-    header('Location: ' . $base_path . 'formulario/' . $id_pet); // <-- URL Limpa
-    exit;
+if (!$id_pet || $dados_formulario['tem_criancas'] === '' || $dados_formulario['todos_apoiam'] === '') {
+    $_SESSION['form_error'] = 'Parece que alguns campos obrigatórios não foram preenchidos.';
+    redirectToAdoptionForm($base_path, $id_pet ?: '');
 }
 
-// 6. Checa se o usuário JÁ aplicou para este pet
-
 try {
-    $sql_check = "SELECT c.id_conversa 
-                  FROM solicitacao s
-                  JOIN conversa c ON s.id_solicitacao = c.id_solicitacao_fk
-                  WHERE s.id_usuario = :id_usuario AND s.id_pet = :id_pet 
-                  LIMIT 1";
-                  
-    $stmt_check = $conn->prepare($sql_check);
-    $stmt_check->execute([
-        ':id_usuario' => $id_usuario_adotante,
-        ':id_pet' => $id_pet
-    ]);
-    
-    $conversa_existente = $stmt_check->fetch(PDO::FETCH_ASSOC);
-
-    if ($conversa_existente) {
-        // O usuário JÁ aplicou para este pet.
-        // Redireciona ele para a conversa existente.
-        header('Location: ' . $base_path . 'chat/' . $conversa_existente['id_conversa']);
-        exit;
-    }
-
-} catch (Exception $e) {
-    // Se der erro na checagem, não deixa continuar por segurança.
-    error_log("Erro ao checar solicitação duplicada: " . $e->getMessage());
-    $_SESSION['form_error'] = "Ops! Ocorreu um erro ao verificar sua solicitação. Tente novamente.";
-    header('Location: ' . $base_path . 'formulario/' . $id_pet);
-    exit;
-}
-
-// Inicia o processo de salvar no banco
-try {
-    // 6. Encontrar o protetor (dono) do pet E o nome do pet
-    $sql_pet = "SELECT nome, id_usuario_fk, id_ong_fk FROM pet WHERE id_pet = :id_pet LIMIT 1";
-    $stmt_pet = $conn->prepare($sql_pet);
+    // Descobre o responsável real pelo pet antes de criar a solicitação/conversa.
+    $stmt_pet = $conn->prepare(
+        "SELECT id_pet, nome, id_usuario_fk, id_ong_fk
+         FROM pet
+         WHERE id_pet = :id_pet
+         LIMIT 1"
+    );
     $stmt_pet->execute([':id_pet' => $id_pet]);
     $pet = $stmt_pet->fetch(PDO::FETCH_ASSOC);
 
     if (!$pet) {
-        throw new Exception("Pet não encontrado.");
+        $_SESSION['form_error'] = 'O pet informado não foi encontrado.';
+        header('Location: ' . $base_path . 'pets/');
+        exit;
     }
 
-    $nome_pet = $pet['nome'];
-    $id_protetor_usuario = $pet['id_usuario_fk']; // Pode ser null
-    $id_protetor_ong = $pet['id_ong_fk']; // Pode ser null
+    $id_protetor_usuario = !empty($pet['id_usuario_fk']) ? (int) $pet['id_usuario_fk'] : null;
+    $id_protetor_ong = !empty($pet['id_ong_fk']) ? (int) $pet['id_ong_fk'] : null;
 
-    // --- NOVO: Define quem é o protetor ---
-    $id_protetor_final = $id_protetor_usuario ?? $id_protetor_ong;
-    $tipo_protetor_final = !empty($id_protetor_usuario) ? 'usuario' : 'ong';
-    // --- FIM NOVO ---
+    // O pet deve pertencer exatamente a um responsável válido.
+    if ($id_protetor_usuario !== null) {
+        $id_protetor_final = $id_protetor_usuario;
+        $tipo_protetor_final = 'usuario';
+    } elseif ($id_protetor_ong !== null) {
+        $id_protetor_final = $id_protetor_ong;
+        $tipo_protetor_final = 'ong';
+    } else {
+        throw new RuntimeException('Pet sem responsável vinculado.');
+    }
 
+    // Um usuário não pode iniciar um processo de adoção do próprio pet.
+    if ($tipo_protetor_final === 'usuario' && $id_protetor_final === $id_usuario_adotante) {
+        $_SESSION['form_error'] = 'Você não pode enviar uma solicitação de adoção para o seu próprio pet.';
+        redirectToAdoptionForm($base_path, $id_pet);
+    }
 
-    // 7. Inicia a Transação (Importante!)
+    // Procura uma solicitação anterior, inclusive as que ficaram sem conversa.
+    $stmt_existente = $conn->prepare(
+        "SELECT s.id_solicitacao, c.id_conversa
+         FROM solicitacao s
+         LEFT JOIN conversa c ON c.id_solicitacao_fk = s.id_solicitacao
+         WHERE s.id_usuario = :id_usuario
+           AND s.id_pet = :id_pet
+         ORDER BY s.id_solicitacao DESC
+         LIMIT 1"
+    );
+    $stmt_existente->execute([
+        ':id_usuario' => $id_usuario_adotante,
+        ':id_pet' => $id_pet,
+    ]);
+    $solicitacao_existente = $stmt_existente->fetch(PDO::FETCH_ASSOC);
+
+    if ($solicitacao_existente && !empty($solicitacao_existente['id_conversa'])) {
+        redirectToChat($base_path, $solicitacao_existente['id_conversa']);
+    }
+
+    // Se já existe solicitação mas faltou a conversa, repara o fluxo sem duplicar a solicitação.
+    if ($solicitacao_existente) {
+        $conn->beginTransaction();
+
+        $stmt_conversa = $conn->prepare(
+            "INSERT INTO conversa
+                (id_solicitacao_fk, id_adotante_fk, id_protetor_fk, tipo_protetor)
+             VALUES
+                (:id_solicitacao, :id_adotante, :id_protetor, :tipo_protetor)"
+        );
+        $stmt_conversa->execute([
+            ':id_solicitacao' => $solicitacao_existente['id_solicitacao'],
+            ':id_adotante' => $id_usuario_adotante,
+            ':id_protetor' => $id_protetor_final,
+            ':tipo_protetor' => $tipo_protetor_final,
+        ]);
+
+        $id_conversa = $conn->lastInsertId();
+
+        $stmt_mensagem = $conn->prepare(
+            "INSERT INTO mensagem
+                (id_conversa_fk, id_remetente_fk, tipo_remetente, conteudo)
+             VALUES
+                (:id_conversa, :id_remetente, 'usuario', :conteudo)"
+        );
+        $stmt_mensagem->execute([
+            ':id_conversa' => $id_conversa,
+            ':id_remetente' => $id_usuario_adotante,
+            ':conteudo' => 'Olá! Tenho interesse em adotar o(a) ' . $pet['nome'] . '.',
+        ]);
+
+        $conn->commit();
+        redirectToChat($base_path, $id_conversa);
+    }
+
+    // Nova solicitação: formulário, conversa e primeira mensagem são criados na mesma transação.
     $conn->beginTransaction();
 
-    // 8. Passo A: Inserir na tabela `solicitacao`
-    $sql_solicitacao = "INSERT INTO solicitacao 
-                            (id_usuario, id_pet, id_protetor_usuario_fk, id_protetor_ong_fk, status_solicitacao) 
-                        VALUES 
-                            (:id_usuario, :id_pet, :id_protetor_usuario, :id_protetor_ong, 'pendente')";
-    
-    $stmt_solicitacao = $conn->prepare($sql_solicitacao);
+    $stmt_solicitacao = $conn->prepare(
+        "INSERT INTO solicitacao
+            (id_usuario, id_pet, id_protetor_usuario_fk, id_protetor_ong_fk, status_solicitacao)
+         VALUES
+            (:id_usuario, :id_pet, :id_protetor_usuario, :id_protetor_ong, 'pendente')"
+    );
     $stmt_solicitacao->execute([
         ':id_usuario' => $id_usuario_adotante,
         ':id_pet' => $id_pet,
         ':id_protetor_usuario' => $id_protetor_usuario,
-        ':id_protetor_ong' => $id_protetor_ong
+        ':id_protetor_ong' => $id_protetor_ong,
     ]);
 
-    // 9. Passo B: Pegar o ID da solicitação que acabamos de criar
-    $id_solicitacao_criada = $conn->lastInsertId();
+    $id_solicitacao = $conn->lastInsertId();
 
-    // 10. Passo C: Inserir as respostas na tabela `formulario_adocao`
-    // ... (código idêntico ao anterior para salvar o formulário) ...
-    $sql_formulario = "INSERT INTO formulario_adocao 
-        (id_solicitacao_fk, id_usuario_fk, id_pet_fk, tem_criancas, todos_apoiam, tipo_moradia, pet_sera_presente, presente_responsavel, teve_pets, autoriza_visita, ciente_devolucao, ciente_termo_responsabilidade) 
-        VALUES 
-        (:id_solicitacao, :id_usuario, :id_pet, :tem_criancas, :todos_apoiam, :tipo_moradia, :pet_sera_presente, :presente_responsavel, :teve_pets, :autoriza_visita, :ciente_devolucao, :ciente_termo_responsabilidade)";
-
-    $stmt_formulario = $conn->prepare($sql_formulario);
+    $stmt_formulario = $conn->prepare(
+        "INSERT INTO formulario_adocao
+            (id_solicitacao_fk, id_usuario_fk, id_pet_fk, tem_criancas, todos_apoiam, tipo_moradia, pet_sera_presente, presente_responsavel, teve_pets, autoriza_visita, ciente_devolucao, ciente_termo_responsabilidade)
+         VALUES
+            (:id_solicitacao, :id_usuario, :id_pet, :tem_criancas, :todos_apoiam, :tipo_moradia, :pet_sera_presente, :presente_responsavel, :teve_pets, :autoriza_visita, :ciente_devolucao, :ciente_termo_responsabilidade)"
+    );
     $stmt_formulario->execute([
-        ':id_solicitacao' => $id_solicitacao_criada,
+        ':id_solicitacao' => $id_solicitacao,
         ':id_usuario' => $id_usuario_adotante,
         ':id_pet' => $id_pet,
         ':tem_criancas' => $dados_formulario['tem_criancas'],
         ':todos_apoiam' => $dados_formulario['todos_apoiam'],
         ':tipo_moradia' => $dados_formulario['tipo_moradia'],
         ':pet_sera_presente' => $dados_formulario['pet_sera_presente'],
-        ':presente_responsavel' => $dados_formulario['presente_responsavel'],
+        ':presente_responsavel' => $dados_formulario['presente_responsavel'] !== '' ? $dados_formulario['presente_responsavel'] : null,
         ':teve_pets' => $dados_formulario['teve_pets'],
         ':autoriza_visita' => $dados_formulario['autoriza_visita'],
         ':ciente_devolucao' => $dados_formulario['ciente_devolucao'],
-        ':ciente_termo_responsabilidade' => $dados_formulario['ciente_termo_responsabilidade']
+        ':ciente_termo_responsabilidade' => $dados_formulario['ciente_termo_responsabilidade'],
     ]);
 
-    
-    // --- INÍCIO DA MÁGICA DO CHAT ---
-
-    // 11. Passo D: Criar a conversa
-    $sql_conversa = "INSERT INTO conversa 
-                        (id_solicitacao_fk, id_adotante_fk, id_protetor_fk, tipo_protetor)
-                     VALUES
-                        (:id_solicitacao, :id_adotante, :id_protetor, :tipo_protetor)";
-    $stmt_conversa = $conn->prepare($sql_conversa);
+    $stmt_conversa = $conn->prepare(
+        "INSERT INTO conversa
+            (id_solicitacao_fk, id_adotante_fk, id_protetor_fk, tipo_protetor)
+         VALUES
+            (:id_solicitacao, :id_adotante, :id_protetor, :tipo_protetor)"
+    );
     $stmt_conversa->execute([
-        ':id_solicitacao' => $id_solicitacao_criada,
+        ':id_solicitacao' => $id_solicitacao,
         ':id_adotante' => $id_usuario_adotante,
         ':id_protetor' => $id_protetor_final,
-        ':tipo_protetor' => $tipo_protetor_final
+        ':tipo_protetor' => $tipo_protetor_final,
     ]);
 
-    // 12. Passo E: Pegar o ID da conversa criada
-    $id_conversa_criada = $conn->lastInsertId();
+    $id_conversa = $conn->lastInsertId();
 
-    // 13. Passo F: Enviar a primeira mensagem automática
-    $mensagem_inicial = "Olá! Tenho interesse em adotar o(a) " . htmlspecialchars($nome_pet) . ".";
-    
-    $sql_mensagem = "INSERT INTO mensagem
-                        (id_conversa_fk, id_remetente_fk, tipo_remetente, conteudo)
-                     VALUES
-                        (:id_conversa, :id_remetente, :tipo_remetente, :conteudo)";
-    $stmt_mensagem = $conn->prepare($sql_mensagem);
+    $stmt_mensagem = $conn->prepare(
+        "INSERT INTO mensagem
+            (id_conversa_fk, id_remetente_fk, tipo_remetente, conteudo)
+         VALUES
+            (:id_conversa, :id_remetente, 'usuario', :conteudo)"
+    );
     $stmt_mensagem->execute([
-        ':id_conversa' => $id_conversa_criada,
+        ':id_conversa' => $id_conversa,
         ':id_remetente' => $id_usuario_adotante,
-        ':tipo_remetente' => 'usuario', // O adotante é sempre 'usuario'
-        ':conteudo' => $mensagem_inicial
+        ':conteudo' => 'Olá! Tenho interesse em adotar o(a) ' . $pet['nome'] . '.',
     ]);
 
-    // --- FIM DA MÁGICA DO CHAT ---
-
-
-    // 14. Passo G: Se tudo deu certo, confirma a transação
     $conn->commit();
 
-    // 15. Redireciona para a página de CHAT com o ID da conversa
-    header('Location: ' . $base_path . 'chat/' . $id_conversa_criada);
-    exit;
+    // O envio de e-mail não interfere na conclusão da solicitação caso o SMTP falhe.
+    try {
+        $stmt_adotante = $conn->prepare(
+            "SELECT nome, email
+             FROM usuario
+             WHERE id_usuario = :id_usuario
+             LIMIT 1"
+        );
+        $stmt_adotante->execute([':id_usuario' => $id_usuario_adotante]);
+        $adotante = $stmt_adotante->fetch(PDO::FETCH_ASSOC);
 
-} catch (Exception $e) {
-    // 16. Se algo deu errado, desfaz tudo (Rollback)
-    $conn->rollBack();
-    
-    error_log("Erro ao processar adoção: " . $e->getMessage());
-    $_SESSION['form_error'] = "Ops! Ocorreu um erro ao enviar sua solicitação. Por favor, tente novamente.";
-    header('Location: ' . $base_path . 'formulario/' . $id_pet); // <-- URL Limpa
-    exit;
+        if ($adotante && !empty($adotante['email'])) {
+            adotePatasSendEmail(
+                (string) $adotante['email'],
+                (string) ($adotante['nome'] ?? ''),
+                'Recebemos seu formulário de adoção',
+                'Formulário enviado com sucesso',
+                'Recebemos seu formulário para adotar ' . $pet['nome'] . '. O responsável pelo pet já pode analisar as informações e conversar com você pelo chat.',
+                'Acompanhar conversa',
+                adotePatasAppUrl() . '/chat/?id=' . urlencode((string) $id_conversa)
+            );
+        }
+    } catch (Throwable $emailError) {
+        error_log('Erro ao preparar e-mail do formulário de adoção: ' . $emailError->getMessage());
+    }
+
+    $_SESSION['mensagem_status'] = 'Solicitação enviada com sucesso. A conversa com o responsável pelo pet foi iniciada.';
+    $_SESSION['tipo_mensagem'] = 'success';
+
+    redirectToChat($base_path, $id_conversa);
+} catch (Throwable $e) {
+    if ($conn->inTransaction()) {
+        $conn->rollBack();
+    }
+
+    error_log('Erro ao processar adoção: ' . $e->getMessage());
+    $_SESSION['form_error'] = 'Não foi possível concluir a solicitação de adoção. Tente novamente.';
+    redirectToAdoptionForm($base_path, $id_pet);
 }
